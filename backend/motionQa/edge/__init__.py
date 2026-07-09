@@ -1,0 +1,2 @@
+"""MotionQA edge pipeline."""
+

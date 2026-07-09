@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "motionqa-backend"
+version = "0.1.0"
+description = "MotionQA FastAPI backend and edge inference pipeline"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.111.0",
+  "uvicorn[standard]>=0.30.0",
+  "pydantic-settings>=2.3.0",
+  "sqlalchemy[asyncio]>=2.0.30",
+  "asyncpg>=0.29.0",
+  "redis>=5.0.5",
+  "httpx>=0.27.0",
+  "aiosmtplib>=3.0.1",
+  "numpy>=1.26.4"
+]
+
+[project.optional-dependencies]
+edge = [
+  "opencv-python-headless>=4.10.0.84",
+  "onnxruntime>=1.18.0",
+  "ultralytics>=8.2.0",
+  "huggingface-hub>=0.23.0",
+  "opcua>=0.98.13"
+]
+test = [
+  "pytest>=8.2.0",
+  "pytest-asyncio>=0.23.7",
+  "aiosqlite>=0.20.0"
+]
+
+[tool.setuptools.packages.find]
+include = ["motionQa*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test*.py"]

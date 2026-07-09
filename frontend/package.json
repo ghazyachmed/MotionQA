@@ -1,0 +1,28 @@
+{
+  "name": "motionqa-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --config viteConfig.ts --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build --config viteConfig.ts",
+    "preview": "vite preview --config viteConfig.ts --host 0.0.0.0",
+    "test": "vitest run --config viteConfig.ts"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^6.0.3",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.6.3",
+    "vite": "^8.1.4",
+    "vitest": "^4.1.10"
+  }
+}

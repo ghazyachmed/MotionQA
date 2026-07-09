@@ -1,0 +1,80 @@
+services:
+  postgresDb:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-motionqa_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-motionqa_password}
+      POSTGRES_DB: ${POSTGRES_DB:-motionqa_logs}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-motionqa_admin} -d ${POSTGRES_DB:-motionqa_logs}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redisCache:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backendApi:
+    build:
+      context: ./backend
+      dockerfile: backendDockerfile
+    environment:
+      MOTIONQA_POSTGRES_DSN: postgresql+asyncpg://motionqa_admin:motionqa_password@postgresDb:5432/motionqa_logs
+      MOTIONQA_REDIS_URL: redis://redisCache:6379/0
+      MOTIONQA_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,http://frontendUi:5173
+      MOTIONQA_AUTO_CREATE_TABLES: "true"
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      postgresDb:
+        condition: service_healthy
+      redisCache:
+        condition: service_healthy
+
+  frontendUi:
+    build:
+      context: ./frontend
+      dockerfile: frontendDockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+        VITE_WS_BASE_URL: ${VITE_WS_BASE_URL:-ws://localhost:8000}
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    depends_on:
+      - backendApi
+
+  edgeProcessor:
+    build:
+      context: ./backend
+      dockerfile: backendDockerfile
+    command: ["python", "-m", "motionQa.edge.edgeProcessor"]
+    environment:
+      MOTIONQA_REDIS_URL: redis://redisCache:6379/0
+      MOTIONQA_RTSP_URL: ${MOTIONQA_RTSP_URL:?Set existing AHM CCTV RTSP URL}
+      MOTIONQA_MODEL_PATH: ${MOTIONQA_MODEL_PATH:-/srv/motionQa/models/yolov8AhmEdge.onnx}
+      MOTIONQA_LINE_ID: ${MOTIONQA_LINE_ID:-LINE_KARAWANG_01}
+    volumes:
+      - ./models:/srv/motionQa/models:ro
+    profiles:
+      - edge
+    depends_on:
+      redisCache:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  redisdata:
