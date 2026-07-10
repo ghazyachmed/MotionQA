@@ -1,4 +1,4 @@
-import type { RefObject } from "react";
+import type { CSSProperties, RefObject } from "react";
 import { Activity, Camera, Cpu, Gauge } from "lucide-react";
 import { formatDefect, formatPercent, formatTime } from "../lib/qcFormat";
 import type { LiveQcEvent } from "../types/qcTypes";
@@ -17,6 +17,7 @@ export function LiveQcMonitor({ event, cameraVideoRef, isCameraEnabled = false }
   const defectText = event ? formatDefect(event.defectFound) : "None";
   const frameWidth = event?.frameWidth && event.frameWidth > 0 ? event.frameWidth : 1920;
   const frameHeight = event?.frameHeight && event.frameHeight > 0 ? event.frameHeight : 1080;
+  const mediaFrameStyle = getMediaFrameStyle(frameWidth, frameHeight);
 
   return (
     <section className="grid gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.55fr)]">
@@ -30,9 +31,15 @@ export function LiveQcMonitor({ event, cameraVideoRef, isCameraEnabled = false }
         </div>
         <div className="relative aspect-video min-h-[280px] bg-[radial-gradient(circle_at_40%_40%,rgba(20,184,166,0.22),transparent_28%),linear-gradient(135deg,#1c1917,#292524)]">
           {isCameraEnabled ? (
-            <video ref={cameraVideoRef} className="h-full w-full object-cover" playsInline muted />
+            <div className="absolute left-1/2 top-1/2 overflow-hidden bg-black" style={mediaFrameStyle}>
+              <video ref={cameraVideoRef} className="h-full w-full object-fill" playsInline muted />
+              <DetectionBox event={event} frameWidth={frameWidth} frameHeight={frameHeight} />
+            </div>
           ) : event?.imageSnapshotUrl ? (
-            <img src={event.imageSnapshotUrl} alt="Inspection snapshot" className="h-full w-full object-cover" />
+            <div className="absolute left-1/2 top-1/2 overflow-hidden bg-black" style={mediaFrameStyle}>
+              <img src={event.imageSnapshotUrl} alt="Inspection snapshot" className="h-full w-full object-fill" />
+              <DetectionBox event={event} frameWidth={frameWidth} frameHeight={frameHeight} />
+            </div>
           ) : (
             <div className="absolute inset-0">
               <div className="absolute left-8 right-8 top-1/2 h-16 -translate-y-1/2 rounded bg-stone-700/80" />
@@ -43,17 +50,6 @@ export function LiveQcMonitor({ event, cameraVideoRef, isCameraEnabled = false }
               </div>
             </div>
           )}
-          {event?.boundingBox ? (
-            <div
-              className="absolute border-2 border-red-400 bg-red-500/10"
-              style={{
-                left: `${Math.min(96, Math.max(0, (event.boundingBox.xMin / frameWidth) * 100))}%`,
-                top: `${Math.min(96, Math.max(0, (event.boundingBox.yMin / frameHeight) * 100))}%`,
-                width: `${Math.max(4, ((event.boundingBox.xMax - event.boundingBox.xMin) / frameWidth) * 100)}%`,
-                height: `${Math.max(4, ((event.boundingBox.yMax - event.boundingBox.yMin) / frameHeight) * 100)}%`,
-              }}
-            />
-          ) : null}
         </div>
       </div>
 
@@ -66,6 +62,46 @@ export function LiveQcMonitor({ event, cameraVideoRef, isCameraEnabled = false }
       </div>
     </section>
   );
+}
+
+interface DetectionBoxProps {
+  event: LiveQcEvent | null;
+  frameWidth: number;
+  frameHeight: number;
+}
+
+function DetectionBox({ event, frameWidth, frameHeight }: DetectionBoxProps): JSX.Element | null {
+  if (!event?.boundingBox) {
+    return null;
+  }
+  return (
+    <div
+      className="absolute border-2 border-red-400 bg-red-500/10"
+      style={{
+        left: `${Math.min(96, Math.max(0, (event.boundingBox.xMin / frameWidth) * 100))}%`,
+        top: `${Math.min(96, Math.max(0, (event.boundingBox.yMin / frameHeight) * 100))}%`,
+        width: `${Math.max(4, ((event.boundingBox.xMax - event.boundingBox.xMin) / frameWidth) * 100)}%`,
+        height: `${Math.max(4, ((event.boundingBox.yMax - event.boundingBox.yMin) / frameHeight) * 100)}%`,
+      }}
+    />
+  );
+}
+
+function getMediaFrameStyle(frameWidth: number, frameHeight: number): CSSProperties {
+  const frameAspect = frameWidth / Math.max(1, frameHeight);
+  const containerAspect = 16 / 9;
+  if (frameAspect >= containerAspect) {
+    return {
+      height: `${(containerAspect / frameAspect) * 100}%`,
+      transform: "translate(-50%, -50%)",
+      width: "100%",
+    };
+  }
+  return {
+    height: "100%",
+    transform: "translate(-50%, -50%)",
+    width: `${(frameAspect / containerAspect) * 100}%`,
+  };
 }
 
 interface MetricTileProps {

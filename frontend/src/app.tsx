@@ -38,7 +38,11 @@ export function App(): JSX.Element {
             <CameraDemoControls
               cameraState={cameraDemo.cameraState}
               cameraMode={cameraDemo.cameraMode}
+              videoDevices={cameraDemo.videoDevices}
+              selectedDeviceId={cameraDemo.selectedDeviceId}
               setCameraMode={cameraDemo.setCameraMode}
+              setCameraDevice={cameraDemo.setCameraDevice}
+              publishPhoto={cameraDemo.publishPhoto}
               startCamera={cameraDemo.startCamera}
               stopCamera={cameraDemo.stopCamera}
             />

@@ -68,7 +68,15 @@ cd /Users/ghazy/Documents/MotionQA/frontend
 npm run dev -- --host 127.0.0.1 --port 5173
 ```
 
-Open `http://127.0.0.1:5173`, choose a camera demo mode, then click `Camera` and allow Chrome camera access. Point your laptop camera at a motorcycle photo from your phone. This mode injects demo inspection events through the same FastAPI, Redis, WebSocket, and PostgreSQL path as the edge pipeline.
+Open `http://127.0.0.1:5173`, keep the mode on `Auto QC`, then click `Photo` and upload one of these local MVP samples:
+
+- `/Users/ghazy/Documents/MotionQA/sampleImages/motionQaOkMotorPart.png`
+- `/Users/ghazy/Documents/MotionQA/sampleImages/motionQaDefectScratch.png`
+- `/Users/ghazy/Documents/MotionQA/sampleImages/motionQaDefectCasting.png`
+
+`Auto QC` reads the image content. `OK Part`, `Scratch`, and `Casting` are demo filters for controlled presentation scenarios.
+
+To test with a laptop camera, click `Camera` and allow Chrome camera access. If Chrome selects `Camo Camera` and the preview is black, use the camera device dropdown to pick the built-in/FaceTime/Continuity camera, or click `Photo` for a deterministic MVP test. The uploaded photo is analyzed locally in the browser, rendered in the live monitor, and published through the same backend event path.
 
 This laptop camera path is only for local MVP demos. Production MotionQA still uses existing AHM CCTV RTSP feeds and YOLOv8 ONNX inference on the edge device.
 
