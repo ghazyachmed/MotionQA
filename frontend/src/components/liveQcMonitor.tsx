@@ -15,6 +15,7 @@ export function LiveQcMonitor({ event, cameraVideoRef, isCameraEnabled = false }
   const status = event?.status ?? "WAITING";
   const confidenceValue = event?.confidenceScore ?? "0";
   const defectText = event ? formatDefect(event.defectFound) : "None";
+  const componentText = event?.componentCode ?? (isCameraEnabled ? "Awaiting component" : "No stream");
   const frameWidth = event?.frameWidth && event.frameWidth > 0 ? event.frameWidth : 1920;
   const frameHeight = event?.frameHeight && event.frameHeight > 0 ? event.frameHeight : 1080;
   const mediaFrameStyle = getMediaFrameStyle(frameWidth, frameHeight);
@@ -34,6 +35,12 @@ export function LiveQcMonitor({ event, cameraVideoRef, isCameraEnabled = false }
             <div className="absolute left-1/2 top-1/2 overflow-hidden bg-black" style={mediaFrameStyle}>
               <video ref={cameraVideoRef} className="h-full w-full object-fill" playsInline muted />
               <DetectionBox event={event} frameWidth={frameWidth} frameHeight={frameHeight} />
+              {!event ? (
+                <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded bg-black/55 px-3 py-2 text-xs font-medium text-white">
+                  <Activity className="h-4 w-4 text-teal-300" />
+                  Awaiting component
+                </div>
+              ) : null}
             </div>
           ) : event?.imageSnapshotUrl ? (
             <div className="absolute left-1/2 top-1/2 overflow-hidden bg-black" style={mediaFrameStyle}>
@@ -57,7 +64,7 @@ export function LiveQcMonitor({ event, cameraVideoRef, isCameraEnabled = false }
         <MetricTile icon={<Cpu className="h-5 w-5" />} label="Defect" value={defectText} tone={event?.status === "FAILED" ? "alarm" : "neutral"} />
         <MetricTile icon={<Gauge className="h-5 w-5" />} label="Confidence" value={formatPercent(confidenceValue)} tone="teal" />
         <MetricTile icon={<Activity className="h-5 w-5" />} label="Throughput" value={`${event?.fps.toFixed(1) ?? "0.0"} fps`} tone="amber" />
-        <MetricTile label="Component" value={event?.componentCode ?? "No stream"} tone="neutral" compact />
+        <MetricTile label="Component" value={componentText} tone="neutral" compact />
         <MetricTile label="Detected" value={event ? formatTime(event.detectedAt) : "--:--:--"} tone="neutral" compact />
       </div>
     </section>

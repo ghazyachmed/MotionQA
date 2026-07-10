@@ -25,6 +25,7 @@ export function App(): JSX.Element {
   const { currentEvent, recentEvents, connectionState } = useQcStream(`${wsBaseUrl}/ws/qc-stream`);
   const { buckets, isLoading } = useDefectTrends(apiBaseUrl, currentEvent?.lineId ?? "LINE_KARAWANG_01");
   const cameraDemo = useCameraDemo(apiBaseUrl);
+  const monitorEvent = cameraDemo.isCameraEnabled ? cameraDemo.cameraInspectionEvent : currentEvent;
 
   return (
     <main className="min-h-screen bg-[#ebe8df] text-factory-ink">
@@ -52,7 +53,7 @@ export function App(): JSX.Element {
       </header>
 
       <div className="mx-auto grid max-w-7xl gap-4 px-4 py-4 lg:px-6">
-        <LiveQcMonitor event={currentEvent} cameraVideoRef={cameraDemo.videoRef} isCameraEnabled={cameraDemo.isCameraEnabled} />
+        <LiveQcMonitor event={monitorEvent} cameraVideoRef={cameraDemo.videoRef} isCameraEnabled={cameraDemo.isCameraEnabled} />
         <div className="grid gap-4 lg:grid-cols-[minmax(0,0.62fr)_minmax(360px,0.38fr)]">
           <DefectTrendAnalytics buckets={buckets} isLoading={isLoading} />
           <AlertCenter events={recentEvents} />

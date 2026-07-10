@@ -7,6 +7,7 @@ interface CameraDemoState {
   isCameraEnabled: boolean;
   cameraState: "IDLE" | "STARTING" | "OPEN" | "ERROR";
   cameraMode: CameraDemoMode;
+  cameraInspectionEvent: LiveQcEvent | null;
   videoDevices: CameraDevice[];
   selectedDeviceId: string;
   setCameraMode: (mode: CameraDemoMode) => void;
@@ -23,6 +24,7 @@ export interface CameraDevice {
 }
 
 const lineId = "LINE_KARAWANG_01";
+const cameraFrameIntervalMs = 250;
 
 // AI Assisted Logic
 export function useCameraDemo(apiBaseUrl: string): CameraDemoState {
@@ -33,6 +35,7 @@ export function useCameraDemo(apiBaseUrl: string): CameraDemoState {
   const lastFrameTimeRef = useRef(performance.now());
   const [cameraState, setCameraState] = useState<CameraDemoState["cameraState"]>("IDLE");
   const [cameraMode, setCameraMode] = useState<CameraDemoMode>("auto");
+  const [cameraInspectionEvent, setCameraInspectionEvent] = useState<LiveQcEvent | null>(null);
   const [videoDevices, setVideoDevices] = useState<CameraDevice[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState("");
 
@@ -90,6 +93,11 @@ export function useCameraDemo(apiBaseUrl: string): CameraDemoState {
 
     context.drawImage(video, 0, 0, sampleWidth, sampleHeight);
     const decision = analyzeCameraFrame(context.getImageData(0, 0, sampleWidth, sampleHeight), cameraMode);
+    if (!decision.isInspectable) {
+      setCameraInspectionEvent(null);
+      lastFrameTimeRef.current = performance.now();
+      return;
+    }
     frameNumberRef.current += 1;
     const currentTime = performance.now();
     const elapsedMs = Math.max(1, currentTime - lastFrameTimeRef.current);
@@ -112,6 +120,7 @@ export function useCameraDemo(apiBaseUrl: string): CameraDemoState {
       fps,
     };
 
+    setCameraInspectionEvent(event);
     await publishLiveEvent(event);
   }, [cameraMode, publishLiveEvent]);
 
@@ -132,9 +141,13 @@ export function useCameraDemo(apiBaseUrl: string): CameraDemoState {
       context.drawImage(bitmap, 0, 0, targetWidth, targetHeight);
       bitmap.close();
       const decision = analyzeCameraFrame(context.getImageData(0, 0, targetWidth, targetHeight), cameraMode);
+      if (!decision.isInspectable) {
+        setCameraInspectionEvent(null);
+        return;
+      }
       frameNumberRef.current += 1;
       const timestamp = new Date().toISOString();
-      await publishLiveEvent({
+      const event: LiveQcEvent = {
         eventId: crypto.randomUUID(),
         componentCode: `${lineId}-PHOTO-${timestamp.replace(/\D/g, "")}-${frameNumberRef.current}`,
         lineId,
@@ -148,7 +161,9 @@ export function useCameraDemo(apiBaseUrl: string): CameraDemoState {
         frameWidth: targetWidth,
         frameHeight: targetHeight,
         fps: 1,
-      });
+      };
+      setCameraInspectionEvent(event);
+      await publishLiveEvent(event);
     },
     [cameraMode, publishLiveEvent],
   );
@@ -163,6 +178,7 @@ export function useCameraDemo(apiBaseUrl: string): CameraDemoState {
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
+    setCameraInspectionEvent(null);
     setCameraState("IDLE");
   }, []);
 
@@ -175,6 +191,7 @@ export function useCameraDemo(apiBaseUrl: string): CameraDemoState {
       }
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
+      setCameraInspectionEvent(null);
       const nextDevices = await loadVideoDevices();
       const resolvedDeviceId = deviceIdOverride || selectedDeviceId || selectPreferredDeviceId(nextDevices) || undefined;
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -199,7 +216,7 @@ export function useCameraDemo(apiBaseUrl: string): CameraDemoState {
       }
       timerRef.current = window.setInterval(() => {
         void publishFrame().catch(() => setCameraState("ERROR"));
-      }, 1200);
+      }, cameraFrameIntervalMs);
       await publishFrame();
     } catch {
       stopCamera();
@@ -245,6 +262,7 @@ export function useCameraDemo(apiBaseUrl: string): CameraDemoState {
       isCameraEnabled: cameraState === "OPEN" || cameraState === "STARTING",
       cameraState,
       cameraMode,
+      cameraInspectionEvent,
       videoDevices,
       selectedDeviceId,
       setCameraMode,
@@ -254,7 +272,7 @@ export function useCameraDemo(apiBaseUrl: string): CameraDemoState {
       startCamera,
       stopCamera,
     }),
-    [cameraMode, cameraState, publishPhoto, refreshDevices, selectedDeviceId, setCameraDevice, startCamera, stopCamera, videoDevices],
+    [cameraInspectionEvent, cameraMode, cameraState, publishPhoto, refreshDevices, selectedDeviceId, setCameraDevice, startCamera, stopCamera, videoDevices],
   );
 }
 

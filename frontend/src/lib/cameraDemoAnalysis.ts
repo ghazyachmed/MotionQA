@@ -15,6 +15,8 @@ export interface CameraDemoDecision {
   confidenceScore: number;
   status: InspectionStatus;
   boundingBox: BoundingBox | null;
+  componentBox: BoundingBox | null;
+  isInspectable: boolean;
 }
 
 interface PixelBuffer {
@@ -31,7 +33,14 @@ interface LineBucket {
   yMax: number;
 }
 
-interface CastingComponent {
+interface BoxLike {
+  xMin: number;
+  yMin: number;
+  xMax: number;
+  yMax: number;
+}
+
+interface MaskComponent {
   area: number;
   xMin: number;
   yMin: number;
@@ -41,9 +50,20 @@ interface CastingComponent {
 
 // AI Assisted Logic
 export function analyzeCameraFrame(imageData: ImageData, mode: CameraDemoMode): CameraDemoDecision {
-  const stats = calculateFrameStats({ data: imageData.data, width: imageData.width, height: imageData.height });
-  const scratchBox = locateScratchBox(imageData);
-  const castingBox = locateCastingBox(imageData);
+  const componentBox = locateComponentBox(imageData);
+  const stats = calculateFrameStats({ data: imageData.data, width: imageData.width, height: imageData.height }, componentBox);
+  if (!componentBox) {
+    return {
+      defectFound: "none",
+      confidenceScore: 0,
+      status: "PASSED",
+      boundingBox: null,
+      componentBox: null,
+      isInspectable: false,
+    };
+  }
+  const scratchBox = locateScratchBox(imageData, componentBox);
+  const castingBox = locateCastingBox(imageData, componentBox);
   const defectFound = selectDefectType(stats, mode, scratchBox, castingBox);
   const confidenceScore = calculateConfidence(stats, defectFound);
   const status: InspectionStatus = defectFound === "none" ? "PASSED" : "FAILED";
@@ -52,10 +72,12 @@ export function analyzeCameraFrame(imageData: ImageData, mode: CameraDemoMode): 
     confidenceScore,
     status,
     boundingBox: selectBoundingBox(defectFound, scratchBox, castingBox),
+    componentBox,
+    isInspectable: true,
   };
 }
 
-export function calculateFrameStats(pixelBuffer: PixelBuffer): CameraFrameStats {
+export function calculateFrameStats(pixelBuffer: PixelBuffer, componentBox: BoundingBox | null = null): CameraFrameStats {
   let brightnessTotal = 0;
   let varianceTotal = 0;
   let edgeTotal = 0;
@@ -76,7 +98,7 @@ export function calculateFrameStats(pixelBuffer: PixelBuffer): CameraFrameStats 
     const pixelIndex = index / 4;
     const x = pixelIndex % pixelBuffer.width;
     const y = Math.floor(pixelIndex / pixelBuffer.width);
-    if (isComponentRoi(x, y, pixelBuffer.width, pixelBuffer.height)) {
+    if (isStatsRoi(x, y, pixelBuffer.width, pixelBuffer.height, componentBox)) {
       roiPixels += 1;
       if (isScratchPixel(lumaValue)) {
         scratchPixels += 1;
@@ -140,17 +162,42 @@ function selectBoundingBox(defectFound: DefectType, scratchBox: BoundingBox | nu
   return null;
 }
 
-function locateScratchBox(imageData: ImageData): BoundingBox | null {
+function locateComponentBox(imageData: ImageData): BoundingBox | null {
+  const mask = new Uint8Array(imageData.width * imageData.height);
+  for (let y = 0; y < imageData.height; y += 1) {
+    for (let x = 0; x < imageData.width; x += 1) {
+      const index = (y * imageData.width + x) * 4;
+      const redValue = imageData.data[index] ?? 0;
+      const greenValue = imageData.data[index + 1] ?? 0;
+      const blueValue = imageData.data[index + 2] ?? 0;
+      const lumaValue = getLuma(redValue, greenValue, blueValue);
+      if (isComponentPixel(redValue, greenValue, blueValue, lumaValue, x, y, imageData.width, imageData.height)) {
+        mask[y * imageData.width + x] = 1;
+      }
+    }
+  }
+  const components = collectMaskComponents(mask, imageData.width, imageData.height);
+  const componentCandidates = components
+    .filter((component) => isInspectableComponent(component, imageData.width, imageData.height))
+    .sort((leftComponent, rightComponent) => rightComponent.area - leftComponent.area);
+  const component = componentCandidates[0];
+  if (!component) {
+    return null;
+  }
+  return padBoundingBox(component, imageData.width, imageData.height, 8);
+}
+
+function locateScratchBox(imageData: ImageData, componentBox: BoundingBox): BoundingBox | null {
   const slopes = [0.18, 0.24, 0.3, 0.36, 0.42];
   const buckets = new Map<string, LineBucket>();
   for (let y = 0; y < imageData.height; y += 2) {
     for (let x = 0; x < imageData.width; x += 2) {
-      if (!isScratchRoi(x, y, imageData.width, imageData.height)) {
+      if (!isScratchRoi(x, y, componentBox)) {
         continue;
       }
       const index = (y * imageData.width + x) * 4;
       const lumaValue = getLuma(imageData.data[index] ?? 0, imageData.data[index + 1] ?? 0, imageData.data[index + 2] ?? 0);
-      if (!isScratchPixel(lumaValue)) {
+      if (!isScratchCandidatePixel(imageData, x, y, lumaValue)) {
         continue;
       }
       slopes.forEach((slopeValue, slopeIndex) => {
@@ -171,18 +218,18 @@ function locateScratchBox(imageData: ImageData): BoundingBox | null {
   const bestBucket = [...buckets.values()]
     .filter((bucket) => bucket.xMax - bucket.xMin > imageData.width * 0.1 && bucket.yMax - bucket.yMin > imageData.height * 0.025)
     .sort((leftBucket, rightBucket) => rightBucket.matchedPixels - leftBucket.matchedPixels)[0];
-  const minMatchedPixels = Math.max(24, imageData.width * imageData.height * 0.00012);
+  const minMatchedPixels = Math.max(18, getBoxArea(componentBox) * 0.00016);
   if (!bestBucket || bestBucket.matchedPixels < minMatchedPixels) {
     return null;
   }
   return padBoundingBox(bestBucket, imageData.width, imageData.height, 18);
 }
 
-function locateCastingBox(imageData: ImageData): BoundingBox | null {
+function locateCastingBox(imageData: ImageData, componentBox: BoundingBox): BoundingBox | null {
   const mask = new Uint8Array(imageData.width * imageData.height);
   for (let y = 0; y < imageData.height; y += 1) {
     for (let x = 0; x < imageData.width; x += 1) {
-      if (!isCastingRoi(x, y, imageData.width, imageData.height)) {
+      if (!isCastingRoi(x, y, componentBox)) {
         continue;
       }
       const index = (y * imageData.width + x) * 4;
@@ -192,17 +239,18 @@ function locateCastingBox(imageData: ImageData): BoundingBox | null {
       }
     }
   }
-  const components = collectCastingComponents(mask, imageData.width, imageData.height);
-  const minArea = Math.max(3, imageData.width * imageData.height * 0.00002);
-  const maxArea = Math.max(24, imageData.width * imageData.height * 0.0025);
-  const maxSpan = Math.max(10, Math.min(imageData.width, imageData.height) * 0.13);
+  const components = collectMaskComponents(mask, imageData.width, imageData.height);
+  const componentArea = getBoxArea(componentBox);
+  const minArea = Math.max(3, componentArea * 0.00002);
+  const maxArea = Math.max(24, componentArea * 0.008);
+  const maxSpan = Math.max(10, Math.min(componentBox.xMax - componentBox.xMin, componentBox.yMax - componentBox.yMin) * 0.18);
   const defectComponents = components.filter((component) => {
     const componentWidth = component.xMax - component.xMin + 1;
     const componentHeight = component.yMax - component.yMin + 1;
     return component.area >= minArea && component.area <= maxArea && componentWidth <= maxSpan && componentHeight <= maxSpan;
   });
   const totalArea = defectComponents.reduce((sumValue, component) => sumValue + component.area, 0);
-  const minTotalArea = Math.max(18, imageData.width * imageData.height * 0.00035);
+  const minTotalArea = Math.max(16, componentArea * 0.00045);
   if (defectComponents.length < 5 || totalArea < minTotalArea) {
     return null;
   }
@@ -225,8 +273,8 @@ function locateCastingBox(imageData: ImageData): BoundingBox | null {
   return padBoundingBox(defectBox, imageData.width, imageData.height, 18);
 }
 
-function collectCastingComponents(mask: Uint8Array, width: number, height: number): CastingComponent[] {
-  const components: CastingComponent[] = [];
+function collectMaskComponents(mask: Uint8Array, width: number, height: number): MaskComponent[] {
+  const components: MaskComponent[] = [];
   const queue = new Int32Array(width * height);
   for (let pixelIndex = 0; pixelIndex < mask.length; pixelIndex += 1) {
     if (mask[pixelIndex] !== 1) {
@@ -271,7 +319,7 @@ function visitNeighbor(mask: Uint8Array, queue: Int32Array, queueEnd: number, ne
   return queueEnd + 1;
 }
 
-function padBoundingBox(boxValue: LineBucket, width: number, height: number, padding: number): BoundingBox {
+function padBoundingBox(boxValue: BoxLike, width: number, height: number, padding: number): BoundingBox {
   return {
     xMin: Math.max(0, boxValue.xMin - padding),
     yMin: Math.max(0, boxValue.yMin - padding),
@@ -292,14 +340,118 @@ function isCastingPixel(lumaValue: number): boolean {
   return lumaValue < 0.42;
 }
 
-function isScratchRoi(x: number, y: number, width: number, height: number): boolean {
-  return x > width * 0.24 && x < width * 0.78 && y > height * 0.39 && y < height * 0.76;
+function isScratchCandidatePixel(imageData: ImageData, x: number, y: number, lumaValue: number): boolean {
+  if (!isScratchPixel(lumaValue)) {
+    return false;
+  }
+  const offsets = [
+    [-5, 0],
+    [5, 0],
+    [0, -5],
+    [0, 5],
+    [-4, -4],
+    [4, 4],
+  ];
+  const supportCount = offsets.reduce((countValue, [xOffset, yOffset]) => {
+    const sampleX = x + xOffset;
+    const sampleY = y + yOffset;
+    if (sampleX < 0 || sampleY < 0 || sampleX >= imageData.width || sampleY >= imageData.height) {
+      return countValue;
+    }
+    const index = (sampleY * imageData.width + sampleX) * 4;
+    const redValue = imageData.data[index] ?? 0;
+    const greenValue = imageData.data[index + 1] ?? 0;
+    const blueValue = imageData.data[index + 2] ?? 0;
+    const sampleLuma = getLuma(redValue, greenValue, blueValue);
+    return isComponentSurfacePixel(redValue, greenValue, blueValue, sampleLuma) ? countValue + 1 : countValue;
+  }, 0);
+  return supportCount >= 3;
+}
+
+function isScratchRoi(x: number, y: number, componentBox: BoundingBox): boolean {
+  const boxWidth = componentBox.xMax - componentBox.xMin;
+  const boxHeight = componentBox.yMax - componentBox.yMin;
+  return (
+    x > componentBox.xMin + boxWidth * 0.07 &&
+    x < componentBox.xMax - boxWidth * 0.07 &&
+    y > componentBox.yMin + boxHeight * 0.27 &&
+    y < componentBox.yMax - boxHeight * 0.12
+  );
 }
 
 function isComponentRoi(x: number, y: number, width: number, height: number): boolean {
   return x > width * 0.22 && x < width * 0.84 && y > height * 0.31 && y < height * 0.78;
 }
 
-function isCastingRoi(x: number, y: number, width: number, height: number): boolean {
-  return x > width * 0.24 && x < width * 0.8 && y > height * 0.34 && y < height * 0.75;
+function isCastingRoi(x: number, y: number, componentBox: BoundingBox): boolean {
+  const boxWidth = componentBox.xMax - componentBox.xMin;
+  const boxHeight = componentBox.yMax - componentBox.yMin;
+  return (
+    x > componentBox.xMin + boxWidth * 0.06 &&
+    x < componentBox.xMax - boxWidth * 0.06 &&
+    y > componentBox.yMin + boxHeight * 0.16 &&
+    y < componentBox.yMax - boxHeight * 0.12
+  );
+}
+
+function isStatsRoi(x: number, y: number, width: number, height: number, componentBox: BoundingBox | null): boolean {
+  if (!componentBox) {
+    return isComponentRoi(x, y, width, height);
+  }
+  const boxWidth = componentBox.xMax - componentBox.xMin;
+  const boxHeight = componentBox.yMax - componentBox.yMin;
+  return (
+    x > componentBox.xMin + boxWidth * 0.05 &&
+    x < componentBox.xMax - boxWidth * 0.05 &&
+    y > componentBox.yMin + boxHeight * 0.14 &&
+    y < componentBox.yMax - boxHeight * 0.1
+  );
+}
+
+function isComponentPixel(
+  redValue: number,
+  greenValue: number,
+  blueValue: number,
+  lumaValue: number,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): boolean {
+  return (
+    x > width * 0.08 &&
+    x < width * 0.94 &&
+    y > height * 0.08 &&
+    y < height * 0.9 &&
+    isComponentSurfacePixel(redValue, greenValue, blueValue, lumaValue)
+  );
+}
+
+function isComponentSurfacePixel(redValue: number, greenValue: number, blueValue: number, lumaValue: number): boolean {
+  const colorSpread = (Math.max(redValue, greenValue, blueValue) - Math.min(redValue, greenValue, blueValue)) / 255;
+  return lumaValue > 0.24 && lumaValue < 0.69 && colorSpread < 0.16;
+}
+
+function isInspectableComponent(component: MaskComponent, width: number, height: number): boolean {
+  const componentWidth = component.xMax - component.xMin + 1;
+  const componentHeight = component.yMax - component.yMin + 1;
+  const frameArea = width * height;
+  const boxArea = componentWidth * componentHeight;
+  const coverage = component.area / Math.max(1, frameArea);
+  const fillRatio = component.area / Math.max(1, boxArea);
+  return (
+    coverage > 0.025 &&
+    coverage < 0.58 &&
+    fillRatio > 0.38 &&
+    componentWidth > width * 0.18 &&
+    componentHeight > height * 0.12 &&
+    component.xMin > width * 0.04 &&
+    component.xMax < width * 0.98 &&
+    component.yMin > height * 0.04 &&
+    component.yMax < height * 0.94
+  );
+}
+
+function getBoxArea(boxValue: BoundingBox): number {
+  return Math.max(1, (boxValue.xMax - boxValue.xMin) * (boxValue.yMax - boxValue.yMin));
 }

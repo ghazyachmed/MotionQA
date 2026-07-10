@@ -1,5 +1,5 @@
 from functools import lru_cache
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -32,6 +32,16 @@ class AppSettings(BaseSettings):
     emailFrom: str | None = Field(default=None, validation_alias="MOTIONQA_EMAIL_FROM")
     emailTo: str | None = Field(default=None, validation_alias="MOTIONQA_EMAIL_TO")
     requestTimeoutSeconds: float = Field(default=5.0, gt=0.0, le=30.0, validation_alias="MOTIONQA_REQUEST_TIMEOUT_SECONDS")
+    frontendDistPath: str | None = Field(default=None, validation_alias="MOTIONQA_FRONTEND_DIST_PATH")
+
+    @field_validator("postgresDsn")
+    @classmethod
+    def normalizePostgresDsn(cls, value: str) -> str:
+        if value.startswith("postgresql://"):
+            return value.replace("postgresql://", "postgresql+asyncpg://", 1)
+        if value.startswith("postgres://"):
+            return value.replace("postgres://", "postgresql+asyncpg://", 1)
+        return value
 
     @property
     def allowedOriginList(self) -> list[str]:

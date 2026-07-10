@@ -13,8 +13,8 @@ function createImageData(redValue: number, greenValue: number, blueValue: number
 }
 
 function drawScratch(imageData: ImageData): ImageData {
-  for (let x = 94; x < 220; x += 1) {
-    const y = Math.round(74 + (x - 94) * 0.34);
+  for (let x = 96; x < 224; x += 1) {
+    const y = Math.round(82 + (x - 96) * 0.32);
     drawDisc(imageData, x, y, 3, 248, 248, 248);
   }
   return imageData;
@@ -22,16 +22,39 @@ function drawScratch(imageData: ImageData): ImageData {
 
 function drawCasting(imageData: ImageData): ImageData {
   const centers = [
-    [96, 74],
+    [92, 78],
     [116, 106],
     [142, 88],
-    [164, 122],
-    [184, 94],
+    [164, 118],
+    [184, 96],
     [204, 116],
-    [222, 82],
-    [236, 132],
+    [222, 84],
+    [236, 126],
   ];
   centers.forEach(([x, y]) => drawDisc(imageData, x, y, 4, 54, 54, 54));
+  return imageData;
+}
+
+function drawCleanPart(imageData: ImageData): ImageData {
+  const centerX = imageData.width / 2;
+  const centerY = imageData.height / 2;
+  const radiusX = imageData.width * 0.32;
+  const radiusY = imageData.height * 0.28;
+  for (let y = 0; y < imageData.height; y += 1) {
+    for (let x = 0; x < imageData.width; x += 1) {
+      const normalizedX = (x - centerX) / radiusX;
+      const normalizedY = (y - centerY) / radiusY;
+      if (normalizedX ** 2 + normalizedY ** 2 <= 1) {
+        setPixel(imageData, x, y, 124, 127, 130);
+      }
+    }
+  }
+  for (let x = 92; x < 228; x += 1) {
+    drawDisc(imageData, x, 61, 1, 238, 238, 238);
+  }
+  drawDisc(imageData, 104, 83, 9, 58, 58, 58);
+  drawDisc(imageData, 214, 83, 9, 58, 58, 58);
+  drawDisc(imageData, 160, 112, 10, 58, 58, 58);
   return imageData;
 }
 
@@ -44,13 +67,17 @@ function drawDisc(imageData: ImageData, centerX: number, centerY: number, radius
       if ((x - centerX) ** 2 + (y - centerY) ** 2 > radius ** 2) {
         continue;
       }
-      const index = (y * imageData.width + x) * 4;
-      imageData.data[index] = redValue;
-      imageData.data[index + 1] = greenValue;
-      imageData.data[index + 2] = blueValue;
-      imageData.data[index + 3] = 255;
+      setPixel(imageData, x, y, redValue, greenValue, blueValue);
     }
   }
+}
+
+function setPixel(imageData: ImageData, x: number, y: number, redValue: number, greenValue: number, blueValue: number): void {
+  const index = (y * imageData.width + x) * 4;
+  imageData.data[index] = redValue;
+  imageData.data[index + 1] = greenValue;
+  imageData.data[index + 2] = blueValue;
+  imageData.data[index + 3] = 255;
 }
 
 // AI Assisted Logic
@@ -61,22 +88,32 @@ describe("cameraDemoAnalysis", () => {
     expect(stats.brightnessScore).toBeCloseTo(1, 2);
   });
 
-  it("keeps a clean part passed in auto mode", () => {
-    const decision = analyzeCameraFrame(createImageData(120, 120, 120), "auto");
+  it("waits when no component is visible", () => {
+    const decision = analyzeCameraFrame(createImageData(232, 232, 232), "auto");
+    expect(decision.isInspectable).toBe(false);
+    expect(decision.defectFound).toBe("none");
+    expect(decision.boundingBox).toBeNull();
+  });
+
+  it("keeps a clean visible part passed in auto mode", () => {
+    const decision = analyzeCameraFrame(drawCleanPart(createImageData(232, 232, 232)), "auto");
+    expect(decision.isInspectable).toBe(true);
     expect(decision.defectFound).toBe("none");
     expect(decision.status).toBe("PASSED");
     expect(decision.boundingBox).toBeNull();
   });
 
   it("finds a scratch box from diagonal evidence", () => {
-    const decision = analyzeCameraFrame(drawScratch(createImageData(122, 122, 122)), "auto");
+    const decision = analyzeCameraFrame(drawScratch(drawCleanPart(createImageData(232, 232, 232))), "auto");
+    expect(decision.isInspectable).toBe(true);
     expect(decision.defectFound).toBe("scratch");
     expect(decision.status).toBe("FAILED");
     expect(decision.boundingBox).not.toBeNull();
   });
 
   it("finds casting defect from repeated pore evidence", () => {
-    const decision = analyzeCameraFrame(drawCasting(createImageData(122, 122, 122)), "auto");
+    const decision = analyzeCameraFrame(drawCasting(drawCleanPart(createImageData(232, 232, 232))), "auto");
+    expect(decision.isInspectable).toBe(true);
     expect(decision.defectFound).toBe("casting_defect");
     expect(decision.status).toBe("FAILED");
     expect(decision.boundingBox).not.toBeNull();
