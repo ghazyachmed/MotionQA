@@ -1,6 +1,9 @@
 from functools import lru_cache
+from pathlib import Path
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+backendRoot = Path(__file__).resolve().parents[1]
 
 
 class AppSettings(BaseSettings):
@@ -14,12 +17,25 @@ class AppSettings(BaseSettings):
     enableRedisPersistence: bool = Field(default=True, validation_alias="MOTIONQA_ENABLE_REDIS_PERSISTENCE")
     allowedOrigins: str = Field(default="http://localhost:5173,http://127.0.0.1:5173", validation_alias="MOTIONQA_ALLOWED_ORIGINS")
     autoCreateTables: bool = Field(default=True, validation_alias="MOTIONQA_AUTO_CREATE_TABLES")
-    lineId: str = Field(default="LINE_KARAWANG_01", validation_alias="MOTIONQA_LINE_ID")
+    lineId: str = Field(default="LINE_01", validation_alias="MOTIONQA_LINE_ID")
+    stationId: str = Field(default="STATION_01", validation_alias="MOTIONQA_STATION_ID")
     rtspUrl: str | None = Field(default=None, validation_alias="MOTIONQA_RTSP_URL")
-    modelPath: str = Field(default="models/yolov8AhmEdge.onnx", validation_alias="MOTIONQA_MODEL_PATH")
-    modelInputName: str = Field(default="images", validation_alias="MOTIONQA_MODEL_INPUT_NAME")
-    modelConfidenceThreshold: float = Field(default=0.45, ge=0.0, le=1.0, validation_alias="MOTIONQA_MODEL_CONFIDENCE_THRESHOLD")
-    modelIouThreshold: float = Field(default=0.45, ge=0.0, le=1.0, validation_alias="MOTIONQA_MODEL_IOU_THRESHOLD")
+    inspectionProfilePath: str = Field(default=str(backendRoot / "models" / "visaPcb1" / "inspectionProfile.json"), validation_alias="MOTIONQA_INSPECTION_PROFILE_PATH")
+    inferenceTimeoutSeconds: float = Field(default=10.0, gt=0.0, le=120.0, validation_alias="MOTIONQA_INFERENCE_TIMEOUT_SECONDS")
+    maxUploadBytes: int = Field(default=8 * 1024 * 1024, ge=1024, le=32 * 1024 * 1024, validation_alias="MOTIONQA_MAX_UPLOAD_BYTES")
+    inspectionRateLimitPerMinute: int = Field(default=30, ge=1, le=6000, validation_alias="MOTIONQA_INSPECTION_RATE_LIMIT_PER_MINUTE")
+    demoEventRateLimitPerMinute: int = Field(default=60, ge=1, le=6000, validation_alias="MOTIONQA_DEMO_EVENT_RATE_LIMIT_PER_MINUTE")
+    requireAuth: bool = Field(default=True, validation_alias="MOTIONQA_REQUIRE_AUTH")
+    apiTokens: str | None = Field(default=None, validation_alias="MOTIONQA_API_TOKENS")
+    evidenceBackend: str = Field(default="local", pattern="^(local|s3)$", validation_alias="MOTIONQA_EVIDENCE_BACKEND")
+    evidenceDir: str = Field(default=str(backendRoot / "evidence"), validation_alias="MOTIONQA_EVIDENCE_DIR")
+    evidenceBucket: str | None = Field(default=None, validation_alias="MOTIONQA_EVIDENCE_BUCKET")
+    evidencePrefix: str = Field(default="evidence/", validation_alias="MOTIONQA_EVIDENCE_PREFIX")
+    evidenceKmsKeyId: str | None = Field(default=None, validation_alias="MOTIONQA_EVIDENCE_KMS_KEY_ID")
+    evidenceRetentionDays: int = Field(default=30, ge=1, le=3650, validation_alias="MOTIONQA_EVIDENCE_RETENTION_DAYS")
+    awsRegion: str | None = Field(default=None, validation_alias="AWS_REGION")
+    stationPresenceFrames: int = Field(default=5, ge=1, le=300, validation_alias="MOTIONQA_STATION_PRESENCE_FRAMES")
+    stationAbsenceFrames: int = Field(default=10, ge=1, le=600, validation_alias="MOTIONQA_STATION_ABSENCE_FRAMES")
     frameStride: int = Field(default=1, ge=1, le=120, validation_alias="MOTIONQA_FRAME_STRIDE")
     ahmMesBaseUrl: str | None = Field(default=None, validation_alias="MOTIONQA_AHM_MES_BASE_URL")
     ahmMesApiKey: str | None = Field(default=None, validation_alias="MOTIONQA_AHM_MES_API_KEY")
@@ -46,6 +62,10 @@ class AppSettings(BaseSettings):
     @property
     def allowedOriginList(self) -> list[str]:
         return [origin.strip() for origin in self.allowedOrigins.split(",") if origin.strip()]
+
+    @property
+    def apiTokenList(self) -> list[str]:
+        return [token.strip() for token in (self.apiTokens or "").split(",") if len(token.strip()) >= 16]
 
 
 @lru_cache

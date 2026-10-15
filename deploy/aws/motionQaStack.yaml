@@ -1,0 +1,288 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  MotionQA MVP: one Graviton EC2 instance running the existing docker compose stack (nginx UI, FastAPI +
+  OpenCV 5 inspection, PostgreSQL, Redis), a private S3 bucket for evidence (with expiry) and release
+  artifacts, generated secrets, CloudWatch Logs, and a CloudFront distribution for HTTPS.
+  No SSH: administration uses SSM Session Manager / Run Command.
+
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC containing the public subnet.
+  PublicSubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: Public subnet with auto-assigned public IPv4 and DNS hostnames enabled.
+  CloudFrontOriginPrefixListId:
+    Type: String
+    AllowedPattern: "^pl-[0-9a-f]+$"
+    Description: >-
+      Region-specific id of the managed prefix list com.amazonaws.global.cloudfront.origin-facing
+      (aws ec2 describe-managed-prefix-lists --filters Name=prefix-list-name,Values=com.amazonaws.global.cloudfront.origin-facing).
+  InstanceType:
+    Type: String
+    Default: t4g.medium
+    AllowedValues: [t4g.small, t4g.medium, t4g.large, c7g.large]
+  EvidenceRetentionDays:
+    Type: Number
+    Default: 30
+    MinValue: 1
+    MaxValue: 365
+  LogRetentionDays:
+    Type: Number
+    Default: 14
+    AllowedValues: [7, 14, 30, 60, 90]
+  LineId:
+    Type: String
+    Default: LINE_01
+    AllowedPattern: "^[A-Za-z0-9_-]{3,40}$"
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64
+
+Resources:
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireInspectionEvidence
+            Status: Enabled
+            Prefix: evidence/
+            ExpirationInDays: !Ref EvidenceRetentionDays
+          - Id: ExpireOldReleases
+            Status: Enabled
+            Prefix: releases/
+            ExpirationInDays: 90
+
+  ArtifactBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ArtifactBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: "s3:*"
+            Resource:
+              - !GetAtt ArtifactBucket.Arn
+              - !Sub "${ArtifactBucket.Arn}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+
+  OperatorTokenSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: MotionQA operator bearer token (MOTIONQA_API_TOKENS)
+      GenerateSecretString:
+        PasswordLength: 40
+        ExcludePunctuation: true
+
+  DatabasePasswordSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: MotionQA PostgreSQL password (container-local database)
+      GenerateSecretString:
+        PasswordLength: 32
+        ExcludePunctuation: true
+
+  ApplicationLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/motionqa/${AWS::StackName}"
+      RetentionInDays: !Ref LogRetentionDays
+
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Policies:
+        - PolicyName: MotionQaRuntime
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: ReadReleasesAndModels
+                Effect: Allow
+                Action: s3:GetObject
+                Resource:
+                  - !Sub "${ArtifactBucket.Arn}/releases/*"
+                  - !Sub "${ArtifactBucket.Arn}/models/*"
+              - Sid: ListModels
+                Effect: Allow
+                Action: s3:ListBucket
+                Resource: !GetAtt ArtifactBucket.Arn
+                Condition:
+                  StringLike:
+                    s3:prefix: ["models/*", "releases/*"]
+              - Sid: ReadWriteEvidence
+                Effect: Allow
+                Action: [s3:PutObject, s3:GetObject]
+                Resource: !Sub "${ArtifactBucket.Arn}/evidence/*"
+              - Sid: ReadSecrets
+                Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: [!Ref OperatorTokenSecret, !Ref DatabasePasswordSecret]
+              - Sid: WriteLogs
+                Effect: Allow
+                Action: [logs:CreateLogStream, logs:PutLogEvents, logs:DescribeLogStreams]
+                Resource: !Sub "${ApplicationLogGroup.Arn}:*"
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles: [!Ref InstanceRole]
+
+  OriginSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: MotionQA origin; HTTP from CloudFront origin-facing ranges only, no SSH
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourcePrefixListId: !Ref CloudFrontOriginPrefixListId
+          Description: CloudFront origin-facing
+      SecurityGroupEgress:
+        - IpProtocol: "-1"
+          CidrIp: 0.0.0.0/0
+          Description: Package installs, AWS APIs
+
+  ApplicationInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref InstanceProfile
+      SubnetId: !Ref PublicSubnetId
+      SecurityGroupIds: [!Ref OriginSecurityGroup]
+      MetadataOptions:
+        HttpTokens: required
+        HttpEndpoint: enabled
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 30
+            VolumeType: gp3
+            Encrypted: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-app"
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -euo pipefail
+          dnf install -y docker
+          systemctl enable --now docker
+          mkdir -p /usr/local/lib/docker/cli-plugins /opt/motionqa
+          curl -fsSL -o /usr/local/lib/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v5.5.1/docker-compose-linux-aarch64
+          echo "732e3a84c1a0f67256ce80bc2598a24546b10ca05f9faa97efceb1171ece2ef7  /usr/local/lib/docker/cli-plugins/docker-compose" | sha256sum -c -
+          chmod 0755 /usr/local/lib/docker/cli-plugins/docker-compose
+          cat > /opt/motionqa/stack.env <<'EOF'
+          MOTIONQA_STACK_NAME=${AWS::StackName}
+          MOTIONQA_ARTIFACT_BUCKET=${ArtifactBucket}
+          MOTIONQA_LOG_GROUP=${ApplicationLogGroup}
+          MOTIONQA_OPERATOR_TOKEN_SECRET=${OperatorTokenSecret}
+          MOTIONQA_DATABASE_PASSWORD_SECRET=${DatabasePasswordSecret}
+          MOTIONQA_EVIDENCE_RETENTION_DAYS=${EvidenceRetentionDays}
+          MOTIONQA_LINE_ID=${LineId}
+          AWS_REGION=${AWS::Region}
+          EOF
+          cat > /opt/motionqa/deployRelease.sh <<'EOF'
+          #!/bin/bash
+          # Usage: deployRelease.sh <release archive name under s3://<bucket>/releases/>
+          set -euo pipefail
+          source /opt/motionqa/stack.env
+          release="$1"
+          workDir=$(mktemp -d)
+          aws s3 cp "s3://$MOTIONQA_ARTIFACT_BUCKET/releases/$release" "$workDir/release.tar.gz"
+          rm -rf /opt/motionqa/app.next && mkdir -p /opt/motionqa/app.next
+          tar -xzf "$workDir/release.tar.gz" -C /opt/motionqa/app.next
+          rm -rf /opt/motionqa/app.previous
+          if [ -d /opt/motionqa/app ]; then mv /opt/motionqa/app /opt/motionqa/app.previous; fi
+          mv /opt/motionqa/app.next /opt/motionqa/app
+          exec /opt/motionqa/app/deploy/aws/startStack.sh
+          EOF
+          chmod 0750 /opt/motionqa/deployRelease.sh
+
+  WebDistributionCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: !Sub "${AWS::StackName}-no-store-auth"
+        Comment: Forwards Authorization and query strings; API responses send Cache-Control no-store
+        MinTTL: 0
+        DefaultTTL: 0
+        MaxTTL: 1
+        ParametersInCacheKeyAndForwardedToOrigin:
+          EnableAcceptEncodingGzip: true
+          EnableAcceptEncodingBrotli: true
+          HeadersConfig:
+            HeaderBehavior: whitelist
+            Headers: [Authorization]
+          CookiesConfig:
+            CookieBehavior: none
+          QueryStringsConfig:
+            QueryStringBehavior: all
+
+  WebDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: !Sub "MotionQA ${AWS::StackName}"
+        HttpVersion: http2
+        PriceClass: PriceClass_100
+        Origins:
+          - Id: motionqa-origin
+            DomainName: !GetAtt ApplicationInstance.PublicDnsName
+            CustomOriginConfig:
+              HTTPPort: 80
+              OriginProtocolPolicy: http-only
+              OriginReadTimeout: 60
+        DefaultCacheBehavior:
+          TargetOriginId: motionqa-origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE]
+          CachedMethods: [GET, HEAD]
+          CachePolicyId: !Ref WebDistributionCachePolicy
+          # Managed policy AllViewerExceptHostHeader: forwards WebSocket upgrade headers.
+          OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+          Compress: true
+
+Outputs:
+  WebUrl:
+    Description: HTTPS endpoint (UI, /api, /ws) once a release is deployed
+    Value: !Sub "https://${WebDistribution.DomainName}"
+  ArtifactBucketName:
+    Value: !Ref ArtifactBucket
+  InstanceId:
+    Value: !Ref ApplicationInstance
+  OperatorTokenSecretArn:
+    Value: !Ref OperatorTokenSecret
+  LogGroupName:
+    Value: !Ref ApplicationLogGroup

@@ -1,0 +1,73 @@
+# Review and Changes
+
+Baseline: commit `31761da9a4e2741887a594166b29b62fbc26b322` ("AHM QA", master, 2026-07-11). Work branch:
+`feat/inspection-mvp-opencv5`. Verification date: 2026-10-15.
+
+Two sources are kept separate below:
+
+- **Previous review**: an earlier AI review that read nine files without running anything. Its findings (M1–M6, m1) are
+  historical input.
+- **This verification**: findings re-checked against the code at `31761da`, plus issues found while running the code,
+  tests, and evaluation in this round (N1–N12).
+
+## Review matrix
+
+| Finding | Severity | Verified evidence (at `31761da` unless noted) | Change | Test | Remaining limitation |
+| --- | --- | --- | --- | --- | --- |
+| **M1** Inference can return PASS without detections | Major | **Confirmed and extended.** `edge/inferenceEngine.py:57-58` returns `PASSED` when `detections` is empty; `normalizeOutput` (`:105-108`) turns any non-2D (malformed) output into an empty array, so malformed output also became PASS. No part-presence or image-quality prerequisite existed. | New decision model (`NO_PART/RETAKE/REVIEW/PASS/FAIL/ERROR`). PASS only after capture gates, part identity, and a finite score below a validated threshold. Detector path: empty detections → `REVIEW` unless the part is verified present and the detector is marked validated; malformed outputs raise. Missing model, invalid output, timeout, exception, evidence failure → `ERROR`. | `testDecisionRules.py`, `testInspectionPipeline.py` (missing model, invalid output, timeout, failure, evidence failure, tampered bank, stale profile), `testInspectionApi.py::testEmptySceneIsNoPartNotPass`, `testMissingModelYieldsErrorDecision` | Gates are calibrated for one benchmark setup; a new station needs its own validation data. |
+| **M2** Edge processing creates a component id per frame | Major | **Confirmed.** `edge/edgeProcessor.py:30,47-49` builds `componentCode` from timestamp + frame number for every processed frame; the persistence worker stored one row per frame (`components_log.component_code` was `UNIQUE`). | Explicit capture creates one inspection per request with a client `inspectionId` (idempotent retries). RTSP path uses `StationSessionTracker`: one inspection per part placement, sharpest of the first K frames. `componentId` is optional, operator-supplied, and not unique; `frameNumber` is stored separately. | `testSessionTracker.py` (stationary part, re-entry, short dropout, flicker), `testInspectionApi.py::testRealInspectionIsPersistedOnceAndRetriesReplay`; browser demo: `cameraDemoAnalysis.test.ts` (one event per placement) | Re-placing the same part counts again; two parts in view are one object; no tracking across stations; RTSP path not run against a real camera. |
+| **M3** Browser confidence is not a calibrated probability | Major | **Confirmed.** `cameraDemoAnalysis.ts:146-152` computes `0.56 + coverage + edge + variance`, clamped to 0.621–0.982, so any heuristic detection displayed ≥ 62 % "confidence". | Renamed `heuristicScore`; shown as "uncalibrated, not a probability"; demo marked `SIMULATED DEMO` by a persistent mode bar; forced scenarios carry `isForcedScenario` and reason `SIMULATED_FORCED_SCENARIO`. Real inference reports a raw anomaly distance with its thresholds; no probability is displayed anywhere. | `cameraDemoAnalysis.test.ts`, `testInspectionSchemas.py::testDemoEventCannotClaimRealInference` | No calibrated probability exists for the real model either (by design). |
+| **M4** Custom ONNX model absent | Major | **Confirmed.** `models/yolov8AhmEdge.onnx` is not in the tree; `*.onnx` and `models/` are gitignored; no download source or dataset (`datasets/ahmDefects.yaml`) exists. The registry only downloads a 30-class part-type classifier (MIT per model card, private training data) that is not a defect model. | Replaced with a reproducible profile: OpenCV Zoo MobileNetV2 (Apache-2.0, sha256-pinned download) + memory bank built from VisA `pcb1` (CC BY 4.0) by `motionQa.evaluation.runEvaluation`. Profile records source, license, checksums, preprocessing, thresholds; startup verifies checksums and reports actionable errors. | `testTamperedMemoryBankIsRejected`, `testIncompatibleProfileIsRejectedAtLoad`, `GET /api/v1/model/status` | No model for the motorcycle-part target exists; benchmark only. |
+| **M5** `>=4.10` does not guarantee OpenCV 5 | Major | **Confirmed.** `backend/pyproject.toml:24` `opencv-python-headless>=4.10.0.84` (edge extra only). OpenCV was used for resize/padding/colour conversion and `VideoCapture`; inference ran in ONNX Runtime. | Pinned `opencv-python-headless==5.0.0.93` in core dependencies and both lock files. Inference now runs in `cv.dnn` (new engine); localization, gates, preprocessing, anomaly maps, and evidence are OpenCV. `opencvRuntime.requireOpenCvFive()` runs in the Docker build and the evaluation; `/api/v1/model/status` reports the runtime version. | `testModelStatusReportsOpenCvFive`; runtime version recorded in `evaluation/results/visaPcb1Results.json` (`5.0.0`); `requireOpenCvFive()` passed inside the Linux aarch64 image | Base images pinned by tag, not digest. |
+| **M6** AWS deployment not verified | Major | **Confirmed.** No AWS resources, templates, or SDK use at `31761da`; the README stated "no … cloud-only services". | `deploy/aws/motionQaStack.yaml` (EC2 Graviton, private S3 evidence bucket with expiry, Secrets Manager, CloudWatch Logs, CloudFront), release and smoke-test scripts, S3 evidence backend. | cfn-lint 1.57.2: no findings; `docker compose config` for base + AWS override; `testS3EvidenceStore.py` with a stub client | **AWS deployment not executed** (no credentials). No endpoint, latency, or cost has been measured on AWS. |
+| **m1** Browser publication ignored HTTP status | Minor | **Confirmed.** `useCameraDemo.ts:67-73` awaited `fetch` without checking `response.ok`; 4xx/5xx looked like success; network errors in the photo path were swallowed. | `apiFetch` checks status, maps 401/429/timeouts/unreachable to messages; the monitor shows "Not recorded: …" for demo events and a Retry button (same `inspectionId`) for real inspections. | `testPublicationFailureIsReported` (API side); UI checked in the browser pane | No automated browser test. |
+| Qualification (previous review) | — | **Confirmed.** `publishFrame`/`publishPhoto` returned early when `isInspectable` was false, so empty browser frames were not published as PASS. Any grey region passing the heuristic was still published as PASS. | Demo results remain simulated and excluded from metrics. | `cameraDemoAnalysis.test.ts` | — |
+| **N1** Sample images leak labels | Major (evaluation validity) | `sampleImages/*.png` are 960×540 synthetic renders whose top-left square is green for "OK" and red for defects. | Not used for evaluation; kept only for the simulated demo. Real inference returns `RETAKE · OVEREXPOSED` for all three (their light background is outside the validated station range), never PASS. | — | — |
+| **N2** Unauthenticated writes to inspection log | Major (security, metric contamination) | `POST /api/v1/defects` accepted any client-supplied PASSED/FAILED record; no endpoint had authentication. | Removed. Records are created only by the server pipeline (`REAL_INFERENCE`) or the demo route (forced `SIMULATED_DEMO`). Bearer tokens on all inspection, evidence, review, demo, and WebSocket endpoints; auth required by default. | `testInspectionEndpointsRequireToken`, `testEvidenceIsServedOnlyWithToken`, `testWebsocketRejectsMissingToken` | Single shared operator token type; no per-user accounts or roles. |
+| **N3** Upload and request limits | Major (security) | No upload path existed; the demo posted full JPEG data URLs inside JSON events. | 8 MB limit, JPEG/PNG magic bytes, pixel limit (`OPENCV_IO_MAX_IMAGE_PIXELS`), min size, identifier patterns, per-client rate limits (API + nginx), non-root container. Demo events no longer carry images. | `testInvalidUploadsAreRejectedWithoutRecords`, `testRateLimitIsEnforced`, `testIdentifiersRejectPathCharacters`, `testEvidenceKeysCannotEscapeRoot` | In-process rate limiter is per instance. |
+| **N4** Re-inspection impossible | Medium | `component_code UNIQUE` meant a component could be logged once; a retry returned 409. | `inspection_id` unique (idempotency), `component_id` optional and repeatable. | `testRealInspectionIsPersistedOnceAndRetriesReplay` | Schema change without migration tooling (table `inspection_records` replaces `components_log`). |
+| **N5** Demo flooded the event log | Medium | The camera demo published one event per 250 ms frame. | One demo event per part placement (`advanceDemoSession`). | `cameraDemoAnalysis.test.ts` | — |
+| **N6** Partnership and deployment implied | Medium (claims) | README/UI: "PT Astra Honda Motor production lines", "AHM Karawang Live Quality Monitor", "existing AHM CCTV". No partnership evidence in the repository. | Neutral wording; target context described as a hypothesis in README and `prd.md`. | — | — |
+| **N7** Unpinned builds | Medium | Frontend image ran `npm install` without the lockfile; backend image installed `ultralytics` (PyTorch) for the API. | `npm ci` with lockfile; backend image installs `requirements-runtime.lock`; training dependencies moved to an optional extra. | Local `npm ci`, `pip install` from locks | Base images pinned by tag, not digest. |
+| **N8** Exposed services with default password | Medium | Compose published Postgres/Redis on all interfaces with password `motionqa_password`. | Bound to `127.0.0.1`, password required from `.env`; AWS override publishes only nginx. | `docker compose config` | — |
+| **N9** Health check not actionable | Low | `/api/v1/health` raised 500 on dependency failure and ignored the model. | Structured 503 with per-dependency status, including model readiness; Docker `HEALTHCHECK`. | Local run (below) | — |
+| **N10** Capture gates mistook a defect for a capture fault | Medium (found in this round) | First full evaluation run: 3 of 53 test anomalies (severe "missing" defects: both transducer covers or meshes absent) → `RETAKE` (OVEREXPOSED/BLURRED) because exposure and sharpness were measured over the part itself. The same pattern exists in validation data (3 of 8 validation "missing" images), which the calibration had not checked. A second attempt (part median luminance, tile-percentile sharpness) still gated the same 3 test images and 1 validation anomaly. | Final design measures capture quality where the defect cannot reach it: exposure on the background around the part plus frame clipping; focus as Sobel edge strength on the part silhouette. Calibration now reports gate outcomes on every validation target image and on synthetic faults applied to validation images. | `testLocalBrightDefectIsNotMistakenForOverexposure`, `testLocalSmoothDefectIsNotMistakenForBlur`; `captureGateValidation` in results | **Test-informed change** (two iterations after seeing test outcomes, each confirmed on validation). Anomaly scoring, model selection, and decision thresholds were not changed between runs. Earlier results: `evaluation/results/history/`. |
+| **N11** Unsupported product claims | Low (claims) | `prd.md`: "100% inspection coverage", "30-60fps", "dimensional deviations". | Moved to product goals; dimensional checks marked out of scope without calibration and scale evidence. | — | — |
+| **N12** Browser camera on HTTP | Low | `getUserMedia` requires a secure context outside `localhost`. | AWS design terminates HTTPS at CloudFront. | — | Not deployed. |
+
+## Change summary
+
+### Major
+
+- Inspection pipeline (`backend/motionQa/inspection/`): OpenCV 5 localization, capture gates, `cv.dnn` feature extraction,
+  normal-only anomaly scoring, decision states, evidence rendering, checksum-verified model profile.
+- API (`inspectionRoutes.py`): authenticated multipart inspection endpoint with idempotency, review endpoint, private
+  evidence streaming, model status; provenance enforcement for demo events.
+- Data model (`inspection_records`): inspection id, component id, capture time, machine decision and reason, model id and
+  version, processing mode, scores, thresholds, regions, evidence references, latency, review state.
+- Evaluation (`backend/motionQa/evaluation/`): dataset extraction with archive checksum, deterministic splits, validation-only
+  model selection and threshold calibration, test metrics, OpenCV-only baseline, capture-fault scenarios, latency.
+- Frontend: persistent REAL INFERENCE / SIMULATED DEMO mode bar, real inspection by upload or camera capture, evidence
+  overlay, score-vs-threshold display, review actions and queue, decision trend (real only), error and empty states.
+- AWS: CloudFormation stack, compose override, release and smoke-test scripts.
+
+### Minor
+
+- HTTP status handling, timeouts, and readable errors in the frontend.
+- One-event-per-placement demo publishing; demo events no longer embed images.
+- JSON request logs with request ids; structured health check.
+- Pinned Python and npm dependencies with lock files; non-root container; nginx proxy with security headers.
+
+## Local verification performed (2026-10-15, Apple M2, macOS 26.6.2)
+
+- Backend: `pytest -q` → 66 passed.
+- Frontend: `npm test` → 11 passed; `tsc --noEmit` and `npm run build` pass.
+- Evaluation: `python -m motionQa.evaluation.runEvaluation` → `evaluation/results/visaPcb1Results.json`.
+- End-to-end: uvicorn + PostgreSQL 16 + Redis 7 with `deploy/smokeTest.sh`; UI in a browser at 1024 px and 375 px;
+  docker compose stack (Docker 29.8.0, aarch64) built from the lock files and smoke-tested through nginx.
+  Details in `docs/EVALUATION.md` § 10.
+- Found during the UI check and fixed: page overflow at 1024 px and 375 px widths; WebSocket rejection surfaced as a
+  generic close (now close code 1008 → "Stream locked"); Retry offered for non-retryable 4xx errors; evidence heatmap
+  coloured normal regions.
+- Found during the Docker check and fixed: compose derived invalid image names from camelCase service names
+  (`motionqa-frontendUi`), so `docker compose build` failed — also at `31761da`. Explicit lowercase image names added.

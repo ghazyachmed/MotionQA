@@ -1,6 +1,12 @@
-export type DefectType = "casting_defect" | "scratch" | "dimensional_deviation" | "none";
+export type DefectType = "anomaly" | "casting_defect" | "scratch" | "dimensional_deviation" | "none";
 
-export type InspectionStatus = "PASSED" | "FAILED";
+export type InspectionDecision = "NO_PART" | "RETAKE" | "REVIEW" | "PASS" | "FAIL" | "ERROR";
+
+export type ProcessingMode = "REAL_INFERENCE" | "SIMULATED_DEMO";
+
+export type ReviewStatus = "NOT_REQUIRED" | "PENDING" | "CONFIRMED" | "OVERRIDDEN";
+
+export const inspectionDecisions: InspectionDecision[] = ["PASS", "FAIL", "REVIEW", "RETAKE", "NO_PART", "ERROR"];
 
 export interface BoundingBox {
   xMin: number;
@@ -9,28 +15,73 @@ export interface BoundingBox {
   yMax: number;
 }
 
-export interface LiveQcEvent {
-  eventId: string;
-  componentCode: string;
-  lineId: string;
-  defectFound: DefectType;
-  confidenceScore: string;
-  status: InspectionStatus;
-  detectedAt: string;
-  imageSnapshotUrl?: string | null;
-  boundingBox?: BoundingBox | null;
-  frameNumber: number;
-  frameWidth: number;
-  frameHeight: number;
-  fps: number;
+export interface DefectRegion extends BoundingBox {
+  peakScore: number;
 }
 
-export interface DefectTrendBucket {
+export interface EvidenceReference {
+  kind: string;
+  uri: string;
+  contentType: string;
+  sha256?: string | null;
+}
+
+export interface LatencyBreakdown {
+  decodeMs: number;
+  captureChecksMs: number;
+  inferenceMs: number;
+  evidenceMs: number;
+  totalMs: number;
+}
+
+export interface ReviewState {
+  status: ReviewStatus;
+  reviewerDecision?: InspectionDecision | null;
+  reviewerNote?: string | null;
+  reviewedBy?: string | null;
+  reviewedAt?: string | null;
+}
+
+export interface InspectionResult {
+  inspectionId: string;
+  componentId?: string | null;
+  lineId: string;
+  stationId: string;
+  capturedAt: string;
+  processedAt: string;
+  decision: InspectionDecision;
+  finalDecision: InspectionDecision;
+  reasonCode: string;
+  reasonDetail: string;
+  processingMode: ProcessingMode;
+  modelId?: string | null;
+  modelVersion?: string | null;
+  defectFound: DefectType;
+  scores: Record<string, number>;
+  thresholds: Record<string, number>;
+  regions: DefectRegion[];
+  partBox?: BoundingBox | null;
+  evidence: EvidenceReference[];
+  latency: LatencyBreakdown;
+  imageWidth: number;
+  imageHeight: number;
+  frameNumber?: number | null;
+  review: ReviewState;
+}
+
+export interface DecisionTrendBucket {
   bucketStart: string;
   lineId: string;
-  passedCount: number;
-  failedCount: number;
-  castingDefectCount: number;
-  scratchCount: number;
-  dimensionalDeviationCount: number;
+  counts: Record<InspectionDecision, number>;
+}
+
+export interface ModelStatus {
+  ready: boolean;
+  loadError: string | null;
+  opencv: { version: string; isSupported: boolean };
+  profileId: string | null;
+  profileVersion: string | null;
+  task: string | null;
+  domainNote: string | null;
+  decisionThresholds: { passBelow: number; failAtOrAbove: number } | null;
 }

@@ -17,3 +17,10 @@ runs/
 pgdata/
 redisdata/
 
+
+# Local datasets, downloads, and generated evidence
+data/
+backend/evidence/
+backend/.venv/
+*.egg-info/
+/.claude

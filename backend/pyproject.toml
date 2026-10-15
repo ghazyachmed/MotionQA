@@ -4,33 +4,46 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "motionqa-backend"
-version = "0.1.0"
-description = "MotionQA FastAPI backend and edge inference pipeline"
-requires-python = ">=3.11"
+version = "0.2.0"
+description = "MotionQA FastAPI backend and OpenCV 5 inspection pipeline"
+requires-python = ">=3.11,<3.14"
+# Direct dependencies are pinned to the versions tested in this repository.
+# Full transitive pins: requirements-runtime.lock (container) and requirements-dev.lock (tests and evaluation).
 dependencies = [
-  "fastapi>=0.111.0",
-  "uvicorn[standard]>=0.30.0",
-  "pydantic-settings>=2.3.0",
-  "sqlalchemy[asyncio]>=2.0.30",
-  "asyncpg>=0.29.0",
-  "redis>=5.0.5",
-  "httpx>=0.27.0",
-  "aiosmtplib>=3.0.1",
-  "numpy>=1.26.4"
+  "fastapi==0.143.1",
+  "uvicorn[standard]==0.54.0",
+  "pydantic==2.14.1",
+  "pydantic-settings==2.16.0",
+  "sqlalchemy[asyncio]==2.1.4",
+  "asyncpg==0.32.0",
+  "redis==8.1.0",
+  "httpx==0.28.1",
+  "aiosmtplib==5.1.3",
+  "numpy==2.4.6",
+  "opencv-python-headless==5.0.0.93",
+  "python-multipart==0.0.32",
+  "boto3==1.43.114"
 ]
 
 [project.optional-dependencies]
-edge = [
-  "opencv-python-headless>=4.10.0.84",
-  "onnxruntime>=1.18.0",
+model-build = [
+  "onnx==1.23.2"
+]
+detector = [
+  "onnxruntime==1.31.0"
+]
+training = [
   "ultralytics>=8.2.0",
-  "huggingface-hub>=0.23.0",
+  "huggingface-hub>=0.23.0"
+]
+plant = [
   "opcua>=0.98.13"
 ]
 test = [
-  "pytest>=8.2.0",
-  "pytest-asyncio>=0.23.7",
-  "aiosqlite>=0.20.0"
+  "onnx==1.23.2",
+  "pytest==9.1.1",
+  "pytest-asyncio==1.4.0",
+  "aiosqlite==0.22.1"
 ]
 
 [tool.setuptools.packages.find]

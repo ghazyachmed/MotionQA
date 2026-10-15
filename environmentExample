@@ -1,10 +1,45 @@
-MOTIONQA_POSTGRES_DSN=postgresql+asyncpg://motionqa_admin:motionqa_password@localhost:5432/motionqa_logs
+# Copy to .env (never commit .env). Values here are placeholders for local development.
+
+# PostgreSQL (docker compose); choose a local password.
+POSTGRES_USER=motionqa_admin
+POSTGRES_PASSWORD=change-me-local-only
+POSTGRES_DB=motionqa_logs
+
+# Backend outside docker uses these directly.
+MOTIONQA_POSTGRES_DSN=postgresql+asyncpg://motionqa_admin:change-me-local-only@localhost:5432/motionqa_logs
 MOTIONQA_REDIS_URL=redis://localhost:6379/0
 MOTIONQA_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 MOTIONQA_AUTO_CREATE_TABLES=true
-MOTIONQA_RTSP_URL=rtsp://existing-ahm-cctv.example/live
-MOTIONQA_MODEL_PATH=models/yolov8AhmEdge.onnx
-MOTIONQA_LINE_ID=LINE_KARAWANG_01
+
+# Operator tokens (comma separated, at least 16 characters each). Generate one with:
+#   python -c "import secrets; print(secrets.token_urlsafe(32))"
+# MOTIONQA_REQUIRE_AUTH=false is only acceptable on a trusted local machine.
+MOTIONQA_REQUIRE_AUTH=true
+MOTIONQA_API_TOKENS=
+
+# Inspection model profile produced by: cd backend && python -m motionQa.evaluation.runEvaluation
+MOTIONQA_INSPECTION_PROFILE_PATH=models/visaPcb1/inspectionProfile.json
+MOTIONQA_INFERENCE_TIMEOUT_SECONDS=10
+MOTIONQA_MAX_UPLOAD_BYTES=8388608
+MOTIONQA_INSPECTION_RATE_LIMIT_PER_MINUTE=30
+MOTIONQA_DEMO_EVENT_RATE_LIMIT_PER_MINUTE=60
+
+# Evidence storage: local disk (default) or a private S3 bucket.
+MOTIONQA_EVIDENCE_BACKEND=local
+MOTIONQA_EVIDENCE_DIR=evidence
+MOTIONQA_EVIDENCE_BUCKET=
+MOTIONQA_EVIDENCE_PREFIX=evidence/
+MOTIONQA_EVIDENCE_RETENTION_DAYS=30
+AWS_REGION=
+
+# Line, station, and continuous-capture sessions (edge processor only).
+MOTIONQA_LINE_ID=LINE_01
+MOTIONQA_STATION_ID=STATION_01
+MOTIONQA_RTSP_URL=
+MOTIONQA_STATION_PRESENCE_FRAMES=5
+MOTIONQA_STATION_ABSENCE_FRAMES=10
+
+# Optional plant integrations (not exercised in this MVP).
 MOTIONQA_AHM_MES_BASE_URL=
 MOTIONQA_OPC_UA_ENDPOINT=
 MOTIONQA_WHATSAPP_WEBHOOK_URL=
@@ -14,5 +49,8 @@ MOTIONQA_SMTP_USERNAME=
 MOTIONQA_SMTP_PASSWORD=
 MOTIONQA_EMAIL_FROM=
 MOTIONQA_EMAIL_TO=
+
+# Frontend dev server only (npm run dev). Leave empty in container builds (same-origin proxy).
 VITE_API_BASE_URL=http://localhost:8000
 VITE_WS_BASE_URL=ws://localhost:8000
+VITE_LINE_ID=LINE_01

@@ -1,101 +1,147 @@
 # MotionQA
 
-MotionQA is a Fase 0 prototype for AI-powered visual defect detection on PT Astra Honda Motor production lines. It runs on top of existing AHM CCTV RTSP feeds, performs YOLOv8 ONNX inference on an edge device or GPU server, logs every component inspection to PostgreSQL, streams live state through Redis Pub/Sub and FastAPI WebSockets, and exposes a React + TypeScript + Tailwind QC dashboard.
+MotionQA is a visual-inspection MVP. An operator uploads or captures one image of a part; the server runs an OpenCV 5
+pipeline and returns one of six decisions — `NO_PART`, `RETAKE`, `REVIEW`, `PASS`, `FAIL`, `ERROR` — with the reason,
+raw scores, thresholds, model version, latency, and stored image evidence. `FAIL` and `REVIEW` go to a human review queue;
+the machine decision is never overwritten.
 
-## Architecture Boundary
+The intended target is component inspection on motorcycle production lines. **No target-component data, manufacturer
+partnership, or site validation exists.** The shipped model profile is evaluated on a public benchmark (VisA `pcb1`,
+HC-SR04 sensor boards), and its results say nothing about motorcycle parts.
 
-- Input: existing CCTV RTSP stream only.
-- Edge AI: NVIDIA Jetson or GPU server running YOLOv8 ONNX inference at the line.
-- Backend: Python 3.11 FastAPI, PostgreSQL defect log, Redis real-time cache and Pub/Sub.
-- Frontend: React Vite TypeScript Tailwind live QC monitor, alert center, and defect trend analytics.
-- Integrations: REST API to SAP/MES AHM, OPC-UA to PLC/sensors, WhatsApp/email supervisor alerts.
+| Capability | Status |
+| --- | --- |
+| Inspection pipeline, decision states, evidence, review, demo/real separation | Implemented, tested locally |
+| Anomaly model on VisA `pcb1` | Evaluated on benchmark data ([docs/EVALUATION.md](docs/EVALUATION.md)) |
+| OpenCV 5 runtime (`opencv-python-headless==5.0.0.93`, `cv.dnn` new engine) | Verified locally |
+| AWS deployment (CloudFormation, S3 evidence, CloudFront) | Prepared, **AWS deployment not executed** |
+| Validation on target components / target workplace | Not done |
 
-No new camera hardware, Kafka, cloud-only services, or unapproved microservices are introduced.
+## Inspection task
 
-## Model Choice
+Single-part stationary inspection, normal-only anomaly detection: a part is placed in a fixed station, photographed,
+and compared with features of known-good parts. Defects are localized (heatmap + regions) but not classified.
 
-The public `AswinG5/moto-parts-30cls` Hugging Face model is registered as a motorcycle-component classification checkpoint for transfer-learning experiments. The repository confirms it is YOLOv8n-cls with 30 classes, not a defect detector. MotionQA production inference therefore expects a custom AHM defect detector exported to ONNX at `models/yolov8AhmEdge.onnx`.
+Benchmark: VisA `pcb1` (CC BY 4.0, Amazon; `s3://amazon-visual-anomaly/VisA_20220922.tar`), 804 normal images for the
+memory bank, 100 normal + 47 anomalous for validation, 100 normal + 53 anomalous for test. Defect types: melt, missing,
+bent, scratch. Details, provenance, and the domain gap are in [docs/EVALUATION.md](docs/EVALUATION.md).
 
-## Run Locally
+## Results (test split, Apple M2 CPU)
+
+| Metric (deployed operating point) | MotionQA | OpenCV-only baseline |
+| --- | --- | --- |
+| Image AUROC, official VisA 1cls test split | 0.974 | 0.861 |
+| Missed-defect rate (anomalous → PASS) | 1.9 % (1/53) | 0 % (0/53) |
+| False-rejection rate (normal → FAIL) | 4.0 % (4/100) | 7.0 % |
+| REVIEW rate | 26.1 % | 37.9 % |
+| RETAKE / NO_PART on clean test images | 0 % / 0.7 % | 0 % / 0 % |
+| Synthetic blur, exposure, cut-off, empty scene (360 cases), other objects (50) | 0 PASS | — |
+| Server latency per 1404×1070 image (median) | 92 ms inference, 191 ms end-to-end | — |
+
+Scores are raw nearest-neighbour feature distances, not probabilities. Thresholds were chosen on validation data only.
+
+## Setup
+
+Prerequisites: Python 3.11, Node.js 22 (or 20.19+), PostgreSQL 15+ and Redis 7 (or Docker), ~3 GB free disk.
 
 ```bash
-cp environmentExample .env
-docker compose -f dockerCompose.yml up --build postgresDb redisCache backendApi frontendUi
-```
+git clone https://github.com/ghazyachmed/MotionQA.git && cd MotionQA
+cp environmentExample .env          # then set POSTGRES_PASSWORD and MOTIONQA_API_TOKENS
 
-Run the RTSP edge pipeline after setting `MOTIONQA_RTSP_URL` and mounting an ONNX model:
-
-```bash
-docker compose -f dockerCompose.yml --profile edge up --build edgeProcessor
-```
-
-Backend only:
-
-```bash
 cd backend
-python3 -m venv .venv
-. .venv/bin/activate
-pip install -e ".[test]"
-uvicorn motionQa.mainApi:createApp --factory --reload
+python3.11 -m venv .venv && . .venv/bin/activate
+pip install -r requirements-dev.lock && pip install --no-deps -e .
+python -m motionQa.inspection.opencvRuntime     # must report version 5.x and isSupported: true
 ```
 
-Frontend only:
+### Model retrieval and build
+
+No model weights are committed. The profile is rebuilt from verifiable sources:
 
 ```bash
-cd frontend
-npm install
-npm run dev
+# 1. Backbone: OpenCV Zoo MobileNetV2 (Apache-2.0), sha256 verified
+python -m motionQa.edge.modelRegistry --download-feature-backbone --model-dir models
+
+# 2. Dataset: VisA archive (1.93 GB, CC BY 4.0), checksum verified, pcb1 + 100 other-object images extracted
+mkdir -p ../data/downloads
+curl -o ../data/downloads/VisA_20220922.tar https://amazon-visual-anomaly.s3.us-west-2.amazonaws.com/VisA_20220922.tar
+python -m motionQa.evaluation.visaDataset
+
+# 3. Build the profile and evaluate (≈10 min on an Apple M2; writes evaluation/results/visaPcb1Results.json)
+python -m motionQa.evaluation.runEvaluation
 ```
 
-## Local MVP Camera Test
+Artifacts land in `backend/models/visaPcb1/` (`featureExtractor.onnx`, `memoryBank.npz`, `inspectionProfile.json`).
+The API verifies their checksums at start-up; if anything is missing or altered, every inspection returns `ERROR` with
+`MODEL_UNAVAILABLE` and `/api/v1/model/status` explains how to rebuild.
 
-Run the backend and frontend separately. Port `8000` is the API, so opening `http://127.0.0.1:8000` shows backend JSON/docs. The dashboard UI is on `http://127.0.0.1:5173`.
-
-Backend:
+### Run locally
 
 ```bash
-cd /Users/ghazy/Documents/MotionQA
-. .venv/bin/activate
-MOTIONQA_POSTGRES_DSN=postgresql+asyncpg://ghazy@localhost:5432/motionqa_logs \
-MOTIONQA_REDIS_URL=redis://localhost:6379/0 \
+# terminal 1 (backend/, venv active; Postgres and Redis running, values from .env)
 uvicorn motionQa.mainApi:createApp --factory --host 127.0.0.1 --port 8000
+
+# terminal 2
+cd frontend && npm ci && npm run dev -- --host 127.0.0.1 --port 5173
 ```
 
-Frontend:
+Open http://127.0.0.1:5173, paste the operator token into the mode bar, keep **REAL INFERENCE**, and choose
+*Inspect photo* with an image from `data/visa/pcb1/Data/Images/` (test-split names are listed in
+`evaluation/visaPcb1Split.json`). *Camera* → *Capture & inspect* sends a single webcam frame.
+
+Or with Docker (after building the profile):
 
 ```bash
-cd /Users/ghazy/Documents/MotionQA/frontend
-npm run dev -- --host 127.0.0.1 --port 5173
+docker compose -f dockerCompose.yml up --build postgresDb redisCache backendApi frontendUi
+# UI and same-origin API on http://127.0.0.1:5173
+MOTIONQA_TOKEN=<token> deploy/smokeTest.sh http://127.0.0.1:5173 data/visa/pcb1/Data/Images/Normal/0000.JPG
 ```
 
-Open `http://127.0.0.1:5173`, keep the mode on `Auto QC`, then click `Photo` and upload one of these local MVP samples:
+### Modes
 
-- `/Users/ghazy/Documents/MotionQA/sampleImages/motionQaOkMotorPart.png`
-- `/Users/ghazy/Documents/MotionQA/sampleImages/motionQaDefectScratch.png`
-- `/Users/ghazy/Documents/MotionQA/sampleImages/motionQaDefectCasting.png`
+- **REAL INFERENCE**: the server pipeline produces the decision. Only this path creates `REAL_INFERENCE` records, and only
+  these records feed trends, the review queue, and alerts.
+- **SIMULATED DEMO**: browser pixel heuristics and forced scenarios (OK / scratch / casting) for presentations. Scores are
+  uncalibrated. Events are stored as `SIMULATED_DEMO` whatever the client sends and are excluded from metrics.
+  `sampleImages/` holds synthetic renders for this mode only; they contain a coloured status square that leaks the label.
+  Sent to real inference they return `RETAKE` (background outside the validated station range).
 
-`Auto QC` reads the image content. `OK Part`, `Scratch`, and `Casting` are demo filters for controlled presentation scenarios.
-
-To test with a laptop camera, click `Camera` and allow Chrome camera access. If Chrome selects `Camo Camera` and the preview is black, use the camera device dropdown to pick the built-in/FaceTime/Continuity camera, or click `Photo` for a deterministic MVP test. The uploaded photo is analyzed locally in the browser, rendered in the live monitor, and published through the same backend event path.
-
-This laptop camera path is only for local MVP demos. Production MotionQA still uses existing AHM CCTV RTSP feeds and YOLOv8 ONNX inference on the edge device.
-
-## Training And Export
-
-Train a YOLOv8 detector with an AHM defect dataset:
+## Tests
 
 ```bash
-python -m motionQa.edge.modelTrainingPipeline --dataset-yaml datasets/ahmDefects.yaml --output-dir runs/defectTraining
+cd backend && pytest -q                     # unit, pipeline, API tests (synthetic fixtures; no accuracy meaning)
+cd frontend && npm test && npm run build    # Vitest + type check + production build
 ```
 
-Export a trained detector to ONNX:
+## AWS
 
-```bash
-python -m motionQa.edge.modelExportPipeline --model-path runs/detect/train/weights/best.pt --output-dir models
-```
+`deploy/aws/motionQaStack.yaml` provisions one Graviton EC2 instance running the compose stack, a private S3 bucket
+(evidence with expiry, model artifacts, releases), Secrets Manager secrets, CloudWatch Logs, and CloudFront for HTTPS.
+Steps and cost assumptions: [docs/SUBMISSION_READINESS.md](docs/SUBMISSION_READINESS.md). **AWS deployment not executed**
+for lack of credentials; no AWS endpoint or cloud measurement exists yet.
 
-Download the motorcycle-parts classifier checkpoint for component metadata experiments:
+## Known limitations
 
-```bash
-python -m motionQa.edge.modelRegistry --download-component-classifier
-```
+- Benchmark-only model; no motorcycle-part data. Needed data is listed in [docs/EVALUATION.md](docs/EVALUATION.md).
+- About a third of good boards on the test split go to `REVIEW` at the deployed operating point (zero validation misses);
+  other operating points are tabulated in the evaluation.
+- Capture gates and identity thresholds are calibrated to one benchmark setup; a new station needs new validation images.
+- Occlusion is not detected explicitly; dimensional measurement is not supported (no calibration or scale reference).
+- Single operator-token model, single instance, no database migrations (`inspection_records` replaces `components_log`).
+- MES, OPC-UA, WhatsApp, and email clients exist but have not been tested against real systems.
+
+## Documentation
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — pipeline, decision states, counting, API, AWS design
+- [docs/EVALUATION.md](docs/EVALUATION.md) — dataset, splits, thresholds, results, latency
+- [docs/REVIEW_AND_CHANGES.md](docs/REVIEW_AND_CHANGES.md) — historical findings, verification, changes
+- [docs/SUBMISSION_READINESS.md](docs/SUBMISSION_READINESS.md) — competition requirements and blockers
+- [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) — five-minute demo
+- [prd.md](prd.md) — product scope and goals
+
+## Attribution
+
+- VisA dataset: Zou et al., "SPot-the-Difference Self-Supervised Pre-training for Anomaly Detection and Segmentation",
+  ECCV 2022 (arXiv:2207.14315). CC BY 4.0. Derived artifacts (memory bank, evidence images) inherit the attribution requirement.
+- MobileNetV2 weights: OpenCV Zoo (`opencv/image_classification_mobilenet`), Apache-2.0.
+- OpenCV: Apache-2.0.

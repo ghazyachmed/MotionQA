@@ -1,54 +1,67 @@
-import { ImageUp, SlidersHorizontal, Video, VideoOff } from "lucide-react";
+import { Aperture, ImageUp, SlidersHorizontal, Video, VideoOff } from "lucide-react";
 import { useRef, useState } from "react";
 import type { CameraDemoMode } from "../lib/cameraDemoAnalysis";
-import type { CameraDevice } from "../hooks/useCameraDemo";
+import type { CameraDevice, CameraState } from "../hooks/useCameraDemo";
+import type { ProcessingMode } from "../types/qcTypes";
 
-interface CameraDemoControlsProps {
-  cameraState: "IDLE" | "STARTING" | "OPEN" | "ERROR";
+interface CaptureControlsProps {
+  processingMode: ProcessingMode;
+  cameraState: CameraState;
   cameraMode: CameraDemoMode;
   videoDevices: CameraDevice[];
   selectedDeviceId: string;
+  isSubmitting: boolean;
+  componentId: string;
+  setComponentId: (componentId: string) => void;
   setCameraMode: (mode: CameraDemoMode) => void;
   setCameraDevice: (deviceId: string) => void;
-  publishPhoto: (file: File) => Promise<void>;
+  onPhoto: (file: File) => Promise<void>;
+  onCaptureAndInspect: () => Promise<void>;
   startCamera: () => Promise<void>;
   stopCamera: () => void;
 }
 
-const cameraModes: Array<{ label: string; value: CameraDemoMode }> = [
-  { label: "Auto QC", value: "auto" },
-  { label: "OK Part", value: "none" },
-  { label: "Scratch", value: "scratch" },
-  { label: "Casting", value: "casting_defect" },
+const demoScenarios: Array<{ label: string; value: CameraDemoMode }> = [
+  { label: "Heuristic (auto)", value: "auto" },
+  { label: "Forced: OK part", value: "none" },
+  { label: "Forced: scratch", value: "scratch" },
+  { label: "Forced: casting", value: "casting_defect" },
 ];
 
 // AI Assisted Logic
-export function CameraDemoControls({
+export function CaptureControls({
+  processingMode,
   cameraState,
   cameraMode,
   videoDevices,
   selectedDeviceId,
+  isSubmitting,
+  componentId,
+  setComponentId,
   setCameraMode,
   setCameraDevice,
-  publishPhoto,
+  onPhoto,
+  onCaptureAndInspect,
   startCamera,
   stopCamera,
-}: CameraDemoControlsProps): JSX.Element {
+}: CaptureControlsProps): JSX.Element {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [isLoadingPhoto, setIsLoadingPhoto] = useState(false);
+  const isReal = processingMode === "REAL_INFERENCE";
   const isOpen = cameraState === "OPEN";
   const isStarting = cameraState === "STARTING";
+  const isBusy = isLoadingPhoto || isSubmitting;
 
   const handlePhotoChange = async (fileList: FileList | null): Promise<void> => {
     const file = fileList?.[0];
     if (!file) {
       return;
     }
-    setIsUploading(true);
+    setIsLoadingPhoto(true);
     try {
-      await publishPhoto(file);
+      await onPhoto(file);
     } finally {
-      setIsUploading(false);
+      setIsLoadingPhoto(false);
       if (inputRef.current) {
         inputRef.current.value = "";
       }
@@ -57,28 +70,41 @@ export function CameraDemoControls({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <label className="relative inline-flex h-9 items-center">
-        <SlidersHorizontal className="pointer-events-none absolute left-3 h-4 w-4 text-factory-steel" />
-        <select
-          value={cameraMode}
-          onChange={(event) => setCameraMode(event.target.value as CameraDemoMode)}
-          className="h-9 rounded-md border border-factory-line bg-white pl-9 pr-3 text-sm font-bold text-factory-ink shadow-soft"
-          aria-label="Camera demo mode"
-        >
-          {cameraModes.map((mode) => (
-            <option key={mode.value} value={mode.value}>
-              {mode.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      {videoDevices.length > 0 ? (
+      {isReal ? (
+        <label className="inline-flex h-9 items-center">
+          <span className="sr-only">Component ID (optional)</span>
+          <input
+            value={componentId}
+            onChange={(event) => setComponentId(event.target.value)}
+            placeholder="Component ID (optional)"
+            pattern="[A-Za-z0-9][A-Za-z0-9._:-]{2,79}"
+            className="h-9 w-48 rounded-md border border-factory-line bg-white px-3 text-sm font-semibold text-factory-ink placeholder:text-factory-steel"
+          />
+        </label>
+      ) : (
+        <label className="relative inline-flex h-9 items-center">
+          <SlidersHorizontal className="pointer-events-none absolute left-3 h-4 w-4 text-factory-steel" aria-hidden />
+          <select
+            value={cameraMode}
+            onChange={(event) => setCameraMode(event.target.value as CameraDemoMode)}
+            className="h-9 rounded-md border border-factory-line bg-white pl-9 pr-3 text-sm font-bold text-factory-ink"
+            aria-label="Simulated demo scenario"
+          >
+            {demoScenarios.map((scenario) => (
+              <option key={scenario.value} value={scenario.value}>
+                {scenario.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      {videoDevices.length > 1 ? (
         <label className="relative inline-flex h-9 max-w-56 items-center">
-          <Video className="pointer-events-none absolute left-3 h-4 w-4 text-factory-steel" />
+          <Video className="pointer-events-none absolute left-3 h-4 w-4 text-factory-steel" aria-hidden />
           <select
             value={selectedDeviceId}
             onChange={(event) => setCameraDevice(event.target.value)}
-            className="h-9 w-full rounded-md border border-factory-line bg-white pl-9 pr-3 text-sm font-bold text-factory-ink shadow-soft"
+            className="h-9 w-full rounded-md border border-factory-line bg-white pl-9 pr-3 text-sm font-bold text-factory-ink"
             aria-label="Camera device"
           >
             {videoDevices.map((device) => (
@@ -91,38 +117,33 @@ export function CameraDemoControls({
       ) : null}
       <button
         type="button"
-        onClick={() => {
-          if (isOpen) {
-            stopCamera();
-            return;
-          }
-          void startCamera();
-        }}
+        onClick={() => (isOpen ? stopCamera() : void startCamera())}
         disabled={isStarting}
-        className={`inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-semibold text-white shadow-soft ${
-          isOpen ? "bg-factory-alarm" : "bg-factory-teal"
-        } disabled:cursor-wait disabled:bg-factory-steel`}
+        className={`inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-semibold text-white ${isOpen ? "bg-factory-alarm" : "bg-factory-teal"} disabled:cursor-wait disabled:bg-factory-steel`}
       >
-        {isOpen ? <VideoOff className="h-4 w-4" /> : <Video className="h-4 w-4" />}
-        {isOpen ? "Stop" : isStarting ? "Starting" : "Camera"}
+        {isOpen ? <VideoOff className="h-4 w-4" aria-hidden /> : <Video className="h-4 w-4" aria-hidden />}
+        {isOpen ? "Stop camera" : isStarting ? "Starting" : "Camera"}
       </button>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(event) => {
-          void handlePhotoChange(event.currentTarget.files);
-        }}
-      />
+      {isReal && isOpen ? (
+        <button
+          type="button"
+          onClick={() => void onCaptureAndInspect()}
+          disabled={isBusy}
+          className="inline-flex h-9 items-center gap-2 rounded-md bg-factory-ink px-3 text-sm font-semibold text-white disabled:cursor-wait disabled:bg-factory-steel"
+        >
+          <Aperture className="h-4 w-4" aria-hidden />
+          {isSubmitting ? "Inspecting" : "Capture & inspect"}
+        </button>
+      ) : null}
+      <input ref={inputRef} type="file" accept="image/jpeg,image/png" className="hidden" onChange={(event) => void handlePhotoChange(event.currentTarget.files)} />
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        disabled={isUploading}
-        className="inline-flex h-9 items-center gap-2 rounded-md bg-factory-ink px-3 text-sm font-semibold text-white shadow-soft disabled:cursor-wait disabled:bg-factory-steel"
+        disabled={isBusy}
+        className="inline-flex h-9 items-center gap-2 rounded-md bg-factory-ink px-3 text-sm font-semibold text-white disabled:cursor-wait disabled:bg-factory-steel"
       >
-        <ImageUp className="h-4 w-4" />
-        {isUploading ? "Loading" : "Photo"}
+        <ImageUp className="h-4 w-4" aria-hidden />
+        {isBusy ? "Working" : isReal ? "Inspect photo" : "Demo photo"}
       </button>
     </div>
   );

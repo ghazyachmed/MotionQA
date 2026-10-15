@@ -1,0 +1,4546 @@
+{
+  "generatedAt": "2026-10-15T07:18:22.495588+00:00",
+  "command": "python -m motionQa.evaluation.runEvaluation",
+  "environment": {
+    "python": "3.11.15",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "machine": "arm64",
+    "processor": "arm",
+    "opencv": {
+      "version": "5.0.0",
+      "majorVersion": 5,
+      "isSupported": true,
+      "hasNewDnnEngine": true,
+      "cpuBaseline": "NEON FP16 NEON_DOTPROD NEON_FP16",
+      "detail": "ok"
+    },
+    "numpy": "2.4.6"
+  },
+  "task": "Single-board stationary visual inspection on the public VisA pcb1 benchmark (normal-only anomaly detection)",
+  "domainNote": "Benchmark task only. Not validated on motorcycle components or any customer production line.",
+  "dataset": {
+    "name": "VisA",
+    "category": "pcb1",
+    "license": "CC BY 4.0",
+    "source": "https://amazon-visual-anomaly.s3.us-west-2.amazonaws.com/VisA_20220922.tar",
+    "archiveSha256": "2eb8690c803ab37de0324772964100169ec8ba1fa3f7e94291c9ca673f40f362",
+    "splitSeed": 20261015,
+    "splitCounts": {
+      "bank": {
+        "normal": 804
+      },
+      "validation": {
+        "anomaly": 47,
+        "normal": 100
+      },
+      "test": {
+        "anomaly": 53,
+        "normal": 100
+      },
+      "officialTest": {
+        "anomaly": 100,
+        "normal": 100
+      },
+      "otherObjectValidation": {
+        "other_object": 50
+      },
+      "otherObjectTest": {
+        "other_object": 50
+      }
+    },
+    "bankLocateFailures": []
+  },
+  "modelSelection": {
+    "method": "validation image AUROC with a 300-image bank; test split unused",
+    "selected": {
+      "inputSize": 448,
+      "scoringMask": "dilated",
+      "validationImageAuroc": 0.9911
+    },
+    "candidates": [
+      {
+        "inputSize": 320,
+        "scoringMask": "hull",
+        "validationImageAuroc": 0.9611
+      },
+      {
+        "inputSize": 320,
+        "scoringMask": "dilated",
+        "validationImageAuroc": 0.9823
+      },
+      {
+        "inputSize": 320,
+        "scoringMask": "full",
+        "validationImageAuroc": 0.8977
+      },
+      {
+        "inputSize": 448,
+        "scoringMask": "hull",
+        "validationImageAuroc": 0.9891
+      },
+      {
+        "inputSize": 448,
+        "scoringMask": "dilated",
+        "validationImageAuroc": 0.9911
+      },
+      {
+        "inputSize": 448,
+        "scoringMask": "full",
+        "validationImageAuroc": 0.9187
+      }
+    ]
+  },
+  "model": {
+    "profileId": "visa-pcb1-patchcore-mnv2",
+    "version": "2026.10.15",
+    "backbone": {
+      "file": "models/image_classification_mobilenetv2_2022apr.onnx",
+      "sha256": "c0c3f76d93fa3fd6580652a45618618a220fced18babf65774ed169de0432ad5",
+      "source": "https://huggingface.co/opencv/image_classification_mobilenet/resolve/main/image_classification_mobilenetv2_2022apr.onnx",
+      "license": "Apache-2.0"
+    },
+    "featureModel": {
+      "file": "featureExtractor.onnx",
+      "sha256": "742edd5417d1f4f11ec372cbd088f282036d3630208b8e15d0ed1ccae6a041a6",
+      "source": "derived from image_classification_mobilenetv2_2022apr.onnx by motionQa.inspection.featureExtractor.buildFeatureModel",
+      "license": "Apache-2.0"
+    },
+    "memoryBank": {
+      "file": "memoryBank.npz",
+      "sha256": "396c4d74e8ae5459a768a848f76008aa6a5b815a88c198dfa856e8ff3d158124",
+      "source": "VisA pcb1 bank split (804 normal images), 16000-patch greedy coreset",
+      "license": "CC BY 4.0 (derived from VisA)",
+      "patches": 16000,
+      "dimension": 128
+    },
+    "inputSize": 448,
+    "scoringMask": "dilated",
+    "buildSeconds": 118.6
+  },
+  "thresholds": {
+    "decision": {
+      "passBelow": 2.159876585006714,
+      "failAtOrAbove": 2.5937364101409917,
+      "identityMaxDistance": 0.15055954456329346,
+      "regionThreshold": 2.159876585006714,
+      "missedDefectTarget": 0.02,
+      "falseRejectTarget": 0.02
+    },
+    "decisionSelection": {
+      "passBelow": 2.159876585006714,
+      "failAtOrAbove": 2.5937364101409917,
+      "allowedFalseRejects": 2,
+      "allowedMisses": 0,
+      "hasReviewBand": true
+    },
+    "capture": {
+      "minFrameMeanLuminance": 0.23612925738498397,
+      "maxFrameMeanLuminance": 0.7644066443841961,
+      "maxFrameDarkFraction": 0.15004260191176078,
+      "maxFrameBrightFraction": 0.2095341747210906,
+      "minPartContrast": 21.118711471557617,
+      "minPartAreaFraction": 0.19652193509615384,
+      "maxPartAreaFraction": 0.4226825420673077,
+      "minBackgroundLuminance": 0.24470588235294116,
+      "maxBackgroundLuminance": 0.7411764705882353,
+      "minEdgeSharpness": 114.25084367370606
+    },
+    "baseline": {
+      "passBelow": 4.086169242858887,
+      "failAtOrAbove": 12.192873001098635,
+      "allowedFalseRejects": 2,
+      "allowedMisses": 0,
+      "hasReviewBand": true
+    }
+  },
+  "captureGateValidation": {
+    "note": "Validation images only: clean target images must pass the gates; synthetic faults are applied to 30 validation normals.",
+    "outcomes": {
+      "clean_normal": {
+        "CAPTURE_OK": 100
+      },
+      "clean_anomaly": {
+        "CAPTURE_OK": 47
+      },
+      "blur_mild": {
+        "BLURRED": 30
+      },
+      "blur_strong": {
+        "BLURRED": 30
+      },
+      "underexposed": {
+        "UNDEREXPOSED": 30
+      },
+      "overexposed": {
+        "OVEREXPOSED": 30
+      },
+      "cut_off": {
+        "PART_CUT_OFF": 30
+      },
+      "empty_scene": {
+        "PART_NOT_FOUND": 30
+      }
+    }
+  },
+  "operatingPoints": {
+    "note": "Thresholds chosen on validation for each missed-defect target (false-rejection target fixed), applied unchanged to test scores. The deployed profile uses the first row.",
+    "points": [
+      {
+        "validationMissTarget": 0.02,
+        "validationRejectTarget": 0.02,
+        "thresholds": {
+          "passBelow": 2.159876585006714,
+          "failAtOrAbove": 2.5937364101409917
+        },
+        "testKeyMetrics": {
+          "missedDefectRate": 0.0189,
+          "falseRejectionRate": 0.04,
+          "reviewRate": 0.2614,
+          "retakeRate": 0.0,
+          "noPartRate": 0.0065,
+          "automaticDecisionRate": 0.732,
+          "automaticDecisionAccuracy": 0.9554
+        }
+      },
+      {
+        "validationMissTarget": 0.05,
+        "validationRejectTarget": 0.02,
+        "thresholds": {
+          "passBelow": 2.5020837783813477,
+          "failAtOrAbove": 2.5937364101409917
+        },
+        "testKeyMetrics": {
+          "missedDefectRate": 0.0755,
+          "falseRejectionRate": 0.04,
+          "reviewRate": 0.0131,
+          "retakeRate": 0.0,
+          "noPartRate": 0.0065,
+          "automaticDecisionRate": 0.9804,
+          "automaticDecisionAccuracy": 0.9467
+        }
+      },
+      {
+        "validationMissTarget": 0.1,
+        "validationRejectTarget": 0.02,
+        "thresholds": {
+          "passBelow": 2.663979649543762,
+          "failAtOrAbove": 2.663979649543762
+        },
+        "testKeyMetrics": {
+          "missedDefectRate": 0.1887,
+          "falseRejectionRate": 0.03,
+          "reviewRate": 0.0,
+          "retakeRate": 0.0,
+          "noPartRate": 0.0065,
+          "automaticDecisionRate": 0.9935,
+          "automaticDecisionAccuracy": 0.9145
+        }
+      }
+    ]
+  },
+  "validation": {
+    "imageAuroc": 0.9853,
+    "baselineImageAuroc": 0.9309,
+    "identityDistance": {
+      "targetMax": 0.0844,
+      "otherObjectMin": 0.2167
+    }
+  },
+  "test": {
+    "imageAuroc": 0.9745,
+    "imageAveragePrecision": 0.9519,
+    "decisions": {
+      "anomaly": {
+        "count": 53,
+        "decisions": {
+          "PASS": 1,
+          "FAIL": 47,
+          "REVIEW": 4,
+          "RETAKE": 0,
+          "NO_PART": 1,
+          "ERROR": 0
+        },
+        "rates": {
+          "PASS": 0.0189,
+          "FAIL": 0.8868,
+          "REVIEW": 0.0755,
+          "RETAKE": 0.0,
+          "NO_PART": 0.0189,
+          "ERROR": 0.0
+        }
+      },
+      "normal": {
+        "count": 100,
+        "decisions": {
+          "PASS": 60,
+          "FAIL": 4,
+          "REVIEW": 36,
+          "RETAKE": 0,
+          "NO_PART": 0,
+          "ERROR": 0
+        },
+        "rates": {
+          "PASS": 0.6,
+          "FAIL": 0.04,
+          "REVIEW": 0.36,
+          "RETAKE": 0.0,
+          "NO_PART": 0.0,
+          "ERROR": 0.0
+        }
+      },
+      "keyMetrics": {
+        "missedDefectRate": 0.0189,
+        "falseRejectionRate": 0.04,
+        "reviewRate": 0.2614,
+        "retakeRate": 0.0,
+        "noPartRate": 0.0065,
+        "automaticDecisionRate": 0.732,
+        "automaticDecisionAccuracy": 0.9554
+      }
+    },
+    "perDefectType": {
+      "bent": {
+        "PASS": 0,
+        "FAIL": 7,
+        "REVIEW": 0,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "bent,melt": {
+        "PASS": 0,
+        "FAIL": 1,
+        "REVIEW": 0,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "melt": {
+        "PASS": 0,
+        "FAIL": 21,
+        "REVIEW": 2,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "melt,missing": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 1,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "melt,scratch": {
+        "PASS": 0,
+        "FAIL": 3,
+        "REVIEW": 0,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "melt,scratch,missing": {
+        "PASS": 0,
+        "FAIL": 1,
+        "REVIEW": 0,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "missing": {
+        "PASS": 1,
+        "FAIL": 6,
+        "REVIEW": 1,
+        "RETAKE": 0,
+        "NO_PART": 1,
+        "ERROR": 0
+      },
+      "scratch": {
+        "PASS": 0,
+        "FAIL": 7,
+        "REVIEW": 0,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "scratch,missing": {
+        "PASS": 0,
+        "FAIL": 1,
+        "REVIEW": 0,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      }
+    },
+    "scoreDistribution": {
+      "normal": {
+        "count": 100,
+        "mean": 2.17,
+        "median": 2.14,
+        "p95": 2.38,
+        "max": 3.73
+      },
+      "anomaly": {
+        "count": 53,
+        "mean": 3.32,
+        "median": 3.18,
+        "p95": 4.61,
+        "max": 5.09
+      }
+    }
+  },
+  "officialSplit": {
+    "note": "Official VisA 1cls test split (threshold-free). Memory bank excludes the 100 validation normals held out from the official train split.",
+    "imageAuroc": 0.974,
+    "baselineImageAuroc": 0.8611
+  },
+  "baseline": {
+    "method": "ECC-aligned per-pixel z-score template (OpenCV only)",
+    "testImageAuroc": 0.8689,
+    "decisions": {
+      "anomaly": {
+        "count": 53,
+        "decisions": {
+          "PASS": 0,
+          "FAIL": 22,
+          "REVIEW": 31,
+          "RETAKE": 0,
+          "NO_PART": 0,
+          "ERROR": 0
+        },
+        "rates": {
+          "PASS": 0.0,
+          "FAIL": 0.4151,
+          "REVIEW": 0.5849,
+          "RETAKE": 0.0,
+          "NO_PART": 0.0,
+          "ERROR": 0.0
+        }
+      },
+      "normal": {
+        "count": 100,
+        "decisions": {
+          "PASS": 66,
+          "FAIL": 7,
+          "REVIEW": 27,
+          "RETAKE": 0,
+          "NO_PART": 0,
+          "ERROR": 0
+        },
+        "rates": {
+          "PASS": 0.66,
+          "FAIL": 0.07,
+          "REVIEW": 0.27,
+          "RETAKE": 0.0,
+          "NO_PART": 0.0,
+          "ERROR": 0.0
+        }
+      },
+      "keyMetrics": {
+        "missedDefectRate": 0.0,
+        "falseRejectionRate": 0.07,
+        "reviewRate": 0.3791,
+        "retakeRate": 0.0,
+        "noPartRate": 0.0,
+        "automaticDecisionRate": 0.6209,
+        "automaticDecisionAccuracy": 0.9263
+      }
+    }
+  },
+  "scenarios": {
+    "note": "Synthetic capture faults applied to real test images, plus real images of other VisA objects.",
+    "summary": {
+      "blur_mild": {
+        "count": 60,
+        "decisions": {
+          "PASS": 0,
+          "FAIL": 0,
+          "REVIEW": 0,
+          "RETAKE": 60,
+          "NO_PART": 0,
+          "ERROR": 0
+        },
+        "reasonCodes": {
+          "BLURRED": 60
+        }
+      },
+      "blur_strong": {
+        "count": 60,
+        "decisions": {
+          "PASS": 0,
+          "FAIL": 0,
+          "REVIEW": 0,
+          "RETAKE": 60,
+          "NO_PART": 0,
+          "ERROR": 0
+        },
+        "reasonCodes": {
+          "BLURRED": 60
+        }
+      },
+      "underexposed": {
+        "count": 60,
+        "decisions": {
+          "PASS": 0,
+          "FAIL": 0,
+          "REVIEW": 0,
+          "RETAKE": 60,
+          "NO_PART": 0,
+          "ERROR": 0
+        },
+        "reasonCodes": {
+          "UNDEREXPOSED": 60
+        }
+      },
+      "overexposed": {
+        "count": 60,
+        "decisions": {
+          "PASS": 0,
+          "FAIL": 0,
+          "REVIEW": 0,
+          "RETAKE": 60,
+          "NO_PART": 0,
+          "ERROR": 0
+        },
+        "reasonCodes": {
+          "OVEREXPOSED": 60
+        }
+      },
+      "cut_off": {
+        "count": 60,
+        "decisions": {
+          "PASS": 0,
+          "FAIL": 0,
+          "REVIEW": 0,
+          "RETAKE": 60,
+          "NO_PART": 0,
+          "ERROR": 0
+        },
+        "reasonCodes": {
+          "PART_CUT_OFF": 60
+        }
+      },
+      "empty_scene": {
+        "count": 60,
+        "decisions": {
+          "PASS": 0,
+          "FAIL": 0,
+          "REVIEW": 0,
+          "RETAKE": 0,
+          "NO_PART": 60,
+          "ERROR": 0
+        },
+        "reasonCodes": {
+          "PART_NOT_FOUND": 60
+        }
+      },
+      "other_object": {
+        "count": 50,
+        "decisions": {
+          "PASS": 0,
+          "FAIL": 0,
+          "REVIEW": 0,
+          "RETAKE": 34,
+          "NO_PART": 16,
+          "ERROR": 0
+        },
+        "reasonCodes": {
+          "BLURRED": 3,
+          "PART_CUT_OFF": 1,
+          "PART_NOT_FOUND": 5,
+          "PART_NOT_RECOGNIZED": 11,
+          "PART_SCALE_OUT_OF_RANGE": 3,
+          "UNDEREXPOSED": 27
+        }
+      }
+    }
+  },
+  "latency": {
+    "hardware": "arm64 arm",
+    "method": "time.perf_counter around each stage inside InspectionPipeline.inspect; sequential, single process, CPU only; first inspection excluded and reported separately",
+    "imageResolution": "1404x1070",
+    "modelInput": "448x448",
+    "coldStart": {
+      "profileAndModelLoadMs": 19.4,
+      "firstInspectionTotalMs": 241.44
+    },
+    "decodeMs": {
+      "count": 59,
+      "mean": 4.46,
+      "median": 4.43,
+      "p95": 4.7,
+      "max": 4.96
+    },
+    "captureChecksMs": {
+      "count": 59,
+      "mean": 37.22,
+      "median": 37.06,
+      "p95": 39.12,
+      "max": 41.04
+    },
+    "inferenceMs": {
+      "count": 59,
+      "mean": 91.72,
+      "median": 91.57,
+      "p95": 93.29,
+      "max": 94.71
+    },
+    "evidenceMs": {
+      "count": 59,
+      "mean": 56.89,
+      "median": 56.88,
+      "p95": 60.43,
+      "max": 61.19
+    },
+    "endToEndMs": {
+      "count": 59,
+      "mean": 190.81,
+      "median": 190.57,
+      "p95": 195.34,
+      "max": 200.83
+    }
+  },
+  "records": {
+    "test": [
+      {
+        "image": "pcb1/Data/Images/Normal/0011.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.055962324142456,
+        "identityDistance": 0.005362272262573242
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0013.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.0812487602233887,
+        "identityDistance": 0.00637364387512207
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0016.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1166439056396484,
+        "identityDistance": 0.005003690719604492
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0024.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.082101345062256,
+        "identityDistance": 0.005833148956298828
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0026.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.037519931793213,
+        "identityDistance": 0.004871964454650879
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0027.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.165032148361206,
+        "identityDistance": 0.004936099052429199
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0046.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1519651412963867,
+        "identityDistance": 0.007121086120605469
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0100.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.145402431488037,
+        "identityDistance": 0.0071440935134887695
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0107.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.1696412563323975,
+        "identityDistance": 0.0061830878257751465
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0159.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.2730703353881836,
+        "identityDistance": 0.005142927169799805
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0168.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.038693428039551,
+        "identityDistance": 0.005919694900512695
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0170.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1309289932250977,
+        "identityDistance": 0.005813002586364746
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0172.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 1.9922723770141602,
+        "identityDistance": 0.005681276321411133
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0174.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.099533796310425,
+        "identityDistance": 0.005629241466522217
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0178.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.0597705841064453,
+        "identityDistance": 0.006952941417694092
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0187.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.2255587577819824,
+        "identityDistance": 0.0012638568878173828
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0196.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1180717945098877,
+        "identityDistance": 0.006113946437835693
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0208.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.0760657787323,
+        "identityDistance": 0.005335569381713867
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0214.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.0745885372161865,
+        "identityDistance": 0.0059386491775512695
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0215.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.074253797531128,
+        "identityDistance": 0.00783681869506836
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0237.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.179812431335449,
+        "identityDistance": 0.005608499050140381
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0261.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.074737548828125,
+        "identityDistance": 0.006826162338256836
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0286.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.2118072509765625,
+        "identityDistance": 0.006358027458190918
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0294.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.2189788818359375,
+        "identityDistance": 0.00516587495803833
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0297.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1115829944610596,
+        "identityDistance": 0.006503105163574219
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0303.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1118826866149902,
+        "identityDistance": 0.006373405456542969
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0306.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.9203782081604004,
+        "identityDistance": 0.004679560661315918
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0320.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.0991382598876953,
+        "identityDistance": 0.006948709487915039
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0333.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.763040781021118,
+        "identityDistance": 0.008529245853424072
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0363.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.0330119132995605,
+        "identityDistance": 0.006273627281188965
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0377.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1242852210998535,
+        "identityDistance": 0.005519747734069824
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0394.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1577770709991455,
+        "identityDistance": 0.005407154560089111
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0400.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.092801332473755,
+        "identityDistance": 0.006600558757781982
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0402.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.174882173538208,
+        "identityDistance": 0.0051468610763549805
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0417.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.0427496433258057,
+        "identityDistance": 0.006044626235961914
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0423.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.1955883502960205,
+        "identityDistance": 0.006031036376953125
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0427.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.10294246673584,
+        "identityDistance": 0.006383180618286133
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0457.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.0955970287323,
+        "identityDistance": 0.005524337291717529
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0469.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.122573137283325,
+        "identityDistance": 0.006242275238037109
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0479.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1232800483703613,
+        "identityDistance": 0.005985140800476074
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0483.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.0313971042633057,
+        "identityDistance": 0.007834017276763916
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0484.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.0656256675720215,
+        "identityDistance": 0.005796194076538086
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0488.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.152899980545044,
+        "identityDistance": 0.006455779075622559
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0490.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 1.9741047620773315,
+        "identityDistance": 0.005510210990905762
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0514.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.167046546936035,
+        "identityDistance": 0.006557941436767578
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0518.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 1.967695713043213,
+        "identityDistance": 0.005757749080657959
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0520.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.009021282196045,
+        "identityDistance": 0.005082607269287109
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0525.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.0727179050445557,
+        "identityDistance": 0.006465733051300049
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0545.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1523523330688477,
+        "identityDistance": 0.0073184967041015625
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0552.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.1739485263824463,
+        "identityDistance": 0.006209135055541992
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0569.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.2877285480499268,
+        "identityDistance": 0.004294395446777344
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0615.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.22695255279541,
+        "identityDistance": 0.007290303707122803
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0617.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.0803842544555664,
+        "identityDistance": 0.006998658180236816
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0619.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.230870246887207,
+        "identityDistance": 0.006441831588745117
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0621.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.2844512462615967,
+        "identityDistance": 0.007050037384033203
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0629.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.2303237915039062,
+        "identityDistance": 0.00482863187789917
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0631.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.295184373855591,
+        "identityDistance": 0.005676209926605225
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0648.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.071556806564331,
+        "identityDistance": 0.0070656538009643555
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0654.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.2308011054992676,
+        "identityDistance": 0.005702197551727295
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0657.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1533548831939697,
+        "identityDistance": 0.005290806293487549
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0659.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.104827642440796,
+        "identityDistance": 0.006581485271453857
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0674.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1376519203186035,
+        "identityDistance": 0.00609278678894043
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0684.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.2371785640716553,
+        "identityDistance": 0.005792975425720215
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0685.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.1885128021240234,
+        "identityDistance": 0.0062468647956848145
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0688.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.1856226921081543,
+        "identityDistance": 0.005950927734375
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0690.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1133599281311035,
+        "identityDistance": 0.005856156349182129
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0694.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.553759813308716,
+        "identityDistance": 0.006859719753265381
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0705.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.2459466457366943,
+        "identityDistance": 0.006871640682220459
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0725.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.1620631217956543,
+        "identityDistance": 0.0063974857330322266
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0730.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.6032466888427734,
+        "identityDistance": 0.006795763969421387
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0735.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.154205799102783,
+        "identityDistance": 0.00661623477935791
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0739.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.182786464691162,
+        "identityDistance": 0.007147669792175293
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0751.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.3674795627593994,
+        "identityDistance": 0.005430698394775391
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0755.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1035594940185547,
+        "identityDistance": 0.005602240562438965
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0764.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.2372164726257324,
+        "identityDistance": 0.009145498275756836
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0768.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.2588977813720703,
+        "identityDistance": 0.005995810031890869
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0779.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.2562408447265625,
+        "identityDistance": 0.005911469459533691
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0784.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.1771607398986816,
+        "identityDistance": 0.006441593170166016
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0796.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.1802821159362793,
+        "identityDistance": 0.005109906196594238
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0797.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.2365901470184326,
+        "identityDistance": 0.0069563984870910645
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0800.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.232325792312622,
+        "identityDistance": 0.007394015789031982
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0804.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.261631965637207,
+        "identityDistance": 0.008579611778259277
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0811.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.207632303237915,
+        "identityDistance": 0.005959630012512207
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0844.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1112911701202393,
+        "identityDistance": 0.006957113742828369
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0869.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.0954599380493164,
+        "identityDistance": 0.008231878280639648
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0871.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 1.9433906078338623,
+        "identityDistance": 0.0052710771560668945
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0892.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.032931327819824,
+        "identityDistance": 0.0056116580963134766
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0900.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.154242753982544,
+        "identityDistance": 0.005715489387512207
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0920.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.732545852661133,
+        "identityDistance": 0.007482647895812988
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0923.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 1.9938026666641235,
+        "identityDistance": 0.005556464195251465
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0935.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.0316274166107178,
+        "identityDistance": 0.004820764064788818
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0940.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 1.9893760681152344,
+        "identityDistance": 0.005041062831878662
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0952.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.016026020050049,
+        "identityDistance": 0.005743443965911865
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0957.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1495912075042725,
+        "identityDistance": 0.007218420505523682
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0964.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.138079881668091,
+        "identityDistance": 0.006202101707458496
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0971.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.06101393699646,
+        "identityDistance": 0.005815863609313965
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0974.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.0658912658691406,
+        "identityDistance": 0.0051146745681762695
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0989.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1051087379455566,
+        "identityDistance": 0.005653083324432373
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/0994.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.17238712310791,
+        "identityDistance": 0.006300747394561768
+      },
+      {
+        "image": "pcb1/Data/Images/Normal/1000.JPG",
+        "label": "normal",
+        "defectType": "normal",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.1288485527038574,
+        "identityDistance": 0.0058487653732299805
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/000.JPG",
+        "label": "anomaly",
+        "defectType": "bent",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.7421865463256836,
+        "identityDistance": 0.010948538780212402
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/001.JPG",
+        "label": "anomaly",
+        "defectType": "bent",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.6131160259246826,
+        "identityDistance": 0.008433699607849121
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/003.JPG",
+        "label": "anomaly",
+        "defectType": "bent",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 4.3374104499816895,
+        "identityDistance": 0.01383209228515625
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/008.JPG",
+        "label": "anomaly",
+        "defectType": "bent",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 4.616735935211182,
+        "identityDistance": 0.013006746768951416
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/009.JPG",
+        "label": "anomaly",
+        "defectType": "bent,melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 4.407065391540527,
+        "identityDistance": 0.012015461921691895
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/010.JPG",
+        "label": "anomaly",
+        "defectType": "bent",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 4.722503662109375,
+        "identityDistance": 0.010373711585998535
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/011.JPG",
+        "label": "anomaly",
+        "defectType": "bent",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 4.598994255065918,
+        "identityDistance": 0.009938716888427734
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/013.JPG",
+        "label": "anomaly",
+        "defectType": "bent",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.776829481124878,
+        "identityDistance": 0.01991128921508789
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/015.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.70650053024292,
+        "identityDistance": 0.0071201324462890625
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/016.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 4.048299789428711,
+        "identityDistance": 0.006708383560180664
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/017.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.597099781036377,
+        "identityDistance": 0.006689906120300293
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/020.JPG",
+        "label": "anomaly",
+        "defectType": "melt,scratch",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.951406717300415,
+        "identityDistance": 0.008372604846954346
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/021.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.5067696571350098,
+        "identityDistance": 0.006442666053771973
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/022.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.801621198654175,
+        "identityDistance": 0.018186330795288086
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/024.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.942046880722046,
+        "identityDistance": 0.01362454891204834
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/025.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.5974419116973877,
+        "identityDistance": 0.015518605709075928
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/027.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.758349657058716,
+        "identityDistance": 0.005616188049316406
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/032.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.6572885513305664,
+        "identityDistance": 0.010755658149719238
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/036.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.0330722332000732,
+        "identityDistance": 0.008213639259338379
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/037.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.3301007747650146,
+        "identityDistance": 0.007949531078338623
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/038.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.220958948135376,
+        "identityDistance": 0.008037447929382324
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/039.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.425359010696411,
+        "identityDistance": 0.008918523788452148
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/040.JPG",
+        "label": "anomaly",
+        "defectType": "scratch,missing",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 4.216640472412109,
+        "identityDistance": 0.022221803665161133
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/042.JPG",
+        "label": "anomaly",
+        "defectType": "missing",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.9638724327087402,
+        "identityDistance": 0.016955971717834473
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/043.JPG",
+        "label": "anomaly",
+        "defectType": "missing",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_RECOGNIZED",
+        "anomalyScore": 5.085483074188232,
+        "identityDistance": 0.1553756594657898
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/044.JPG",
+        "label": "anomaly",
+        "defectType": "missing",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 4.029439926147461,
+        "identityDistance": 0.04079639911651611
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/045.JPG",
+        "label": "anomaly",
+        "defectType": "missing",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 4.203362464904785,
+        "identityDistance": 0.04591381549835205
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/047.JPG",
+        "label": "anomaly",
+        "defectType": "missing",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.4714009761810303,
+        "identityDistance": 0.00841975212097168
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/048.JPG",
+        "label": "anomaly",
+        "defectType": "missing",
+        "decision": "PASS",
+        "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+        "anomalyScore": 2.124938488006592,
+        "identityDistance": 0.006970763206481934
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/051.JPG",
+        "label": "anomaly",
+        "defectType": "melt,missing",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.575867176055908,
+        "identityDistance": 0.013255476951599121
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/053.JPG",
+        "label": "anomaly",
+        "defectType": "melt,scratch,missing",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.9290356636047363,
+        "identityDistance": 0.01116931438446045
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/054.JPG",
+        "label": "anomaly",
+        "defectType": "missing",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 4.162619113922119,
+        "identityDistance": 0.0173337459564209
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/055.JPG",
+        "label": "anomaly",
+        "defectType": "missing",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.7984278202056885,
+        "identityDistance": 0.018676400184631348
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/056.JPG",
+        "label": "anomaly",
+        "defectType": "missing",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.1810553073883057,
+        "identityDistance": 0.011260151863098145
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/066.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.868368625640869,
+        "identityDistance": 0.009860038757324219
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/067.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.185168743133545,
+        "identityDistance": 0.01166081428527832
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/069.JPG",
+        "label": "anomaly",
+        "defectType": "melt,scratch",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.0542593002319336,
+        "identityDistance": 0.010722935199737549
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/070.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.353468418121338,
+        "identityDistance": 0.013916015625
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/073.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.629284143447876,
+        "identityDistance": 0.007750868797302246
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/074.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.6475443840026855,
+        "identityDistance": 0.013845205307006836
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/075.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "REVIEW",
+        "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+        "anomalyScore": 2.2753539085388184,
+        "identityDistance": 0.007066071033477783
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/076.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.7982282638549805,
+        "identityDistance": 0.006808876991271973
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/079.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.992748498916626,
+        "identityDistance": 0.0068776607513427734
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/080.JPG",
+        "label": "anomaly",
+        "defectType": "melt,scratch",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.282325029373169,
+        "identityDistance": 0.00653231143951416
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/081.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.760244131088257,
+        "identityDistance": 0.004413306713104248
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/082.JPG",
+        "label": "anomaly",
+        "defectType": "melt",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.0755419731140137,
+        "identityDistance": 0.013354659080505371
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/085.JPG",
+        "label": "anomaly",
+        "defectType": "scratch",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.5975890159606934,
+        "identityDistance": 0.010513484477996826
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/086.JPG",
+        "label": "anomaly",
+        "defectType": "scratch",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.1362102031707764,
+        "identityDistance": 0.01930159330368042
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/088.JPG",
+        "label": "anomaly",
+        "defectType": "scratch",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.2019710540771484,
+        "identityDistance": 0.011224925518035889
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/091.JPG",
+        "label": "anomaly",
+        "defectType": "scratch",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 2.8146812915802,
+        "identityDistance": 0.014550328254699707
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/092.JPG",
+        "label": "anomaly",
+        "defectType": "scratch",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.7957844734191895,
+        "identityDistance": 0.011026620864868164
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/093.JPG",
+        "label": "anomaly",
+        "defectType": "scratch",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.7293224334716797,
+        "identityDistance": 0.014803528785705566
+      },
+      {
+        "image": "pcb1/Data/Images/Anomaly/099.JPG",
+        "label": "anomaly",
+        "defectType": "scratch",
+        "decision": "FAIL",
+        "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+        "anomalyScore": 3.6929333209991455,
+        "identityDistance": 0.006252467632293701
+      }
+    ],
+    "scenarios": [
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "normal",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "normal",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "blur_mild",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "blur_strong",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED"
+      },
+      {
+        "scenario": "underexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED"
+      },
+      {
+        "scenario": "overexposed",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "OVEREXPOSED"
+      },
+      {
+        "scenario": "cut_off",
+        "label": "anomaly",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF"
+      },
+      {
+        "scenario": "empty_scene",
+        "label": "anomaly",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND"
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "candle/Data/Images/Normal/0089.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "candle/Data/Images/Normal/0566.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "candle/Data/Images/Normal/0647.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "candle/Data/Images/Normal/0728.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "candle/Data/Images/Normal/0881.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "capsules/Data/Images/Normal/296.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "PART_SCALE_OUT_OF_RANGE",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "capsules/Data/Images/Normal/395.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "PART_CUT_OFF",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "capsules/Data/Images/Normal/476.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "PART_SCALE_OUT_OF_RANGE",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "cashew/Data/Images/Normal/098.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "cashew/Data/Images/Normal/197.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "cashew/Data/Images/Normal/296.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "cashew/Data/Images/Normal/359.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "cashew/Data/Images/Normal/377.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "cashew/Data/Images/Normal/395.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "cashew/Data/Images/Normal/476.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "chewinggum/Data/Images/Normal/001.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "chewinggum/Data/Images/Normal/278.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "chewinggum/Data/Images/Normal/359.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "chewinggum/Data/Images/Normal/377.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "chewinggum/Data/Images/Normal/395.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "chewinggum/Data/Images/Normal/476.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "fryum/Data/Images/Normal/001.JPG",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_RECOGNIZED",
+        "identityDistance": 0.4575631618499756
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "fryum/Data/Images/Normal/098.JPG",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_RECOGNIZED",
+        "identityDistance": 0.4976506233215332
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "fryum/Data/Images/Normal/197.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "PART_SCALE_OUT_OF_RANGE",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "fryum/Data/Images/Normal/359.JPG",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_RECOGNIZED",
+        "identityDistance": 0.5043160915374756
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "fryum/Data/Images/Normal/377.JPG",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_RECOGNIZED",
+        "identityDistance": 0.508557915687561
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "fryum/Data/Images/Normal/458.JPG",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_RECOGNIZED",
+        "identityDistance": 0.5291668176651001
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "macaroni1/Data/Images/Normal/0010.JPG",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "macaroni1/Data/Images/Normal/0089.JPG",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "macaroni1/Data/Images/Normal/0485.JPG",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "macaroni1/Data/Images/Normal/0566.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "macaroni1/Data/Images/Normal/0809.JPG",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "macaroni1/Data/Images/Normal/0881.JPG",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_FOUND",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "pcb2/Data/Images/Normal/0809.JPG",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_RECOGNIZED",
+        "identityDistance": 0.2122347354888916
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "pcb2/Data/Images/Normal/0881.JPG",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_RECOGNIZED",
+        "identityDistance": 0.20215177536010742
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "pcb3/Data/Images/Normal/0089.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "pcb3/Data/Images/Normal/0485.JPG",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_RECOGNIZED",
+        "identityDistance": 0.38448071479797363
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "pcb3/Data/Images/Normal/0566.JPG",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_RECOGNIZED",
+        "identityDistance": 0.34987759590148926
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "pcb3/Data/Images/Normal/0647.JPG",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_RECOGNIZED",
+        "identityDistance": 0.3601219654083252
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "pcb3/Data/Images/Normal/0809.JPG",
+        "decision": "NO_PART",
+        "reasonCode": "PART_NOT_RECOGNIZED",
+        "identityDistance": 0.37904250621795654
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "pcb3/Data/Images/Normal/0881.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "pcb3/Data/Images/Normal/0962.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "BLURRED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "pcb4/Data/Images/Normal/0010.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "pcb4/Data/Images/Normal/0809.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "pcb4/Data/Images/Normal/0881.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "pipe_fryum/Data/Images/Normal/098.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "pipe_fryum/Data/Images/Normal/278.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "pipe_fryum/Data/Images/Normal/359.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "pipe_fryum/Data/Images/Normal/395.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      },
+      {
+        "scenario": "other_object",
+        "label": "other_object",
+        "image": "pipe_fryum/Data/Images/Normal/476.JPG",
+        "decision": "RETAKE",
+        "reasonCode": "UNDEREXPOSED",
+        "identityDistance": null
+      }
+    ]
+  }
+}

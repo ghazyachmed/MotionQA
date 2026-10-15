@@ -1,21 +1,33 @@
 import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { analyzeCameraFrame, type CameraDemoMode } from "../lib/cameraDemoAnalysis";
-import type { LiveQcEvent } from "../types/qcTypes";
+import { describeError, apiFetch } from "../lib/apiClient";
+import { advanceDemoSession, analyzeCameraFrame, initialDemoSession, type CameraDemoDecision, type CameraDemoMode, type DemoSessionState } from "../lib/cameraDemoAnalysis";
+import type { InspectionResult } from "../types/qcTypes";
+
+export type CameraState = "IDLE" | "STARTING" | "OPEN" | "ERROR";
+
+export interface PublishState {
+  status: "IDLE" | "OK" | "FAILED";
+  message: string;
+}
 
 interface CameraDemoState {
   videoRef: RefObject<HTMLVideoElement>;
   isCameraEnabled: boolean;
-  cameraState: "IDLE" | "STARTING" | "OPEN" | "ERROR";
+  cameraState: CameraState;
+  cameraError: string | null;
   cameraMode: CameraDemoMode;
-  cameraInspectionEvent: LiveQcEvent | null;
+  demoEvent: InspectionResult | null;
+  demoSnapshotUrl: string | null;
+  publishState: PublishState;
   videoDevices: CameraDevice[];
   selectedDeviceId: string;
   setCameraMode: (mode: CameraDemoMode) => void;
   setCameraDevice: (deviceId: string) => void;
-  refreshDevices: () => Promise<void>;
-  publishPhoto: (file: File) => Promise<void>;
+  analyzeDemoPhoto: (file: File) => Promise<void>;
+  captureFrame: () => Promise<Blob | null>;
   startCamera: () => Promise<void>;
   stopCamera: () => void;
+  clearDemo: () => void;
 }
 
 export interface CameraDevice {
@@ -23,19 +35,49 @@ export interface CameraDevice {
   label: string;
 }
 
-const lineId = "LINE_KARAWANG_01";
 const cameraFrameIntervalMs = 250;
 
 // AI Assisted Logic
-export function useCameraDemo(apiBaseUrl: string): CameraDemoState {
+export function buildDemoResult(decision: CameraDemoDecision, lineId: string, inspectionId: string, width: number, height: number): InspectionResult {
+  const timestamp = new Date().toISOString();
+  const resolvedDecision = decision.isInspectable ? decision.decision : "NO_PART";
+  return {
+    inspectionId,
+    lineId,
+    stationId: "BROWSER_DEMO",
+    capturedAt: timestamp,
+    processedAt: timestamp,
+    decision: resolvedDecision,
+    finalDecision: resolvedDecision,
+    reasonCode: decision.isForcedScenario ? "SIMULATED_FORCED_SCENARIO" : "SIMULATED_HEURISTIC",
+    reasonDetail: "Browser heuristic demo; not a model decision",
+    processingMode: "SIMULATED_DEMO",
+    modelId: "browser-heuristic-demo",
+    modelVersion: "demo",
+    defectFound: resolvedDecision === "FAIL" ? decision.defectFound : "none",
+    scores: { heuristicScore: decision.heuristicScore },
+    thresholds: {},
+    regions: decision.boundingBox && resolvedDecision === "FAIL" ? [{ ...decision.boundingBox, peakScore: decision.heuristicScore }] : [],
+    partBox: decision.componentBox,
+    evidence: [],
+    latency: { decodeMs: 0, captureChecksMs: 0, inferenceMs: 0, evidenceMs: 0, totalMs: 0 },
+    imageWidth: width,
+    imageHeight: height,
+    review: { status: "NOT_REQUIRED" },
+  };
+}
+
+export function useCameraDemo(apiBaseUrl: string, token: string, lineId: string, isSimulatedMode: boolean): CameraDemoState {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<number | null>(null);
-  const frameNumberRef = useRef(0);
-  const lastFrameTimeRef = useRef(performance.now());
-  const [cameraState, setCameraState] = useState<CameraDemoState["cameraState"]>("IDLE");
+  const sessionRef = useRef<DemoSessionState>(initialDemoSession);
+  const [cameraState, setCameraState] = useState<CameraState>("IDLE");
+  const [cameraError, setCameraError] = useState<string | null>(null);
   const [cameraMode, setCameraMode] = useState<CameraDemoMode>("auto");
-  const [cameraInspectionEvent, setCameraInspectionEvent] = useState<LiveQcEvent | null>(null);
+  const [demoEvent, setDemoEvent] = useState<InspectionResult | null>(null);
+  const [demoSnapshotUrl, setDemoSnapshotUrl] = useState<string | null>(null);
+  const [publishState, setPublishState] = useState<PublishState>({ status: "IDLE", message: "" });
   const [videoDevices, setVideoDevices] = useState<CameraDevice[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState("");
 
@@ -46,10 +88,7 @@ export function useCameraDemo(apiBaseUrl: string): CameraDemoState {
     const devices = await navigator.mediaDevices.enumerateDevices();
     const nextDevices = devices
       .filter((device) => device.kind === "videoinput")
-      .map((device, index) => ({
-        deviceId: device.deviceId,
-        label: device.label || `Camera ${index + 1}`,
-      }));
+      .map((device, index) => ({ deviceId: device.deviceId, label: device.label || `Camera ${index + 1}` }));
     setVideoDevices(nextDevices);
     setSelectedDeviceId((currentDeviceId) => {
       if (currentDeviceId && nextDevices.some((device) => device.deviceId === currentDeviceId)) {
@@ -60,75 +99,63 @@ export function useCameraDemo(apiBaseUrl: string): CameraDemoState {
     return nextDevices;
   }, []);
 
-  const refreshDevices = useCallback(async () => {
-    await loadVideoDevices();
-  }, [loadVideoDevices]);
-
-  const publishLiveEvent = useCallback(
-    async (event: LiveQcEvent) => {
-      await fetch(`${apiBaseUrl}/api/v1/live-events`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(event),
-      });
+  const publishDemoEvent = useCallback(
+    async (decision: CameraDemoDecision, event: InspectionResult) => {
+      try {
+        await apiFetch(apiBaseUrl, "/api/v1/live-events", token, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            inspectionId: event.inspectionId,
+            lineId,
+            decision: event.decision,
+            defectFound: event.defectFound,
+            heuristicScore: Number(decision.heuristicScore.toFixed(3)),
+            isForcedScenario: decision.isForcedScenario,
+            boundingBox: event.regions[0] ?? null,
+            capturedAt: event.capturedAt,
+            frameWidth: event.imageWidth,
+            frameHeight: event.imageHeight,
+          }),
+        });
+        setPublishState({ status: "OK", message: `Recorded ${event.inspectionId} as SIMULATED_DEMO` });
+      } catch (error) {
+        setPublishState({ status: "FAILED", message: `Not recorded: ${describeError(error)}` });
+      }
     },
-    [apiBaseUrl],
+    [apiBaseUrl, lineId, token],
   );
 
-  const publishFrame = useCallback(async () => {
+  const analyzeVideoFrame = useCallback(async () => {
     const video = videoRef.current;
-    if (!video || video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) {
+    if (!isSimulatedMode || !video || video.readyState < 2 || video.videoWidth === 0) {
       return;
     }
-
-    const canvas = document.createElement("canvas");
     const sampleWidth = 320;
     const sampleHeight = Math.max(1, Math.round((video.videoHeight / video.videoWidth) * sampleWidth));
+    const canvas = document.createElement("canvas");
     canvas.width = sampleWidth;
     canvas.height = sampleHeight;
     const context = canvas.getContext("2d", { willReadFrequently: true });
     if (!context) {
       return;
     }
-
     context.drawImage(video, 0, 0, sampleWidth, sampleHeight);
     const decision = analyzeCameraFrame(context.getImageData(0, 0, sampleWidth, sampleHeight), cameraMode);
-    if (!decision.isInspectable) {
-      setCameraInspectionEvent(null);
-      lastFrameTimeRef.current = performance.now();
-      return;
+    const { state, shouldPublish } = advanceDemoSession(sessionRef.current, decision.isInspectable);
+    sessionRef.current = state;
+    const scaled = scaleDecision(decision, sampleWidth, sampleHeight, video.videoWidth, video.videoHeight);
+    const event = buildDemoResult(scaled, lineId, `demo-${crypto.randomUUID()}`, video.videoWidth, video.videoHeight);
+    setDemoEvent(decision.isInspectable ? event : null);
+    if (shouldPublish) {
+      await publishDemoEvent(scaled, event);
     }
-    frameNumberRef.current += 1;
-    const currentTime = performance.now();
-    const elapsedMs = Math.max(1, currentTime - lastFrameTimeRef.current);
-    lastFrameTimeRef.current = currentTime;
-    const fps = 1000 / elapsedMs;
-    const timestamp = new Date().toISOString();
-    const event: LiveQcEvent = {
-      eventId: crypto.randomUUID(),
-      componentCode: `${lineId}-CAMERA-${timestamp.replace(/\D/g, "")}-${frameNumberRef.current}`,
-      lineId,
-      defectFound: decision.defectFound,
-      confidenceScore: decision.confidenceScore.toFixed(3),
-      status: decision.status,
-      detectedAt: timestamp,
-      imageSnapshotUrl: null,
-      boundingBox: scaleBoundingBox(decision.boundingBox, sampleWidth, sampleHeight, video.videoWidth, video.videoHeight),
-      frameNumber: frameNumberRef.current,
-      frameWidth: video.videoWidth,
-      frameHeight: video.videoHeight,
-      fps,
-    };
+  }, [cameraMode, isSimulatedMode, lineId, publishDemoEvent]);
 
-    setCameraInspectionEvent(event);
-    await publishLiveEvent(event);
-  }, [cameraMode, publishLiveEvent]);
-
-  const publishPhoto = useCallback(
+  const analyzeDemoPhoto = useCallback(
     async (file: File) => {
       const bitmap = await createImageBitmap(file);
-      const maxWidth = 960;
-      const scale = Math.min(1, maxWidth / bitmap.width);
+      const scale = Math.min(1, 960 / bitmap.width);
       const targetWidth = Math.max(1, Math.round(bitmap.width * scale));
       const targetHeight = Math.max(1, Math.round(bitmap.height * scale));
       const canvas = document.createElement("canvas");
@@ -136,97 +163,102 @@ export function useCameraDemo(apiBaseUrl: string): CameraDemoState {
       canvas.height = targetHeight;
       const context = canvas.getContext("2d", { willReadFrequently: true });
       if (!context) {
+        bitmap.close();
         return;
       }
       context.drawImage(bitmap, 0, 0, targetWidth, targetHeight);
       bitmap.close();
       const decision = analyzeCameraFrame(context.getImageData(0, 0, targetWidth, targetHeight), cameraMode);
-      if (!decision.isInspectable) {
-        setCameraInspectionEvent(null);
-        return;
-      }
-      frameNumberRef.current += 1;
-      const timestamp = new Date().toISOString();
-      const event: LiveQcEvent = {
-        eventId: crypto.randomUUID(),
-        componentCode: `${lineId}-PHOTO-${timestamp.replace(/\D/g, "")}-${frameNumberRef.current}`,
-        lineId,
-        defectFound: decision.defectFound,
-        confidenceScore: decision.confidenceScore.toFixed(3),
-        status: decision.status,
-        detectedAt: timestamp,
-        imageSnapshotUrl: canvas.toDataURL("image/jpeg", 0.82),
-        boundingBox: decision.boundingBox,
-        frameNumber: frameNumberRef.current,
-        frameWidth: targetWidth,
-        frameHeight: targetHeight,
-        fps: 1,
-      };
-      setCameraInspectionEvent(event);
-      await publishLiveEvent(event);
+      const event = buildDemoResult(decision, lineId, `demo-${crypto.randomUUID()}`, targetWidth, targetHeight);
+      setDemoSnapshotUrl(canvas.toDataURL("image/jpeg", 0.82));
+      setDemoEvent(event);
+      await publishDemoEvent(decision, event);
     },
-    [cameraMode, publishLiveEvent],
+    [cameraMode, lineId, publishDemoEvent],
   );
 
-  const stopCamera = useCallback(() => {
+  const captureFrame = useCallback(async (): Promise<Blob | null> => {
+    const video = videoRef.current;
+    if (!video || video.readyState < 2 || video.videoWidth === 0) {
+      return null;
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d")?.drawImage(video, 0, 0);
+    return new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.92));
+  }, []);
+
+  const clearTimer = () => {
     if (timerRef.current !== null) {
       window.clearInterval(timerRef.current);
       timerRef.current = null;
     }
+  };
+
+  const stopCamera = useCallback(() => {
+    clearTimer();
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
-    setCameraInspectionEvent(null);
+    sessionRef.current = initialDemoSession;
+    setDemoEvent(null);
     setCameraState("IDLE");
   }, []);
 
-  const startCameraWithDevice = useCallback(async (deviceIdOverride?: string) => {
-    try {
-      setCameraState("STARTING");
-      if (timerRef.current !== null) {
-        window.clearInterval(timerRef.current);
-        timerRef.current = null;
+  const startCameraWithDevice = useCallback(
+    async (deviceIdOverride?: string) => {
+      try {
+        setCameraState("STARTING");
+        setCameraError(null);
+        clearTimer();
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        setDemoSnapshotUrl(null);
+        const nextDevices = await loadVideoDevices();
+        const resolvedDeviceId = deviceIdOverride || selectedDeviceId || selectPreferredDeviceId(nextDevices) || undefined;
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: createVideoConstraints(resolvedDeviceId) });
+        streamRef.current = stream;
+        if (resolvedDeviceId) {
+          setSelectedDeviceId(resolvedDeviceId);
+        }
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.muted = true;
+          videoRef.current.playsInline = true;
+          await videoRef.current.play();
+        }
+        await loadVideoDevices();
+        sessionRef.current = initialDemoSession;
+        setCameraState("OPEN");
+      } catch (error) {
+        stopCamera();
+        setCameraError(error instanceof Error ? `${error.name}: ${error.message}` : "Camera unavailable");
+        setCameraState("ERROR");
       }
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-      setCameraInspectionEvent(null);
-      const nextDevices = await loadVideoDevices();
-      const resolvedDeviceId = deviceIdOverride || selectedDeviceId || selectPreferredDeviceId(nextDevices) || undefined;
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: createVideoConstraints(resolvedDeviceId),
-      });
-      streamRef.current = stream;
-      if (resolvedDeviceId) {
-        setSelectedDeviceId(resolvedDeviceId);
-      }
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.muted = true;
-        videoRef.current.playsInline = true;
-        await videoRef.current.play();
-      }
-      await loadVideoDevices();
-      lastFrameTimeRef.current = performance.now();
-      setCameraState("OPEN");
-      if (timerRef.current !== null) {
-        window.clearInterval(timerRef.current);
-      }
-      timerRef.current = window.setInterval(() => {
-        void publishFrame().catch(() => setCameraState("ERROR"));
-      }, cameraFrameIntervalMs);
-      await publishFrame();
-    } catch {
-      stopCamera();
-      setCameraState("ERROR");
-    }
-  }, [loadVideoDevices, publishFrame, selectedDeviceId, stopCamera]);
+    },
+    [loadVideoDevices, selectedDeviceId, stopCamera],
+  );
 
-  const startCamera = useCallback(async () => {
-    await startCameraWithDevice();
-  }, [startCameraWithDevice]);
+  useEffect(() => {
+    clearTimer();
+    if (cameraState !== "OPEN" || !isSimulatedMode) {
+      return;
+    }
+    timerRef.current = window.setInterval(() => {
+      void analyzeVideoFrame();
+    }, cameraFrameIntervalMs);
+    return clearTimer;
+  }, [analyzeVideoFrame, cameraState, isSimulatedMode]);
+
+  useEffect(() => {
+    setDemoEvent(null);
+    setDemoSnapshotUrl(null);
+    setPublishState({ status: "IDLE", message: "" });
+    sessionRef.current = initialDemoSession;
+  }, [isSimulatedMode]);
 
   const setCameraDevice = useCallback(
     (deviceId: string) => {
@@ -238,56 +270,44 @@ export function useCameraDemo(apiBaseUrl: string): CameraDemoState {
     [startCameraWithDevice],
   );
 
-  useEffect(() => {
-    const video = videoRef.current;
-    const stream = streamRef.current;
-    if (!video || !stream || video.srcObject === stream) {
-      return;
-    }
-    video.srcObject = stream;
-    video.muted = true;
-    video.playsInline = true;
-    void video.play().catch(() => setCameraState("ERROR"));
-  }, [cameraState]);
+  const clearDemo = useCallback(() => {
+    setDemoEvent(null);
+    setDemoSnapshotUrl(null);
+  }, []);
 
   useEffect(() => () => stopCamera(), [stopCamera]);
 
   useEffect(() => {
-    void refreshDevices();
-  }, [refreshDevices]);
+    void loadVideoDevices();
+  }, [loadVideoDevices]);
 
   return useMemo(
     () => ({
       videoRef,
       isCameraEnabled: cameraState === "OPEN" || cameraState === "STARTING",
       cameraState,
+      cameraError,
       cameraMode,
-      cameraInspectionEvent,
+      demoEvent,
+      demoSnapshotUrl,
+      publishState,
       videoDevices,
       selectedDeviceId,
       setCameraMode,
       setCameraDevice,
-      refreshDevices,
-      publishPhoto,
-      startCamera,
+      analyzeDemoPhoto,
+      captureFrame,
+      startCamera: () => startCameraWithDevice(),
       stopCamera,
+      clearDemo,
     }),
-    [cameraInspectionEvent, cameraMode, cameraState, publishPhoto, refreshDevices, selectedDeviceId, setCameraDevice, startCamera, stopCamera, videoDevices],
+    [analyzeDemoPhoto, cameraError, cameraMode, cameraState, captureFrame, clearDemo, demoEvent, demoSnapshotUrl, publishState, selectedDeviceId, setCameraDevice, startCameraWithDevice, stopCamera, videoDevices],
   );
 }
 
 function createVideoConstraints(deviceId?: string): MediaTrackConstraints {
-  const baseConstraints: MediaTrackConstraints = {
-    width: { ideal: 1280 },
-    height: { ideal: 720 },
-  };
-  if (!deviceId) {
-    return baseConstraints;
-  }
-  return {
-    ...baseConstraints,
-    deviceId: { exact: deviceId },
-  };
+  const baseConstraints: MediaTrackConstraints = { width: { ideal: 1280 }, height: { ideal: 720 } };
+  return deviceId ? { ...baseConstraints, deviceId: { exact: deviceId } } : baseConstraints;
 }
 
 function selectPreferredDeviceId(devices: CameraDevice[]): string | null {
@@ -314,20 +334,15 @@ function isPreferredDevice(label: string): boolean {
   );
 }
 
-function scaleBoundingBox(
-  boundingBox: LiveQcEvent["boundingBox"],
-  sourceWidth: number,
-  sourceHeight: number,
-  targetWidth: number,
-  targetHeight: number,
-): LiveQcEvent["boundingBox"] {
-  if (!boundingBox) {
-    return null;
-  }
-  return {
-    xMin: (boundingBox.xMin / sourceWidth) * targetWidth,
-    yMin: (boundingBox.yMin / sourceHeight) * targetHeight,
-    xMax: (boundingBox.xMax / sourceWidth) * targetWidth,
-    yMax: (boundingBox.yMax / sourceHeight) * targetHeight,
-  };
+function scaleDecision(decision: CameraDemoDecision, sourceWidth: number, sourceHeight: number, targetWidth: number, targetHeight: number): CameraDemoDecision {
+  const scaleBox = (box: CameraDemoDecision["boundingBox"]) =>
+    box
+      ? {
+          xMin: (box.xMin / sourceWidth) * targetWidth,
+          yMin: (box.yMin / sourceHeight) * targetHeight,
+          xMax: (box.xMax / sourceWidth) * targetWidth,
+          yMax: (box.yMax / sourceHeight) * targetHeight,
+        }
+      : null;
+  return { ...decision, boundingBox: scaleBox(decision.boundingBox), componentBox: scaleBox(decision.componentBox) };
 }

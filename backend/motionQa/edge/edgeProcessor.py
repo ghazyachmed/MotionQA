@@ -1,20 +1,28 @@
 import asyncio
+import logging
 from datetime import datetime, timezone
-from decimal import Decimal
-from uuid import uuid4
+from pathlib import Path
 from ..configSettings import getSettings
+from ..dependencyContainer import createEvidenceStore
+from ..inspection.captureQuality import locatePart, measureCapture
+from ..inspection.inspectionPipeline import InspectionPipeline, InspectionRequest
+from ..inspection.sessionTracker import InspectAction, StationSessionTracker
+from ..inspectionSchemas import InspectionResult
 from ..redisGateway import RedisGateway
-from ..streamSchemas import LiveQcEvent
-from .inferenceEngine import OnnxYoloInferenceEngine
 from .rtspCapture import RtspFrameSource
+
+logger = logging.getLogger("motionQa.edge")
 
 
 class EdgeProcessor:
-    def __init__(self, frameSource: RtspFrameSource, inferenceEngine: OnnxYoloInferenceEngine, redisGateway: RedisGateway):
+    """Continuous RTSP capture with presence-based sessions: one published inspection per part placement."""
+
+    def __init__(self, frameSource: RtspFrameSource, pipeline: InspectionPipeline, redisGateway: RedisGateway, tracker: StationSessionTracker):
         # AI Assisted Logic
         self.frameSource = frameSource
-        self.inferenceEngine = inferenceEngine
+        self.pipeline = pipeline
         self.redisGateway = redisGateway
+        self.tracker = tracker
         self.settings = getSettings()
 
     async def run(self) -> None:
@@ -24,44 +32,42 @@ class EdgeProcessor:
                 framePacket = await self.frameSource.readFrame()
                 if framePacket.frameNumber % self.settings.frameStride != 0:
                     continue
-                detection = await self.inferenceEngine.predict(framePacket.frame)
-                event = LiveQcEvent(
-                    eventId=str(uuid4()),
-                    componentCode=self.createComponentCode(framePacket.frameNumber),
-                    lineId=self.settings.lineId,
-                    defectFound=detection.defectFound,
-                    confidenceScore=detection.confidenceScore,
-                    status=detection.status,
-                    detectedAt=datetime.now(timezone.utc),
-                    boundingBox=detection.boundingBox,
-                    frameNumber=framePacket.frameNumber,
-                    frameWidth=int(framePacket.frame.shape[1]),
-                    frameHeight=int(framePacket.frame.shape[0]),
-                    fps=round(framePacket.fps, 2),
-                )
-                await self.redisGateway.publishLiveEvent(event)
+                location = await asyncio.to_thread(locatePart, framePacket.frame)
+                metrics = await asyncio.to_thread(measureCapture, framePacket.frame, location)
+                isPresent = location.found and not location.touchesBorder
+                action = self.tracker.update(framePacket.frameNumber, isPresent, metrics.edgeSharpness, framePacket.frame, datetime.now(timezone.utc))
+                if action is not None:
+                    await self.inspectAndPublish(action)
         finally:
             await self.frameSource.close()
             await self.redisGateway.close()
 
-    def createComponentCode(self, frameNumber: int) -> str:
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S%f")
-        return f"{self.settings.lineId}-{timestamp}-{frameNumber}"
+    async def inspectAndPublish(self, action: InspectAction) -> InspectionResult:
+        result = await self.pipeline.inspect(
+            action.frame,
+            InspectionRequest(inspectionId=action.inspectionId, lineId=self.settings.lineId, stationId=self.settings.stationId, capturedAt=action.capturedAt, frameNumber=action.frameNumber),
+        )
+        for attempt in range(3):
+            try:
+                await self.redisGateway.publishLiveEvent(result)
+                break
+            except Exception as error:
+                logger.warning("publish attempt %d failed for %s: %s", attempt + 1, result.inspectionId, error)
+                await asyncio.sleep(0.5 * (attempt + 1))
+        else:
+            logger.error("inspection %s not published after retries", result.inspectionId)
+        return result
 
 
 async def mainAsync() -> None:
     settings = getSettings()
     if not settings.rtspUrl:
         raise RuntimeError("MOTIONQA_RTSP_URL is required")
-    frameSource = RtspFrameSource(settings.rtspUrl)
-    inferenceEngine = OnnxYoloInferenceEngine(
-        modelPath=settings.modelPath,
-        inputName=settings.modelInputName,
-        confidenceThreshold=settings.modelConfidenceThreshold,
-        iouThreshold=settings.modelIouThreshold,
-    )
-    redisGateway = RedisGateway(settings)
-    await EdgeProcessor(frameSource, inferenceEngine, redisGateway).run()
+    pipeline = InspectionPipeline(Path(settings.inspectionProfilePath), createEvidenceStore(settings), timeoutSeconds=settings.inferenceTimeoutSeconds)
+    if not pipeline.isReady:
+        logger.error("inspection model unavailable; every inspection will be ERROR: %s", pipeline.loadError)
+    tracker = StationSessionTracker(settings.stationId, presenceFrames=settings.stationPresenceFrames, absenceFrames=settings.stationAbsenceFrames)
+    await EdgeProcessor(RtspFrameSource(settings.rtspUrl), pipeline, RedisGateway(settings), tracker).run()
 
 
 if __name__ == "__main__":

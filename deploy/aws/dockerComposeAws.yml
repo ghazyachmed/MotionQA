@@ -1,0 +1,57 @@
+# Overrides dockerCompose.yml on the EC2 instance:
+#   docker compose -f dockerCompose.yml -f deploy/aws/dockerComposeAws.yml up -d --build
+# Only nginx (port 80, reachable from CloudFront) is published; evidence goes to S3; logs go to CloudWatch.
+x-cloudwatch-logging: &cloudwatchLogging
+  driver: awslogs
+  options:
+    awslogs-region: ${AWS_REGION}
+    awslogs-group: ${MOTIONQA_LOG_GROUP}
+    awslogs-create-group: "false"
+
+services:
+  postgresDb:
+    ports: !reset []
+    logging:
+      <<: *cloudwatchLogging
+      options:
+        awslogs-region: ${AWS_REGION}
+        awslogs-group: ${MOTIONQA_LOG_GROUP}
+        awslogs-stream: postgres
+    restart: unless-stopped
+
+  redisCache:
+    ports: !reset []
+    logging:
+      <<: *cloudwatchLogging
+      options:
+        awslogs-region: ${AWS_REGION}
+        awslogs-group: ${MOTIONQA_LOG_GROUP}
+        awslogs-stream: redis
+    restart: unless-stopped
+
+  backendApi:
+    ports: !reset []
+    environment:
+      MOTIONQA_ALLOWED_ORIGINS: ${MOTIONQA_ALLOWED_ORIGINS:-}
+      MOTIONQA_REQUIRE_AUTH: "true"
+      MOTIONQA_EVIDENCE_BACKEND: s3
+      MOTIONQA_EVIDENCE_BUCKET: ${MOTIONQA_ARTIFACT_BUCKET}
+      MOTIONQA_EVIDENCE_PREFIX: evidence/
+    logging:
+      <<: *cloudwatchLogging
+      options:
+        awslogs-region: ${AWS_REGION}
+        awslogs-group: ${MOTIONQA_LOG_GROUP}
+        awslogs-stream: api
+    restart: unless-stopped
+
+  frontendUi:
+    ports: !override
+      - "80:80"
+    logging:
+      <<: *cloudwatchLogging
+      options:
+        awslogs-region: ${AWS_REGION}
+        awslogs-group: ${MOTIONQA_LOG_GROUP}
+        awslogs-stream: nginx
+    restart: unless-stopped

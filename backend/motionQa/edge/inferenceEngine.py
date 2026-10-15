@@ -1,17 +1,43 @@
+"""Optional YOLO-style ONNX defect detector (requires a custom trained model; none ships with MotionQA).
+
+The default inspection path is the normal-only anomaly scorer in motionQa.inspection. This detector is kept
+for a future supervised model. Its decision rule never treats "no detections" as PASS on its own.
+"""
 import asyncio
 from dataclasses import dataclass
-from decimal import Decimal
 import numpy as np
-from ..defectEnums import DefectType, InspectionStatus
-from ..streamSchemas import BoundingBox
+from ..defectEnums import DefectType, InspectionDecision
+from ..inspection.featureExtractor import ModelOutputError
+from ..inspectionSchemas import BoundingBox
 
 
 @dataclass(frozen=True)
 class DetectionResult:
+    decision: InspectionDecision
+    reasonCode: str
     defectFound: DefectType
-    confidenceScore: Decimal
-    status: InspectionStatus
+    confidenceScore: float
     boundingBox: BoundingBox | None
+    detectionCount: int
+
+
+def decideFromDetections(
+    detections: list[tuple[DefectType, float, BoundingBox]],
+    failConfidence: float,
+    isPartPresent: bool,
+    isDetectorValidated: bool,
+) -> tuple[InspectionDecision, str]:
+    """Absent detections only support PASS when the part is verified present and the detector has validated recall."""
+    # AI Assisted Logic
+    if not isPartPresent:
+        return InspectionDecision.noPart, "PART_NOT_VERIFIED"
+    if any(confidence >= failConfidence for _, confidence, _ in detections):
+        return InspectionDecision.failed, "DETECTION_AT_OR_ABOVE_FAIL_CONFIDENCE"
+    if detections:
+        return InspectionDecision.review, "LOW_CONFIDENCE_DETECTION"
+    if not isDetectorValidated:
+        return InspectionDecision.review, "DETECTOR_NOT_VALIDATED"
+    return InspectionDecision.passed, "NO_DETECTIONS_VALIDATED_DETECTOR"
 
 
 @dataclass(frozen=True)
@@ -29,8 +55,10 @@ class OnnxYoloInferenceEngine:
         self,
         modelPath: str,
         inputName: str = "images",
-        confidenceThreshold: float = 0.45,
+        confidenceThreshold: float = 0.25,
+        failConfidence: float = 0.45,
         iouThreshold: float = 0.45,
+        isDetectorValidated: bool = False,
         defectLabels: tuple[DefectType, ...] = (
             DefectType.castingDefect,
             DefectType.scratch,
@@ -44,21 +72,26 @@ class OnnxYoloInferenceEngine:
         self.session = ort.InferenceSession(modelPath, providers=providers)
         self.inputName = inputName
         self.confidenceThreshold = confidenceThreshold
+        self.failConfidence = failConfidence
         self.iouThreshold = iouThreshold
+        self.isDetectorValidated = isDetectorValidated
         self.defectLabels = defectLabels
 
-    async def predict(self, frame: np.ndarray) -> DetectionResult:
-        return await asyncio.to_thread(self.predictSync, frame)
+    async def predict(self, frame: np.ndarray, isPartPresent: bool) -> DetectionResult:
+        return await asyncio.to_thread(self.predictSync, frame, isPartPresent)
 
-    def predictSync(self, frame: np.ndarray) -> DetectionResult:
+    def predictSync(self, frame: np.ndarray, isPartPresent: bool) -> DetectionResult:
         letterboxResult = self.preprocessFrame(frame)
         outputs = self.session.run(None, {self.inputName: letterboxResult.image})
+        if not outputs:
+            raise ModelOutputError("Detector returned no outputs")
         detections = self.decodeDetections(outputs[0], letterboxResult)
+        decision, reasonCode = decideFromDetections(detections, self.failConfidence, isPartPresent, self.isDetectorValidated)
         if not detections:
-            return DetectionResult(DefectType.none, Decimal("0.000"), InspectionStatus.passed, None)
-        bestDetection = max(detections, key=lambda item: item[1])
-        defectFound, confidenceScore, boundingBox = bestDetection
-        return DetectionResult(defectFound, Decimal(str(round(confidenceScore, 3))), InspectionStatus.failed, boundingBox)
+            return DetectionResult(decision, reasonCode, DefectType.none, 0.0, None, 0)
+        defectFound, confidenceScore, boundingBox = max(detections, key=lambda item: item[1])
+        reportedDefect = defectFound if decision == InspectionDecision.failed else DefectType.none
+        return DetectionResult(decision, reasonCode, reportedDefect, round(confidenceScore, 3), boundingBox, len(detections))
 
     def preprocessFrame(self, frame: np.ndarray, targetSize: tuple[int, int] = (640, 640)) -> LetterboxResult:
         import cv2
@@ -89,8 +122,6 @@ class OnnxYoloInferenceEngine:
         predictionRows = self.normalizeOutput(output)
         boxes: list[tuple[DefectType, float, BoundingBox]] = []
         for row in predictionRows:
-            if row.shape[0] < 5:
-                continue
             classScores = row[4 : 4 + len(self.defectLabels)]
             if classScores.size == 0:
                 continue
@@ -103,11 +134,16 @@ class OnnxYoloInferenceEngine:
         return self.applyNms(boxes)
 
     def normalizeOutput(self, output: np.ndarray) -> np.ndarray:
-        outputArray = np.squeeze(output)
+        outputArray = np.squeeze(np.asarray(output))
         if outputArray.ndim != 2:
-            return np.empty((0, 0), dtype=np.float32)
-        if outputArray.shape[0] < outputArray.shape[1] and outputArray.shape[0] <= 128:
+            raise ModelOutputError(f"Detector output must be 2D after squeeze, received shape {np.shape(output)}")
+        expectedColumns = 4 + len(self.defectLabels)
+        if outputArray.shape[0] == expectedColumns and outputArray.shape[1] != expectedColumns:
             outputArray = outputArray.T
+        if outputArray.shape[1] != expectedColumns:
+            raise ModelOutputError(f"Detector output has {outputArray.shape[1]} columns; expected {expectedColumns} (4 box + {len(self.defectLabels)} classes)")
+        if not np.isfinite(outputArray).all():
+            raise ModelOutputError("Detector output contains NaN or infinite values")
         return outputArray.astype(np.float32)
 
     def convertBox(self, rawBox: np.ndarray, letterboxResult: LetterboxResult) -> BoundingBox:

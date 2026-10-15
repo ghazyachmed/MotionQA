@@ -1,18 +1,38 @@
 from collections.abc import AsyncGenerator
-from fastapi import Depends
+from pathlib import Path
+from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from .alertService import SupervisorAlertService
+from .configSettings import AppSettings
 from .databaseSession import getDbSession
-from .defectRepository import DefectRepository
-from .defectService import DefectService
+from .inspection.evidenceStore import LocalEvidenceStore, S3EvidenceStore
+from .inspection.inspectionPipeline import InspectionPipeline
+from .inspectionRepository import InspectionRepository
+from .inspectionService import InspectionService
 from .mesClient import AhmMesClient
 from .opcUaClient import OpcUaStatusClient
 from .redisGateway import RedisGateway
 
 
-async def getDefectService(session: AsyncSession = Depends(getDbSession)) -> DefectService:
+def createEvidenceStore(settings: AppSettings):
     # AI Assisted Logic
-    return DefectService(DefectRepository(session))
+    if settings.evidenceBackend == "s3":
+        if not settings.evidenceBucket:
+            raise RuntimeError("MOTIONQA_EVIDENCE_BACKEND=s3 requires MOTIONQA_EVIDENCE_BUCKET")
+        return S3EvidenceStore(settings.evidenceBucket, settings.evidencePrefix, settings.awsRegion, settings.evidenceKmsKeyId)
+    return LocalEvidenceStore(Path(settings.evidenceDir), settings.evidenceRetentionDays)
+
+
+def createInspectionPipeline(settings: AppSettings, evidenceStore) -> InspectionPipeline:
+    return InspectionPipeline(Path(settings.inspectionProfilePath), evidenceStore, timeoutSeconds=settings.inferenceTimeoutSeconds)
+
+
+async def getInspectionService(session: AsyncSession = Depends(getDbSession)) -> InspectionService:
+    return InspectionService(InspectionRepository(session))
+
+
+def getInspectionPipeline(request: Request) -> InspectionPipeline:
+    return request.app.state.inspectionPipeline
 
 
 async def getRedisGateway() -> AsyncGenerator[RedisGateway, None]:
@@ -33,4 +53,3 @@ def getOpcUaClient() -> OpcUaStatusClient:
 
 def getAlertService() -> SupervisorAlertService:
     return SupervisorAlertService()
-

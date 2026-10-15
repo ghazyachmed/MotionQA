@@ -3,10 +3,10 @@ services:
     image: postgres:15-alpine
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-motionqa_admin}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-motionqa_password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       POSTGRES_DB: ${POSTGRES_DB:-motionqa_logs}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -19,7 +19,7 @@ services:
     image: redis:7-alpine
     command: ["redis-server", "--appendonly", "yes"]
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     volumes:
       - redisdata:/data
     healthcheck:
@@ -29,16 +29,30 @@ services:
       retries: 5
 
   backendApi:
+    # Explicit lowercase image names: compose would otherwise derive invalid names from the camelCase service names.
+    image: motionqa-backend:local
     build:
       context: ./backend
       dockerfile: backendDockerfile
     environment:
-      MOTIONQA_POSTGRES_DSN: postgresql+asyncpg://motionqa_admin:motionqa_password@postgresDb:5432/motionqa_logs
+      MOTIONQA_POSTGRES_DSN: postgresql+asyncpg://${POSTGRES_USER:-motionqa_admin}:${POSTGRES_PASSWORD}@postgresDb:5432/${POSTGRES_DB:-motionqa_logs}
       MOTIONQA_REDIS_URL: redis://redisCache:6379/0
-      MOTIONQA_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,http://frontendUi:5173
+      MOTIONQA_ALLOWED_ORIGINS: ${MOTIONQA_ALLOWED_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
       MOTIONQA_AUTO_CREATE_TABLES: "true"
+      MOTIONQA_REQUIRE_AUTH: ${MOTIONQA_REQUIRE_AUTH:-true}
+      MOTIONQA_API_TOKENS: ${MOTIONQA_API_TOKENS:-}
+      MOTIONQA_LINE_ID: ${MOTIONQA_LINE_ID:-LINE_01}
+      MOTIONQA_EVIDENCE_BACKEND: ${MOTIONQA_EVIDENCE_BACKEND:-local}
+      MOTIONQA_EVIDENCE_BUCKET: ${MOTIONQA_EVIDENCE_BUCKET:-}
+      MOTIONQA_EVIDENCE_RETENTION_DAYS: ${MOTIONQA_EVIDENCE_RETENTION_DAYS:-30}
+      AWS_REGION: ${AWS_REGION:-}
+      # Only the nginx container reaches the API, so forwarded client addresses can be trusted for rate limiting.
+      FORWARDED_ALLOW_IPS: "*"
     ports:
-      - "${BACKEND_PORT:-8000}:8000"
+      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ./backend/models:/srv/motionQa/models:ro
+      - evidence:/srv/motionQa/evidence
     depends_on:
       postgresDb:
         condition: service_healthy
@@ -46,29 +60,34 @@ services:
         condition: service_healthy
 
   frontendUi:
+    image: motionqa-frontend:local
     build:
       context: ./frontend
       dockerfile: frontendDockerfile
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
-        VITE_WS_BASE_URL: ${VITE_WS_BASE_URL:-ws://localhost:8000}
+        VITE_API_BASE_URL: ""
+        VITE_WS_BASE_URL: ""
+        VITE_LINE_ID: ${MOTIONQA_LINE_ID:-LINE_01}
     ports:
       - "${FRONTEND_PORT:-5173}:80"
     depends_on:
       - backendApi
 
   edgeProcessor:
+    image: motionqa-backend:local
     build:
       context: ./backend
       dockerfile: backendDockerfile
     command: ["python", "-m", "motionQa.edge.edgeProcessor"]
     environment:
+      MOTIONQA_POSTGRES_DSN: postgresql+asyncpg://${POSTGRES_USER:-motionqa_admin}:${POSTGRES_PASSWORD}@postgresDb:5432/${POSTGRES_DB:-motionqa_logs}
       MOTIONQA_REDIS_URL: redis://redisCache:6379/0
-      MOTIONQA_RTSP_URL: ${MOTIONQA_RTSP_URL:?Set existing AHM CCTV RTSP URL}
-      MOTIONQA_MODEL_PATH: ${MOTIONQA_MODEL_PATH:-/srv/motionQa/models/yolov8AhmEdge.onnx}
-      MOTIONQA_LINE_ID: ${MOTIONQA_LINE_ID:-LINE_KARAWANG_01}
+      MOTIONQA_RTSP_URL: ${MOTIONQA_RTSP_URL:?Set the RTSP URL of the stationary inspection camera}
+      MOTIONQA_LINE_ID: ${MOTIONQA_LINE_ID:-LINE_01}
+      MOTIONQA_STATION_ID: ${MOTIONQA_STATION_ID:-STATION_01}
     volumes:
-      - ./models:/srv/motionQa/models:ro
+      - ./backend/models:/srv/motionQa/models:ro
+      - evidence:/srv/motionQa/evidence
     profiles:
       - edge
     depends_on:
@@ -78,3 +97,4 @@ services:
 volumes:
   pgdata:
   redisdata:
+  evidence:

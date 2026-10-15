@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { analyzeCameraFrame, calculateFrameStats } from "./cameraDemoAnalysis";
+import { advanceDemoSession, analyzeCameraFrame, calculateFrameStats, initialDemoSession } from "./cameraDemoAnalysis";
 
 function createImageData(redValue: number, greenValue: number, blueValue: number, width = 320, height = 180): ImageData {
   const data = new Uint8ClampedArray(width * height * 4);
@@ -91,6 +91,7 @@ describe("cameraDemoAnalysis", () => {
   it("waits when no component is visible", () => {
     const decision = analyzeCameraFrame(createImageData(232, 232, 232), "auto");
     expect(decision.isInspectable).toBe(false);
+    expect(decision.decision).toBe("NO_PART");
     expect(decision.defectFound).toBe("none");
     expect(decision.boundingBox).toBeNull();
   });
@@ -99,7 +100,8 @@ describe("cameraDemoAnalysis", () => {
     const decision = analyzeCameraFrame(drawCleanPart(createImageData(232, 232, 232)), "auto");
     expect(decision.isInspectable).toBe(true);
     expect(decision.defectFound).toBe("none");
-    expect(decision.status).toBe("PASSED");
+    expect(decision.decision).toBe("PASS");
+    expect(decision.isForcedScenario).toBe(false);
     expect(decision.boundingBox).toBeNull();
   });
 
@@ -107,7 +109,7 @@ describe("cameraDemoAnalysis", () => {
     const decision = analyzeCameraFrame(drawScratch(drawCleanPart(createImageData(232, 232, 232))), "auto");
     expect(decision.isInspectable).toBe(true);
     expect(decision.defectFound).toBe("scratch");
-    expect(decision.status).toBe("FAILED");
+    expect(decision.decision).toBe("FAIL");
     expect(decision.boundingBox).not.toBeNull();
   });
 
@@ -115,7 +117,37 @@ describe("cameraDemoAnalysis", () => {
     const decision = analyzeCameraFrame(drawCasting(drawCleanPart(createImageData(232, 232, 232))), "auto");
     expect(decision.isInspectable).toBe(true);
     expect(decision.defectFound).toBe("casting_defect");
-    expect(decision.status).toBe("FAILED");
+    expect(decision.decision).toBe("FAIL");
     expect(decision.boundingBox).not.toBeNull();
+  });
+
+  it("flags forced scenarios so they are never shown as detections", () => {
+    const decision = analyzeCameraFrame(drawScratch(drawCleanPart(createImageData(232, 232, 232))), "scratch");
+    expect(decision.isForcedScenario).toBe(true);
+  });
+
+  it("publishes one demo event per part placement", () => {
+    const presence = [true, true, true, true, true, true, false, false, false, false, true, true, true, true];
+    let state = initialDemoSession;
+    let publishCount = 0;
+    presence.forEach((isInspectable) => {
+      const next = advanceDemoSession(state, isInspectable);
+      state = next.state;
+      publishCount += next.shouldPublish ? 1 : 0;
+    });
+    expect(publishCount).toBe(2);
+    expect(state.sessionCount).toBe(2);
+  });
+
+  it("does not split a session on a short dropout", () => {
+    const presence = [true, true, true, false, false, true, true, true, true];
+    let state = initialDemoSession;
+    let publishCount = 0;
+    presence.forEach((isInspectable) => {
+      const next = advanceDemoSession(state, isInspectable);
+      state = next.state;
+      publishCount += next.shouldPublish ? 1 : 0;
+    });
+    expect(publishCount).toBe(1);
   });
 });

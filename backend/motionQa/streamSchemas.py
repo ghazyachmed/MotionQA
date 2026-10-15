@@ -1,56 +1,57 @@
 from datetime import datetime, timezone
-from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from .defectEnums import DefectType, InspectionStatus
+from .defectEnums import DefectType, InspectionDecision, ProcessingMode, ReviewStatus
+from .inspectionSchemas import BoundingBox, DefectRegion, InspectionResult, ReviewState, identifierPattern
+
+# Stream payloads on Redis and the WebSocket are full inspection results.
+LiveQcEvent = InspectionResult
+
+simulatedModelId = "browser-heuristic-demo"
 
 
-class BoundingBox(BaseModel):
-    xMin: float = Field(ge=0.0)
-    yMin: float = Field(ge=0.0)
-    xMax: float = Field(ge=0.0)
-    yMax: float = Field(ge=0.0)
+class DemoEventRequest(BaseModel):
+    """Browser demo event. The server always stores it as SIMULATED_DEMO, whatever the client sends."""
 
+    model_config = ConfigDict(extra="ignore", use_enum_values=True)
 
-class LiveQcEvent(BaseModel):
-    model_config = ConfigDict(use_enum_values=True)
-
-    eventId: str = Field(min_length=8, max_length=80)
-    componentCode: str = Field(min_length=3, max_length=50)
-    lineId: str = Field(min_length=3, max_length=20)
+    inspectionId: str = Field(pattern=identifierPattern)
+    lineId: str = Field(min_length=3, max_length=40)
+    decision: InspectionDecision
     defectFound: DefectType = DefectType.none
-    confidenceScore: Decimal = Field(ge=0, le=1, max_digits=4, decimal_places=3)
-    status: InspectionStatus
-    detectedAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    imageSnapshotUrl: str | None = None
+    heuristicScore: float = Field(ge=0.0, le=1.0)
+    isForcedScenario: bool = False
     boundingBox: BoundingBox | None = None
-    frameNumber: int = Field(ge=0)
-    frameWidth: int = Field(default=0, ge=0)
-    frameHeight: int = Field(default=0, ge=0)
-    fps: float = Field(ge=0.0)
+    capturedAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    frameWidth: int = Field(default=0, ge=0, le=10000)
+    frameHeight: int = Field(default=0, ge=0, le=10000)
+    frameNumber: int | None = Field(default=None, ge=0)
 
-    @field_validator("status")
+    @field_validator("decision")
     @classmethod
-    def validateStatus(cls, status: InspectionStatus, values):
-        defectFound = values.data.get("defectFound")
-        isNoneDefect = defectFound in (DefectType.none, DefectType.none.value)
-        isFailed = status in (InspectionStatus.failed, InspectionStatus.failed.value)
-        isPassed = status in (InspectionStatus.passed, InspectionStatus.passed.value)
-        if isNoneDefect and isFailed:
-            raise ValueError("FAILED requires defect")
-        if not isNoneDefect and isPassed:
-            raise ValueError("PASSED requires none")
-        return status
+    def validateDecision(cls, decision: InspectionDecision):
+        if decision not in (InspectionDecision.passed, InspectionDecision.failed, InspectionDecision.noPart, InspectionDecision.passed.value, InspectionDecision.failed.value, InspectionDecision.noPart.value):
+            raise ValueError("Demo events carry PASS, FAIL, or NO_PART")
+        return decision
 
-    def toDefectLogCreate(self):
-        from .defectSchemas import DefectLogCreate
-
+    def toInspectionResult(self) -> InspectionResult:
         # AI Assisted Logic
-        return DefectLogCreate(
-            componentCode=self.componentCode,
+        isFail = self.decision == InspectionDecision.failed.value
+        reasonCode = "SIMULATED_FORCED_SCENARIO" if self.isForcedScenario else "SIMULATED_HEURISTIC"
+        return InspectionResult(
+            inspectionId=self.inspectionId,
             lineId=self.lineId,
-            defectFound=self.defectFound,
-            confidenceScore=self.confidenceScore,
-            status=self.status,
-            imageSnapshotUrl=self.imageSnapshotUrl,
-            detectedAt=self.detectedAt,
+            capturedAt=self.capturedAt,
+            decision=self.decision,
+            reasonCode=reasonCode,
+            reasonDetail="Browser heuristic demo; not a model decision and excluded from inspection metrics",
+            processingMode=ProcessingMode.simulatedDemo,
+            modelId=simulatedModelId,
+            modelVersion="demo",
+            defectFound=self.defectFound if isFail else DefectType.none,
+            scores={"heuristicScore": self.heuristicScore},
+            regions=[DefectRegion(**self.boundingBox.model_dump(), peakScore=self.heuristicScore)] if self.boundingBox and isFail else [],
+            imageWidth=self.frameWidth,
+            imageHeight=self.frameHeight,
+            frameNumber=self.frameNumber,
+            review=ReviewState(status=ReviewStatus.notRequired),
         )

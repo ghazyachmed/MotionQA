@@ -2,19 +2,30 @@ FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV MOTIONQA_INSPECTION_PROFILE_PATH=/srv/motionQa/models/visaPcb1/inspectionProfile.json
+ENV MOTIONQA_EVIDENCE_DIR=/srv/motionQa/evidence
 
 WORKDIR /srv/motionQa
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
+# Exact transitive pins; the project itself is installed without resolving dependencies again.
+COPY requirements-runtime.lock ./
+RUN pip install --no-cache-dir -r requirements-runtime.lock
 
 COPY pyproject.toml ./
 COPY motionQa ./motionQa
+RUN pip install --no-cache-dir --no-deps . \
+    && useradd --system --uid 10001 motionqa \
+    && mkdir -p /srv/motionQa/evidence /srv/motionQa/models \
+    && chown -R motionqa /srv/motionQa/evidence
 
-RUN pip install --no-cache-dir ".[edge]"
+USER motionqa
+
+# Fails the build if the installed OpenCV is not 5.x with the new DNN engine.
+RUN python -c "from motionQa.inspection.opencvRuntime import requireOpenCvFive; requireOpenCvFive()"
 
 EXPOSE 8000
 
-CMD ["uvicorn", "motionQa.mainApi:createApp", "--factory", "--host", "0.0.0.0", "--port", "8000"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=4).status == 200 else 1)"
 
+CMD ["uvicorn", "motionQa.mainApi:createApp", "--factory", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]

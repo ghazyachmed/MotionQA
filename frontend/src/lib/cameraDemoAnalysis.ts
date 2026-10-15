@@ -1,6 +1,10 @@
-import type { BoundingBox, DefectType, InspectionStatus } from "../types/qcTypes";
+import type { BoundingBox, DefectType } from "../types/qcTypes";
 
+// SIMULATED DEMO ONLY. Hand-tuned pixel heuristics for presentations; not a trained or validated model.
+// `heuristicScore` is an uncalibrated presentation value, not a probability.
 export type CameraDemoMode = "auto" | "none" | "scratch" | "casting_defect";
+
+export type DemoDecision = "PASS" | "FAIL" | "NO_PART";
 
 export interface CameraFrameStats {
   brightnessScore: number;
@@ -12,12 +16,22 @@ export interface CameraFrameStats {
 
 export interface CameraDemoDecision {
   defectFound: DefectType;
-  confidenceScore: number;
-  status: InspectionStatus;
+  heuristicScore: number;
+  decision: DemoDecision;
   boundingBox: BoundingBox | null;
   componentBox: BoundingBox | null;
   isInspectable: boolean;
+  isForcedScenario: boolean;
 }
+
+export interface DemoSessionState {
+  presentStreak: number;
+  absentStreak: number;
+  isPublished: boolean;
+  sessionCount: number;
+}
+
+export const initialDemoSession: DemoSessionState = { presentStreak: 0, absentStreak: 0, isPublished: false, sessionCount: 0 };
 
 interface PixelBuffer {
   data: Uint8ClampedArray;
@@ -55,25 +69,51 @@ export function analyzeCameraFrame(imageData: ImageData, mode: CameraDemoMode): 
   if (!componentBox) {
     return {
       defectFound: "none",
-      confidenceScore: 0,
-      status: "PASSED",
+      heuristicScore: 0,
+      decision: "NO_PART",
       boundingBox: null,
       componentBox: null,
       isInspectable: false,
+      isForcedScenario: mode !== "auto",
     };
   }
   const scratchBox = locateScratchBox(imageData, componentBox);
   const castingBox = locateCastingBox(imageData, componentBox);
   const defectFound = selectDefectType(stats, mode, scratchBox, castingBox);
-  const confidenceScore = calculateConfidence(stats, defectFound);
-  const status: InspectionStatus = defectFound === "none" ? "PASSED" : "FAILED";
   return {
     defectFound,
-    confidenceScore,
-    status,
+    heuristicScore: calculateHeuristicScore(stats, defectFound),
+    decision: defectFound === "none" ? "PASS" : "FAIL",
     boundingBox: selectBoundingBox(defectFound, scratchBox, castingBox),
     componentBox,
     isInspectable: true,
+    isForcedScenario: mode !== "auto",
+  };
+}
+
+// One published demo event per part placement: publish after `presenceFrames` inspectable frames,
+// start a new session only after `absenceFrames` frames without a part.
+export function advanceDemoSession(
+  state: DemoSessionState,
+  isInspectable: boolean,
+  presenceFrames = 3,
+  absenceFrames = 4,
+): { state: DemoSessionState; shouldPublish: boolean } {
+  if (!isInspectable) {
+    const absentStreak = state.absentStreak + 1;
+    const isClosed = absentStreak >= absenceFrames;
+    return { state: { ...state, presentStreak: 0, absentStreak, isPublished: isClosed ? false : state.isPublished }, shouldPublish: false };
+  }
+  const presentStreak = state.presentStreak + 1;
+  const shouldPublish = !state.isPublished && presentStreak >= presenceFrames;
+  return {
+    state: {
+      presentStreak,
+      absentStreak: 0,
+      isPublished: state.isPublished || shouldPublish,
+      sessionCount: shouldPublish ? state.sessionCount + 1 : state.sessionCount,
+    },
+    shouldPublish,
   };
 }
 
@@ -143,7 +183,7 @@ function selectDefectType(
   return "none";
 }
 
-function calculateConfidence(stats: CameraFrameStats, defectFound: DefectType): number {
+function calculateHeuristicScore(stats: CameraFrameStats, defectFound: DefectType): number {
   if (defectFound === "none") {
     return 0;
   }

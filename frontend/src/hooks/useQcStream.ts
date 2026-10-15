@@ -1,30 +1,33 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { retainRecentEvents } from "../lib/qcMetrics";
-import type { LiveQcEvent } from "../types/qcTypes";
+import { isInspectionResult, retainRecentEvents } from "../lib/qcMetrics";
+import type { InspectionResult } from "../types/qcTypes";
+
+export type StreamConnectionState = "CONNECTING" | "OPEN" | "CLOSED" | "ERROR" | "UNAUTHORIZED";
 
 interface QcStreamState {
-  currentEvent: LiveQcEvent | null;
-  recentEvents: LiveQcEvent[];
-  connectionState: "CONNECTING" | "OPEN" | "CLOSED" | "ERROR";
+  recentEvents: InspectionResult[];
+  connectionState: StreamConnectionState;
+  upsertEvent: (event: InspectionResult) => void;
 }
 
-// AI Assisted Logic
-export function useQcStream(wsUrl: string): QcStreamState {
-  const [currentEvent, setCurrentEvent] = useState<LiveQcEvent | null>(null);
-  const [recentEvents, setRecentEvents] = useState<LiveQcEvent[]>([]);
-  const [connectionState, setConnectionState] = useState<QcStreamState["connectionState"]>("CONNECTING");
-  const frameRef = useRef<number | null>(null);
-  const pendingEventRef = useRef<LiveQcEvent | null>(null);
+const policyViolationCode = 1008;
 
-  const flushEvent = useCallback(() => {
-    const pendingEvent = pendingEventRef.current;
-    if (!pendingEvent) {
-      return;
-    }
-    setCurrentEvent(pendingEvent);
-    setRecentEvents((events) => retainRecentEvents(events, pendingEvent, 24));
-    pendingEventRef.current = null;
+// AI Assisted Logic
+export function useQcStream(wsUrl: string, token: string): QcStreamState {
+  const [recentEvents, setRecentEvents] = useState<InspectionResult[]>([]);
+  const [connectionState, setConnectionState] = useState<StreamConnectionState>("CONNECTING");
+  const frameRef = useRef<number | null>(null);
+  const pendingEventsRef = useRef<InspectionResult[]>([]);
+
+  const flushEvents = useCallback(() => {
+    const pendingEvents = pendingEventsRef.current;
+    pendingEventsRef.current = [];
     frameRef.current = null;
+    setRecentEvents((events) => pendingEvents.reduce((current, event) => retainRecentEvents(current, event, 50), events));
+  }, []);
+
+  const upsertEvent = useCallback((event: InspectionResult) => {
+    setRecentEvents((events) => retainRecentEvents(events, event, 50));
   }, []);
 
   useEffect(() => {
@@ -34,20 +37,31 @@ export function useQcStream(wsUrl: string): QcStreamState {
 
     const connectSocket = () => {
       setConnectionState("CONNECTING");
-      socket = new WebSocket(wsUrl);
-
+      socket = new WebSocket(`${wsUrl}?token=${encodeURIComponent(token)}`);
       socket.onopen = () => setConnectionState("OPEN");
       socket.onerror = () => setConnectionState("ERROR");
-      socket.onmessage = (event) => {
-        pendingEventRef.current = JSON.parse(event.data) as LiveQcEvent;
-        if (frameRef.current === null) {
-          frameRef.current = requestAnimationFrame(flushEvent);
+      socket.onmessage = (message) => {
+        try {
+          const payload: unknown = JSON.parse(message.data as string);
+          if (!isInspectionResult(payload)) {
+            return;
+          }
+          pendingEventsRef.current.push(payload);
+          if (frameRef.current === null) {
+            frameRef.current = requestAnimationFrame(flushEvents);
+          }
+        } catch {
+          // Ignore malformed frames; the stream continues.
         }
       };
-      socket.onclose = () => {
+      socket.onclose = (closeEvent) => {
+        if (closeEvent.code === policyViolationCode) {
+          setConnectionState("UNAUTHORIZED");
+          return;
+        }
         setConnectionState("CLOSED");
         if (isMounted) {
-          reconnectTimer = window.setTimeout(connectSocket, 1200);
+          reconnectTimer = window.setTimeout(connectSocket, 2000);
         }
       };
     };
@@ -64,8 +78,7 @@ export function useQcStream(wsUrl: string): QcStreamState {
       }
       socket?.close();
     };
-  }, [flushEvent, wsUrl]);
+  }, [flushEvents, token, wsUrl]);
 
-  return { currentEvent, recentEvents, connectionState };
+  return { recentEvents, connectionState, upsertEvent };
 }
-
