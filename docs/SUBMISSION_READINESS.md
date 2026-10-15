@@ -1,5 +1,7 @@
 # Submission Readiness — OpenCV AI Competition 2026
 
+> **Evaluation qualification (2026-10-15):** Existing VisA results are exploratory, not a fresh independent test. Capture gates changed after test inspection; official-test AUROC includes validation anomalies. Independent evaluation has NOT RUN. Follow [the prospective protocol](INDEPENDENT_EVALUATION.md).
+
 **Status: not submission-ready.** The AWS requirement is unmet (deployment not executed), there is no working web endpoint,
 and no video exists. Everything that can run locally has been implemented and verified locally, including the container
 build and a docker compose smoke test.
@@ -75,7 +77,10 @@ Then record in this file: the CloudFront URL, stack outputs, smoke-test output, 
 latency from the instance. Delete the stack after judging if it is not needed (`aws cloudformation delete-stack`; the
 bucket is retained and must be emptied and deleted separately).
 
-## Cost estimate (estimate, not a measurement)
+## Historical cost estimate (not validated; do not use as a budget)
+
+Use [AWS_FREE_PLAN.md](AWS_FREE_PLAN.md) and the official calculator before deployment.
+The default is now t4g.small; the table below describes the former t4g.medium configuration.
 
 Assumptions: us-east-1, on-demand, 730 h/month, 500 inspections/day, two ~250 KB JPEGs per inspection, 30-day evidence
 retention, one dashboard open during working hours, no free-tier credits applied.

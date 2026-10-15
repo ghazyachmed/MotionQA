@@ -26,7 +26,10 @@ Benchmark: VisA `pcb1` (CC BY 4.0, Amazon; `s3://amazon-visual-anomaly/VisA_2022
 memory bank, 100 normal + 47 anomalous for validation, 100 normal + 53 anomalous for test. Defect types: melt, missing,
 bent, scratch. Details, provenance, and the domain gap are in [docs/EVALUATION.md](docs/EVALUATION.md).
 
-## Results (test split, Apple M2 CPU)
+## Exploratory results (reused test split, Apple M2 CPU)
+
+Independent evaluation has not run. See [the prospective protocol](docs/INDEPENDENT_EVALUATION.md).
+See [AWS Free Plan guidance](docs/AWS_FREE_PLAN.md) before provisioning resources.
 
 | Metric (deployed operating point) | MotionQA | OpenCV-only baseline |
 | --- | --- | --- |
