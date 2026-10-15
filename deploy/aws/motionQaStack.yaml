@@ -20,7 +20,7 @@ Parameters:
       (aws ec2 describe-managed-prefix-lists --filters Name=prefix-list-name,Values=com.amazonaws.global.cloudfront.origin-facing).
   InstanceType:
     Type: String
-    Default: t4g.medium
+    Default: t4g.small
     AllowedValues: [t4g.small, t4g.medium, t4g.large, c7g.large]
   EvidenceRetentionDays:
     Type: Number
@@ -38,6 +38,12 @@ Parameters:
   LatestAmiId:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64
+
+Conditions:
+  IsBurstableInstance: !Or
+    - !Equals [!Ref InstanceType, t4g.small]
+    - !Equals [!Ref InstanceType, t4g.medium]
+    - !Equals [!Ref InstanceType, t4g.large]
 
 Resources:
   ArtifactBucket:
@@ -177,6 +183,10 @@ Resources:
     Properties:
       ImageId: !Ref LatestAmiId
       InstanceType: !Ref InstanceType
+      CreditSpecification: !If
+        - IsBurstableInstance
+        - CPUCredits: standard
+        - !Ref AWS::NoValue
       IamInstanceProfile: !Ref InstanceProfile
       SubnetId: !Ref PublicSubnetId
       SecurityGroupIds: [!Ref OriginSecurityGroup]

@@ -423,6 +423,9 @@ def main() -> None:
 
     print("[6/6] Writing results", flush=True)
     results = {
+        "evaluationStatus": "EXPLORATORY_TEST_INFORMED",
+        "independentEvaluationCompleted": False,
+        "qualification": "Capture gates were revised after test inspection; officialTest includes validation anomalies.",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "command": "python -m motionQa.evaluation.runEvaluation",
         "environment": {"python": platform.python_version(), "platform": platform.platform(), "machine": platform.machine(), "processor": platform.processor(), "opencv": getOpenCvDiagnostics().toDict(), "numpy": np.__version__},

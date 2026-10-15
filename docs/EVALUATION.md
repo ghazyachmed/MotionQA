@@ -1,5 +1,7 @@
 # Evaluation
 
+> **Evaluation qualification (2026-10-15):** Existing VisA results are exploratory, not a fresh independent test. Capture gates changed after test inspection; official-test AUROC includes validation anomalies. Independent evaluation has NOT RUN. Follow [the prospective protocol](INDEPENDENT_EVALUATION.md).
+
 All numbers come from `evaluation/results/visaPcb1Results.json`, written by
 `python -m motionQa.evaluation.runEvaluation` on 2026-10-15. They describe a **public benchmark task**, not motorcycle
 components or any production line.
