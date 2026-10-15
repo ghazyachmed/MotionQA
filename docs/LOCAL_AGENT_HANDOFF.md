@@ -166,3 +166,22 @@ Reproduce the import in a subprocess locally and report Python, OS, architecture
 Do not hide this failure or claim that all backend tests passed.
 The full VisA archive was not downloaded during this handoff. Download and inspect it locally.
 No fresh physical images, independent results or AWS deployment were produced by this package.
+
+## Local execution results (2026-10-16)
+
+Run by the local agent on `feat/local-agent-evaluation-kit`; details and raw outputs in
+`evaluation/localRun-2026-10-16/README.md`. The section above is kept as the original handoff record.
+
+| Handoff item | Result |
+| --- | --- |
+| 1. Lockfile install | Resolved on clean Python 3.11.15 and 3.12.13 venvs (macOS 26.6.2 arm64); `pip check` clean |
+| 1. cv2 Bus error | Not reproduced: subprocess import exits 0 (OpenCV 5.0.0, NumPy 2.4.6, wheel `opencv-python-headless` 5.0.0.93). Handoff platform unknown; linux/amd64 probe NOT RUN (Docker Desktop unavailable) |
+| 1. Test suites | backend 75 passed / 0 skipped; root frozen-protocol 7 passed (both Python versions); frontend 11 passed |
+| 1. Public photos | Archive SHA-256 verified; contact sheet and `photo_sources.json` in `artifacts/public-photos-001/` (now records each photo's prior development use) |
+| 2. Model restore | Artifacts present and checksum-verified; clean rebuild reproduced all checksums and all 153 test decisions (`reproducibility.json`) |
+| 2. Real demo | Authenticated local API; PASS, FAIL, REVIEW, RETAKE, NO_PART, and ERROR all observed from real inference, including one missed defect (`artifacts/local-demo-001/`) |
+| 2. Latency | Model step median 96.7 ms; client round trip median 165.9 ms (Apple M2, battery, single worker) |
+| 3. Prospective evidence | **NOT RUN** — no physical parts, photos, custodian, or reviewer available to the agent. Tooling and procedure added: `prospectiveCollection.py`, `docs/PROSPECTIVE_COLLECTION.md` |
+| 4. Freeze/predict/score | Seal → real-pipeline predict → verify → score passes on synthetic fixtures only; no real sealed run exists. VisA lacks part IDs, so legacy data cannot be sealed |
+| 5. AWS | **NOT DEPLOYED**; account eligibility NOT CHECKED (Claude in Chrome not connected; no CLI/credentials). Owner steps in `docs/AWS_FREE_PLAN.md` |
+| Submission | Draft only: `docs/SUBMISSION_DRAFT.md`; nothing submitted |

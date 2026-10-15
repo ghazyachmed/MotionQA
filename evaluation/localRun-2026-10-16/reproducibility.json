@@ -1,0 +1,40 @@
+{
+  "comparedAt": "2026-10-16",
+  "reference": "evaluation/results/visaPcb1Results.json (generated 2026-10-15)",
+  "rebuild": "evaluation/localRun-2026-10-16/rebuild/visaPcb1Results.json (python -m motionQa.evaluation.runEvaluation into a separate model directory)",
+  "status": "REPRODUCTION_OF_EXPLORATORY_BENCHMARK_NOT_INDEPENDENT",
+  "featureModelSha256Equal": true,
+  "memoryBankSha256Equal": true,
+  "memoryBankSha256": "396c4d74e8ae5459a768a848f76008aa6a5b815a88c198dfa856e8ff3d158124",
+  "decisionThresholdsEqual": true,
+  "captureThresholdsEqual": true,
+  "modelSelectionEqual": true,
+  "testImages": 153,
+  "testDecisionsIdentical": true,
+  "maxAbsoluteAnomalyScoreDifference": 0.0,
+  "keyMetricsEqual": true,
+  "rebuildLatency": {
+    "hardware": "arm64 arm",
+    "imageResolution": "1404x1070",
+    "modelInput": "448x448",
+    "coldStart": {
+      "profileAndModelLoadMs": 15.0,
+      "firstInspectionTotalMs": 197.42
+    },
+    "inferenceMs": {
+      "count": 59,
+      "mean": 100.44,
+      "median": 97.05,
+      "p95": 128.86,
+      "max": 138.34
+    },
+    "endToEndMs": {
+      "count": 59,
+      "mean": 168.17,
+      "median": 162.16,
+      "p95": 208.2,
+      "max": 330.8
+    }
+  },
+  "qualification": "Identical outputs show the build is deterministic on this machine. They add no independent evidence about accuracy."
+}

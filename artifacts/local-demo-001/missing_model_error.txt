@@ -1,0 +1,7 @@
+== GET /api/v1/health (missing model)
+{"status":"degraded","postgres":"ok","redis":"ok","inspectionModel":"unavailable: Inspection profile not found at <scratch>/demo/missing-profile/inspectionProfile.json. Build it with: python -m motionQa.evaluation.runEvaluation"}
+HTTP 503
+== GET /api/v1/model/status
+{'ready': False, 'loadError': 'Inspection profile not found at <scratch>/demo/missing-profile/inspectionProfile.json. Build it with: python -m motionQa.evaluation.runEvaluation'}
+== POST inspection (Normal/0011.JPG)
+{'inspectionId': 'demo-missing-model-01', 'decision': 'ERROR', 'reasonCode': 'MODEL_UNAVAILABLE', 'reasonDetail': 'Inspection profile not found at <scratch>/demo/missing-profile/inspectionProfile.json. Build it with: python -m motionQa.evaluation.runEvaluation', 'processingMode': 'REAL_INFERENCE'}

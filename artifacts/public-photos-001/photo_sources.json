@@ -1,0 +1,67 @@
+{
+  "source": "https://amazon-visual-anomaly.s3.us-west-2.amazonaws.com/VisA_20220922.tar",
+  "license": "CC BY 4.0",
+  "citation": "Zou et al., SPot-the-Difference, ECCV 2022",
+  "preparedAt": "2026-10-15T23:24:00.455093+00:00",
+  "status": "PUBLIC_BENCHMARK_DEMO_NOT_INDEPENDENT",
+  "selection": "First three filenames per category; illustrative, not representative",
+  "developmentUseNote": "bank = memory-bank (training) image; validation = used for model and threshold selection; test = reused exploratory test split. None of these is independent.",
+  "archive": {
+    "archiveSha256": "2eb8690c803ab37de0324772964100169ec8ba1fa3f7e94291c9ca673f40f362",
+    "archiveBytes": 1929840640,
+    "extractedFiles": 1309
+  },
+  "photos": [
+    {
+      "image": "pcb1/Data/Images/Normal/0000.JPG",
+      "label": "normal",
+      "sha256": "cdd134e70b2ebfb048b9d50e13b68af24e16f9130d083f4f6cfbd63a74f884af",
+      "developmentUse": [
+        "bank"
+      ]
+    },
+    {
+      "image": "pcb1/Data/Images/Normal/0001.JPG",
+      "label": "normal",
+      "sha256": "c71fc38d4d03498c0827c114e21157b5e71d3da25b549a693ac23a961db68202",
+      "developmentUse": [
+        "bank"
+      ]
+    },
+    {
+      "image": "pcb1/Data/Images/Normal/0002.JPG",
+      "label": "normal",
+      "sha256": "211f0bb0170631daf7d1d22c0317aa0f3be793aae4943173bc7edb2fac6a588a",
+      "developmentUse": [
+        "bank"
+      ]
+    },
+    {
+      "image": "pcb1/Data/Images/Anomaly/000.JPG",
+      "label": "anomaly",
+      "sha256": "e67db34e1045d7b8f01173a2f3e0138a6d89700e8a83d1426b6de0464e1e5e9d",
+      "developmentUse": [
+        "test",
+        "officialTest"
+      ]
+    },
+    {
+      "image": "pcb1/Data/Images/Anomaly/001.JPG",
+      "label": "anomaly",
+      "sha256": "4e255d79adde14e83171896fe571113aa632de1202a32b263bd8bd6ba04c105c",
+      "developmentUse": [
+        "test",
+        "officialTest"
+      ]
+    },
+    {
+      "image": "pcb1/Data/Images/Anomaly/002.JPG",
+      "label": "anomaly",
+      "sha256": "9f297d7f791bcf17ec97f3275ff3bd2a1ab9988dc5d57fc3767eaf2741b92a98",
+      "developmentUse": [
+        "validation",
+        "officialTest"
+      ]
+    }
+  ]
+}

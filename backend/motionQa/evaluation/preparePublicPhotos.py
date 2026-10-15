@@ -32,9 +32,21 @@ def download(destination):
     partial.rename(destination)
 
 
-def prepare(archive, dataset, output):
+def load_development_use(split_manifest):
+    """Map image path -> development splits it already belongs to (bank images are memory-bank members)."""
+    if split_manifest is None or not split_manifest.exists():
+        return {}
+    membership = {}
+    for split, items in json.loads(split_manifest.read_text())['splits'].items():
+        for item in items:
+            membership.setdefault(item['image'], []).append(split)
+    return membership
+
+
+def prepare(archive, dataset, output, split_manifest=None):
     import cv2 as cv
     import numpy as np
+    development_use = load_development_use(split_manifest)
     extraction = extractArchive(archive, dataset)
     output.mkdir(parents=True, exist_ok=False)
     sheet = np.full((720, 1080, 3), 245, dtype=np.uint8)
@@ -55,8 +67,9 @@ def prepare(archive, dataset, output):
             y, x = 65 + row * 305, 10 + col * 360
             sheet[y:y+thumb.shape[0], x:x+thumb.shape[1]] = thumb
             cv.putText(sheet, f'{category}: {photo.name}', (x, y+270), cv.FONT_HERSHEY_SIMPLEX, .5, (0, 0, 0), 1)
-            records.append({'image': str(photo.relative_to(dataset)), 'label': category.lower(),
-                            'sha256': computeSha256(photo)})
+            relative = str(photo.relative_to(dataset))
+            records.append({'image': relative, 'label': category.lower(), 'sha256': computeSha256(photo),
+                            'developmentUse': development_use.get(relative, ['unknown'])})
     cv.putText(sheet, 'CC BY 4.0 | Zou et al., ECCV 2022 | Selected examples, not evaluation results',
                (10, 705), cv.FONT_HERSHEY_SIMPLEX, .45, (0, 0, 0), 1)
     if not cv.imwrite(str(output / 'public_benchmark_contact_sheet.jpg'), sheet):
@@ -66,6 +79,8 @@ def prepare(archive, dataset, output):
                 'preparedAt': datetime.now(timezone.utc).isoformat(),
                 'status': 'PUBLIC_BENCHMARK_DEMO_NOT_INDEPENDENT',
                 'selection': 'First three filenames per category; illustrative, not representative',
+                'developmentUseNote': 'bank = memory-bank (training) image; validation = used for model and threshold '
+                                      'selection; test = reused exploratory test split. None of these is independent.',
                 'archive': extraction, 'photos': records}
     (output / 'photo_sources.json').write_text(json.dumps(metadata, indent=2) + '\n')
 
@@ -76,10 +91,12 @@ def main():
     parser.add_argument('--dataset', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--download', action='store_true', help='Download approximately 1.93 GB from public AWS Open Data')
+    parser.add_argument('--split-manifest', type=Path, default=Path(__file__).resolve().parents[3] / 'evaluation' / 'visaPcb1Split.json',
+                        help='Records which development split each selected photo already belongs to')
     args = parser.parse_args()
     if args.download:
         download(args.archive)
-    prepare(args.archive, args.dataset, args.output)
+    prepare(args.archive, args.dataset, args.output, args.split_manifest)
 
 
 if __name__ == '__main__':
