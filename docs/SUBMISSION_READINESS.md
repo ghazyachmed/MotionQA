@@ -6,6 +6,10 @@
 and no video exists. Everything that can run locally has been implemented and verified locally, including the container
 build and a docker compose smoke test.
 
+**Update 2026-10-16:** requirements re-read (unchanged); local run evidence in `evaluation/localRun-2026-10-16/`;
+submission text drafted in [SUBMISSION_DRAFT.md](SUBMISSION_DRAFT.md). AWS account eligibility NOT CHECKED (owner steps in
+[AWS_FREE_PLAN.md](AWS_FREE_PLAN.md)); AWS NOT DEPLOYED; prospective evaluation NOT RUN.
+
 ## Sources
 
 | Source | URL | Accessed | Method |

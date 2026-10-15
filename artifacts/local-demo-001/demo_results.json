@@ -1,0 +1,355 @@
+{
+  "createdAt": "2026-10-15T23:34:10.159836+00:00",
+  "status": "PUBLIC_BENCHMARK_DEMO_NOT_EVALUATION",
+  "qualification": "Every image was already used in development (bank, validation, or the reused test split). Outcomes are illustrative and must not be counted as accuracy.",
+  "hardware": "Apple M2 (4P+4E cores), 16 GiB, macOS 26.6.2, battery power, local uvicorn + Homebrew PostgreSQL 16 / Redis",
+  "api": "http://127.0.0.1:8000",
+  "modelStatus": {
+    "ready": true,
+    "loadError": null,
+    "opencv": {
+      "version": "5.0.0",
+      "majorVersion": 5,
+      "isSupported": true,
+      "hasNewDnnEngine": true,
+      "cpuBaseline": "NEON FP16 NEON_DOTPROD NEON_FP16",
+      "detail": "ok"
+    },
+    "profileId": "visa-pcb1-patchcore-mnv2",
+    "profileVersion": "2026.10.15",
+    "task": "Single-board stationary visual inspection on the public VisA pcb1 benchmark (normal-only anomaly detection)",
+    "domainNote": "Benchmark task only. Not validated on motorcycle components or any customer production line.",
+    "decisionThresholds": {
+      "passBelow": 2.159876585006714,
+      "failAtOrAbove": 2.5937364101409917,
+      "identityMaxDistance": 0.15055954456329346,
+      "regionThreshold": 2.159876585006714,
+      "missedDefectTarget": 0.02,
+      "falseRejectTarget": 0.02
+    },
+    "timeoutSeconds": 10.0
+  },
+  "records": [
+    {
+      "image": "pcb1/Data/Images/Normal/0000.JPG",
+      "selectionReason": "contact sheet",
+      "syntheticDegradation": false,
+      "developmentUse": [
+        "bank"
+      ],
+      "httpStatus": 201,
+      "clientRoundTripMs": 152.5,
+      "inspectionId": "demo-94278994-00",
+      "decision": "PASS",
+      "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+      "processingMode": "REAL_INFERENCE",
+      "modelId": "visa-pcb1-patchcore-mnv2",
+      "modelVersion": "2026.10.15",
+      "anomalyScore": 2.00911545753479,
+      "identityDistance": -1.1920928955078125e-07,
+      "serverLatencyMs": {
+        "decodeMs": 4.09,
+        "captureChecksMs": 34.28,
+        "inferenceMs": 88.68,
+        "evidenceMs": 15.3,
+        "totalMs": 142.83
+      },
+      "evidenceHttpStatus": 200,
+      "evidenceFile": "00-overlay.jpg"
+    },
+    {
+      "image": "pcb1/Data/Images/Normal/0001.JPG",
+      "selectionReason": "contact sheet",
+      "syntheticDegradation": false,
+      "developmentUse": [
+        "bank"
+      ],
+      "httpStatus": 201,
+      "clientRoundTripMs": 146.3,
+      "inspectionId": "demo-94278994-01",
+      "decision": "PASS",
+      "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+      "processingMode": "REAL_INFERENCE",
+      "modelId": "visa-pcb1-patchcore-mnv2",
+      "modelVersion": "2026.10.15",
+      "anomalyScore": 1.9740264415740967,
+      "identityDistance": -1.1920928955078125e-07,
+      "serverLatencyMs": {
+        "decodeMs": 3.7,
+        "captureChecksMs": 34.5,
+        "inferenceMs": 84.46,
+        "evidenceMs": 15.1,
+        "totalMs": 138.2
+      },
+      "evidenceHttpStatus": 200,
+      "evidenceFile": "01-overlay.jpg"
+    },
+    {
+      "image": "pcb1/Data/Images/Normal/0002.JPG",
+      "selectionReason": "contact sheet",
+      "syntheticDegradation": false,
+      "developmentUse": [
+        "bank"
+      ],
+      "httpStatus": 201,
+      "clientRoundTripMs": 180.3,
+      "inspectionId": "demo-94278994-02",
+      "decision": "PASS",
+      "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+      "processingMode": "REAL_INFERENCE",
+      "modelId": "visa-pcb1-patchcore-mnv2",
+      "modelVersion": "2026.10.15",
+      "anomalyScore": 2.052464246749878,
+      "identityDistance": 0.0,
+      "serverLatencyMs": {
+        "decodeMs": 3.69,
+        "captureChecksMs": 40.98,
+        "inferenceMs": 112.65,
+        "evidenceMs": 15.82,
+        "totalMs": 173.61
+      },
+      "evidenceHttpStatus": 200,
+      "evidenceFile": "02-overlay.jpg"
+    },
+    {
+      "image": "pcb1/Data/Images/Anomaly/000.JPG",
+      "selectionReason": "contact sheet",
+      "syntheticDegradation": false,
+      "developmentUse": [
+        "test",
+        "officialTest"
+      ],
+      "httpStatus": 201,
+      "clientRoundTripMs": 273.8,
+      "inspectionId": "demo-94278994-03",
+      "decision": "FAIL",
+      "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+      "processingMode": "REAL_INFERENCE",
+      "modelId": "visa-pcb1-patchcore-mnv2",
+      "modelVersion": "2026.10.15",
+      "anomalyScore": 2.7421865463256836,
+      "identityDistance": 0.010948538780212402,
+      "serverLatencyMs": {
+        "decodeMs": 4.3,
+        "captureChecksMs": 41.16,
+        "inferenceMs": 198.1,
+        "evidenceMs": 20.84,
+        "totalMs": 265.12
+      },
+      "evidenceHttpStatus": 200,
+      "evidenceFile": "03-overlay.jpg"
+    },
+    {
+      "image": "pcb1/Data/Images/Anomaly/001.JPG",
+      "selectionReason": "contact sheet",
+      "syntheticDegradation": false,
+      "developmentUse": [
+        "test",
+        "officialTest"
+      ],
+      "httpStatus": 201,
+      "clientRoundTripMs": 238.3,
+      "inspectionId": "demo-94278994-04",
+      "decision": "FAIL",
+      "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+      "processingMode": "REAL_INFERENCE",
+      "modelId": "visa-pcb1-patchcore-mnv2",
+      "modelVersion": "2026.10.15",
+      "anomalyScore": 3.6131160259246826,
+      "identityDistance": 0.008433699607849121,
+      "serverLatencyMs": {
+        "decodeMs": 4.36,
+        "captureChecksMs": 43.36,
+        "inferenceMs": 153.95,
+        "evidenceMs": 26.77,
+        "totalMs": 229.1
+      },
+      "evidenceHttpStatus": 200,
+      "evidenceFile": "04-overlay.jpg"
+    },
+    {
+      "image": "pcb1/Data/Images/Anomaly/002.JPG",
+      "selectionReason": "contact sheet",
+      "syntheticDegradation": false,
+      "developmentUse": [
+        "validation",
+        "officialTest"
+      ],
+      "httpStatus": 201,
+      "clientRoundTripMs": 154.8,
+      "inspectionId": "demo-94278994-05",
+      "decision": "FAIL",
+      "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+      "processingMode": "REAL_INFERENCE",
+      "modelId": "visa-pcb1-patchcore-mnv2",
+      "modelVersion": "2026.10.15",
+      "anomalyScore": 3.675995111465454,
+      "identityDistance": 0.012923836708068848,
+      "serverLatencyMs": {
+        "decodeMs": 3.58,
+        "captureChecksMs": 35.56,
+        "inferenceMs": 89.37,
+        "evidenceMs": 17.74,
+        "totalMs": 147.32
+      },
+      "evidenceHttpStatus": 200,
+      "evidenceFile": "05-overlay.jpg"
+    },
+    {
+      "image": "pcb1/Data/Images/Normal/0011.JPG",
+      "selectionReason": "reused test split: normal case",
+      "syntheticDegradation": false,
+      "developmentUse": [
+        "test",
+        "officialTest"
+      ],
+      "httpStatus": 201,
+      "clientRoundTripMs": 147.3,
+      "inspectionId": "demo-94278994-06",
+      "decision": "PASS",
+      "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+      "processingMode": "REAL_INFERENCE",
+      "modelId": "visa-pcb1-patchcore-mnv2",
+      "modelVersion": "2026.10.15",
+      "anomalyScore": 2.055962324142456,
+      "identityDistance": 0.005362272262573242,
+      "serverLatencyMs": {
+        "decodeMs": 3.84,
+        "captureChecksMs": 34.83,
+        "inferenceMs": 86.3,
+        "evidenceMs": 14.8,
+        "totalMs": 140.23
+      },
+      "evidenceHttpStatus": 200,
+      "evidenceFile": "06-overlay.jpg"
+    },
+    {
+      "image": "pcb1/Data/Images/Normal/0027.JPG",
+      "selectionReason": "reused test split: borderline normal",
+      "syntheticDegradation": false,
+      "developmentUse": [
+        "test",
+        "officialTest"
+      ],
+      "httpStatus": 201,
+      "clientRoundTripMs": 149.2,
+      "inspectionId": "demo-94278994-07",
+      "decision": "REVIEW",
+      "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+      "processingMode": "REAL_INFERENCE",
+      "modelId": "visa-pcb1-patchcore-mnv2",
+      "modelVersion": "2026.10.15",
+      "anomalyScore": 2.165032148361206,
+      "identityDistance": 0.004936099052429199,
+      "serverLatencyMs": {
+        "decodeMs": 3.83,
+        "captureChecksMs": 33.86,
+        "inferenceMs": 88.62,
+        "evidenceMs": 15.21,
+        "totalMs": 141.96
+      },
+      "evidenceHttpStatus": 200,
+      "evidenceFile": "07-overlay.jpg"
+    },
+    {
+      "image": "pcb1/Data/Images/Anomaly/048.JPG",
+      "selectionReason": "reused test split: defect the exploratory run missed",
+      "syntheticDegradation": false,
+      "developmentUse": [
+        "test",
+        "officialTest"
+      ],
+      "httpStatus": 201,
+      "clientRoundTripMs": 151.2,
+      "inspectionId": "demo-94278994-08",
+      "decision": "PASS",
+      "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+      "processingMode": "REAL_INFERENCE",
+      "modelId": "visa-pcb1-patchcore-mnv2",
+      "modelVersion": "2026.10.15",
+      "anomalyScore": 2.124938488006592,
+      "identityDistance": 0.006970763206481934,
+      "serverLatencyMs": {
+        "decodeMs": 3.99,
+        "captureChecksMs": 34.19,
+        "inferenceMs": 88.78,
+        "evidenceMs": 15.87,
+        "totalMs": 143.3
+      },
+      "evidenceHttpStatus": 200,
+      "evidenceFile": "08-overlay.jpg"
+    },
+    {
+      "image": "pcb1/Data/Images/Anomaly/043.JPG",
+      "selectionReason": "reused test split: severe missing-part defect",
+      "syntheticDegradation": false,
+      "developmentUse": [
+        "test",
+        "officialTest"
+      ],
+      "httpStatus": 201,
+      "clientRoundTripMs": 138.7,
+      "inspectionId": "demo-94278994-09",
+      "decision": "NO_PART",
+      "reasonCode": "PART_NOT_RECOGNIZED",
+      "processingMode": "REAL_INFERENCE",
+      "modelId": "visa-pcb1-patchcore-mnv2",
+      "modelVersion": "2026.10.15",
+      "anomalyScore": 5.085483074188232,
+      "identityDistance": 0.1553756594657898,
+      "serverLatencyMs": {
+        "decodeMs": 3.33,
+        "captureChecksMs": 34.36,
+        "inferenceMs": 85.8,
+        "evidenceMs": 7.94,
+        "totalMs": 131.65
+      },
+      "evidenceHttpStatus": 200,
+      "evidenceFile": "09-overlay.jpg"
+    },
+    {
+      "image": "pcb1/Data/Images/Normal/0011.JPG",
+      "selectionReason": "SYNTHETIC blur of a reused test image (capture-fault demo)",
+      "syntheticDegradation": true,
+      "developmentUse": [
+        "test",
+        "officialTest"
+      ],
+      "httpStatus": 201,
+      "clientRoundTripMs": 45.9,
+      "inspectionId": "demo-94278994-10",
+      "decision": "RETAKE",
+      "reasonCode": "BLURRED",
+      "processingMode": "REAL_INFERENCE",
+      "modelId": "visa-pcb1-patchcore-mnv2",
+      "modelVersion": "2026.10.15",
+      "anomalyScore": null,
+      "identityDistance": null,
+      "serverLatencyMs": {
+        "decodeMs": 2.1,
+        "captureChecksMs": 30.95,
+        "inferenceMs": 0.0,
+        "evidenceMs": 6.05,
+        "totalMs": 39.29
+      },
+      "evidenceHttpStatus": 200,
+      "evidenceFile": "10-overlay.jpg"
+    }
+  ],
+  "checks": {
+    "reviewKeepsMachineDecision": {
+      "inspectionId": "demo-94278994-07",
+      "machineDecision": "REVIEW",
+      "finalDecision": "PASS",
+      "reviewStatus": "OVERRIDDEN",
+      "machineDecisionUnchanged": true
+    },
+    "missingTokenStatus": 401,
+    "invalidUploadStatus": 415,
+    "retrySameInspectionId": {
+      "httpStatus": 200,
+      "idempotentReplay": "true"
+    }
+  },
+  "latencyNote": "clientRoundTripMs includes HTTP upload, server processing, database write and response; serverLatencyMs.inferenceMs is the model step only."
+}

@@ -19,9 +19,12 @@ uvicorn motionQa.mainApi:createApp --factory --host 127.0.0.1 --port 8000
 cd frontend && npm run dev -- --host 127.0.0.1 --port 5173
 ```
 
-Pick from the **test split** only (`evaluation/visaPcb1Split.json` → `splits.test`): one normal image the results file
-records as `PASS`, one anomaly recorded as `FAIL`, and one recorded as `REVIEW`. Also prepare one blurred copy and one
-other-object image (for example a `candle` image from `otherObjectTest`).
+Pick from the **test split** only (`evaluation/visaPcb1Split.json` → `splits.test`). The 2026-10-16 local run
+(`artifacts/local-demo-001/demo_results.json`, recorded with `python -m motionQa.evaluation.runLocalDemo`) observed:
+`Normal/0011` → PASS, `Anomaly/000` → FAIL, `Normal/0027` → REVIEW, `Anomaly/048` → **PASS (a missed defect)**,
+`Anomaly/043` → NO_PART, a synthetic blur of `Normal/0011` → RETAKE, and any image with the profile missing → ERROR.
+Show the missed defect: it is the honest failure case. Do not use memory-bank images (`Normal/0000`–`0002`) as
+evidence of a correct PASS; they are part of the model.
 
 ## Shot list
 

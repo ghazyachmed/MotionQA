@@ -1,6 +1,6 @@
 # Independent evaluation protocol
 
-Status: NOT RUN. No new independent dataset has been supplied.
+Status: NOT RUN. No new independent dataset has been supplied (rechecked 2026-10-16). Collection tooling and procedure: [PROSPECTIVE_COLLECTION.md](PROSPECTIVE_COLLECTION.md).
 
 The existing VisA pcb1 results are exploratory development evidence. Capture gates were revised after viewing test outcomes. Also, 47 official-test anomalies entered validation/model selection, so AUROC on the entire official test set is not an independent estimate. Preserve every historical result; do not relabel it as fresh evidence.
 

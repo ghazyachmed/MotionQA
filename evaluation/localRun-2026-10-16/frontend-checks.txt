@@ -1,0 +1,11 @@
+# 2026-10-15T23:45:35Z node v25.9.0; cwd frontend/
+$ npx tsc --noEmit -p tsconfig.json
+tsc: ok
+$ npm test
+ Test Files  2 passed (2)
+      Tests  11 passed (11)
+$ npm run build
+dist/assets/index-Bwvl8MrE.css   14.08 kB │ gzip:  3.98 kB
+dist/assets/index-Dy2m7jfR.js   194.69 kB │ gzip: 62.62 kB
+
+✓ built in 227ms
