@@ -1,0 +1,6 @@
+=== <scratch>/lockcheck3.11/bin/python
+{"python": "3.11.15", "implementation": "CPython", "os": "macOS-26.6.2-arm64-arm-64bit", "machine": "arm64", "packages": {"numpy": "2.4.6", "opencv-python-headless": "5.0.0.93"}, "importExitCode": 0, "stdout": "5.0.0 2.4.6 True", "stderr": ""}
+=== <scratch>/lockcheck3.12/bin/python
+{"python": "3.12.13", "implementation": "CPython", "os": "macOS-26.6.2-arm64-arm-64bit", "machine": "arm64", "packages": {"numpy": "2.4.6", "opencv-python-headless": "5.0.0.93"}, "importExitCode": 0, "stdout": "5.0.0 2.4.6 True", "stderr": ""}
+=== <repo>/backend/.venv/bin/python
+{"python": "3.11.15", "implementation": "CPython", "os": "macOS-26.6.2-arm64-arm-64bit", "machine": "arm64", "packages": {"numpy": "2.4.6", "opencv-python-headless": "5.0.0.93"}, "importExitCode": 0, "stdout": "5.0.0 2.4.6 True", "stderr": ""}

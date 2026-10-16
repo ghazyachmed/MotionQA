@@ -1,6 +1,6 @@
 # Independent evaluation protocol
 
-Status: NOT RUN. No new independent dataset has been supplied.
+Status: NOT RUN. No new independent dataset has been supplied (rechecked 2026-10-16). Collection tooling and procedure: [PROSPECTIVE_COLLECTION.md](PROSPECTIVE_COLLECTION.md).
 
 The existing VisA pcb1 results are exploratory development evidence. Capture gates were revised after viewing test outcomes. Also, 47 official-test anomalies entered validation/model selection, so AUROC on the entire official test set is not an independent estimate. Preserve every historical result; do not relabel it as fresh evidence.
 
@@ -41,3 +41,30 @@ Use one accessible component type and a fixed station. Determine sample size fro
 For adaptive recapture, preregister A (one photo), B (always two photos) and C (conditional recapture). Use identical component groups, a maximum attempt count, operator instructions and time budget. Record total capture time and human work, not just inference latency. This requires new multi-view data; the current single-view benchmark cannot establish the benefit.
 
 Source: https://scikit-learn.org/stable/common_pitfalls.html (accessed 2026-10-15).
+
+## Inference-only runner
+
+A separate command now runs the frozen profile without model fitting or calibration.
+Create a new seal after final code changes. The manifest must contain no labels in test rows.
+Use opaque image filenames if original filenames reveal their labels.
+
+```bash
+# From backend/, after frozenProtocol seal:
+python -m motionQa.evaluation.frozenInference predict \
+  --manifest /absolute/private/manifest.json --images /absolute/private/images \
+  --profile models/visaPcb1/inspectionProfile.json --source . \
+  --protocol ../docs/INDEPENDENT_EVALUATION.md --seal /absolute/private/seal.json \
+  --evidence /absolute/private/evidence --output /absolute/private/run-001
+
+# Only after predictions.jsonl and run.json are finalized, reveal labels:
+python -m motionQa.evaluation.frozenInference score \
+  --run /absolute/private/run-001 --labels /absolute/private/labels.json \
+  --output /absolute/private/metrics-001.json
+```
+
+Labels are a JSON mapping from exact image path to normal, anomaly, capture_fault or wrong_object.
+Missing labels and duplicate predictions fail scoring. Changed predictions fail checksum verification.
+Invalid images remain ERROR records. An interrupted run lacks run.json and cannot be scored as complete.
+The output directory cannot be reused silently. The runner verifies the seal before and after inference.
+It does not provide human independence, physical data collection, grouped confidence intervals or adaptive-recapture evaluation.
+Reported rates are per image; no automatic generalization to independent parts is made.

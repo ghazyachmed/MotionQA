@@ -1,0 +1,23 @@
+{
+ "process": "single uvicorn API worker (python), macOS 26.6.2 arm64, Apple M2 on battery; not Linux, not t4g",
+ "requests": 40,
+ "httpStatuses": [
+  201
+ ],
+ "rssMbIdleAfterStartup": 143.0,
+ "rssMbPeak": 461.7,
+ "rssMbFinal": 461.7,
+ "clientRoundTripMs": {
+  "median": 165.9,
+  "p95": 256.2
+ },
+ "serverTotalMs": {
+  "median": 157.2,
+  "p95": 246.8
+ },
+ "serverInferenceMs": {
+  "median": 96.7,
+  "p95": 149.8
+ }
+}
+{"continuation": "requests 41-120", "rssMbEvery10Requests": [[50, 461.8, 201], [60, 463.2, 201], [70, 463.3, 201], [80, 463.3, 201], [90, 463.3, 201], [100, 463.3, 201], [110, 463.4, 201], [120, 463.4, 201]]}

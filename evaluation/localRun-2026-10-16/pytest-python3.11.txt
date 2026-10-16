@@ -1,0 +1,13 @@
+# 2026-10-15T23:45:17Z Python 3.11 clean venv from requirements-dev.lock; cwd backend/
+$ python -m pytest -q -rs
+........................................................................ [ 96%]
+...                                                                      [100%]
+=============================== warnings summary ===============================
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+75 passed, 1 warning in 3.56s
+
+# cwd repo root
+$ python -m pytest -q -rs tests/test_frozen_protocol.py
+.......                                                                  [100%]
+7 passed in 0.02s

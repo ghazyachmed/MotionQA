@@ -140,6 +140,10 @@ for lack of credentials; no AWS endpoint or cloud measurement exists yet.
 - [docs/REVIEW_AND_CHANGES.md](docs/REVIEW_AND_CHANGES.md) — historical findings, verification, changes
 - [docs/SUBMISSION_READINESS.md](docs/SUBMISSION_READINESS.md) — competition requirements and blockers
 - [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) — five-minute demo
+- [docs/SUBMISSION_DRAFT.md](docs/SUBMISSION_DRAFT.md) — Devpost submission draft (not submitted)
+- [docs/INDEPENDENT_EVALUATION.md](docs/INDEPENDENT_EVALUATION.md) and [docs/PROSPECTIVE_COLLECTION.md](docs/PROSPECTIVE_COLLECTION.md) — sealed prospective protocol and photo-collection tooling (NOT RUN)
+- [docs/AWS_FREE_PLAN.md](docs/AWS_FREE_PLAN.md) — Free Tier terms and owner account checks (NOT DEPLOYED)
+- [evaluation/localRun-2026-10-16/README.md](evaluation/localRun-2026-10-16/README.md) — local agent run: tests, reproduction, real-inference demo
 - [prd.md](prd.md) — product scope and goals
 
 ## Attribution

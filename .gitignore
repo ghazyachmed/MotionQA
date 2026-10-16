@@ -24,3 +24,6 @@ backend/evidence/
 backend/.venv/
 *.egg-info/
 /.claude
+
+# Full-resolution demo evidence (regenerate with motionQa.evaluation.runLocalDemo)
+artifacts/local-demo-*/*-overlay.jpg
