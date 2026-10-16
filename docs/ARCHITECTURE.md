@@ -1,7 +1,7 @@
 # MotionQA Architecture
 
 Status labels used below: **Implemented** (code exists), **Tested locally** (exercised by tests or a local run),
-**Prepared, not deployed** (configuration exists, AWS deployment not executed).
+**Deployed** (running on AWS since 2026-10-16; `evaluation/aws-2026-10-16/README.md`).
 
 ## System diagram
 
@@ -11,9 +11,9 @@ flowchart LR
     upload["Operator upload / browser capture"]
     rtsp["Stationary camera (RTSP, optional)"]
   end
-  subgraph AWS["AWS (prepared, not deployed)"]
+  subgraph AWS["AWS us-east-1 (deployed 2026-10-16)"]
     cf["CloudFront HTTPS"]
-    subgraph EC2["EC2 Graviton t4g.medium — docker compose"]
+    subgraph EC2["EC2 Graviton t4g.small — docker compose"]
       nginx["nginx: UI + /api + /ws proxy"]
       api["FastAPI + OpenCV 5 inspection pipeline"]
       pg[("PostgreSQL inspection_records")]
@@ -129,7 +129,7 @@ burst of 10 on both paths; both answer 429), 8 MB upload limit, JPEG/PNG magic-b
 reject path characters, evidence keys confined to the evidence root, CORS restricted to configured origins without
 credentials, non-root container user.
 
-## AWS deployment design (Prepared, not deployed)
+## AWS deployment (Deployed 2026-10-16)
 
 Workload: a handful of inspections per minute, CPU-only inference (~0.1–0.3 s per image measured on an Apple M2), a small
 PostgreSQL table, and a WebSocket stream. One instance running the existing compose stack is proportionate; managed
@@ -137,7 +137,7 @@ databases, load balancers, GPU instances, and container orchestration are not ne
 
 `deploy/aws/motionQaStack.yaml` (CloudFormation, validated with cfn-lint 1.57.2) creates:
 
-- EC2 `t4g.medium` (Graviton, arm64; OpenCV 5.0.0.93 publishes manylinux aarch64 wheels), IMDSv2 required, encrypted gp3,
+- EC2 `t4g.small` (Graviton, arm64; OpenCV 5.0.0.93 publishes manylinux aarch64 wheels), IMDSv2 required, encrypted gp3,
   no SSH (SSM Session Manager / Run Command only), security group admitting HTTP only from the CloudFront origin-facing prefix list.
 - Private S3 bucket (SSE-S3, public access blocked, TLS-only policy) with `evidence/` expiring after `EvidenceRetentionDays`
   (default 30), `models/` for the inspection profile artifacts, and `releases/` for source archives.

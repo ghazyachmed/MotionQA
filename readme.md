@@ -15,7 +15,7 @@ HC-SR04 sensor boards), and its results say nothing about motorcycle parts.
 | Recapture sessions (one part, limited retakes, escalation to a reviewer) | Implemented, tested locally |
 | Anomaly model on VisA `pcb1` | Evaluated on benchmark data ([docs/EVALUATION.md](docs/EVALUATION.md)) |
 | OpenCV 5 runtime (`opencv-python-headless==5.0.0.93`, `cv.dnn` new engine) | Verified locally |
-| AWS deployment (CloudFormation, S3 evidence, CloudFront) | Prepared; Linux ARM64 checked under t4g.small-like limits locally; **AWS deployment not executed** |
+| AWS deployment (CloudFormation, EC2 Graviton, S3 evidence, CloudFront) | **Deployed 2026-10-16** (us-east-1, `t4g.small`); smoke test passed through CloudFront ([record](evaluation/aws-2026-10-16/README.md)) |
 | Validation on target components / target workplace | Not done |
 
 ## Inspection task
@@ -125,8 +125,10 @@ cd frontend && npm test && npm run build    # Vitest + type check + production b
 
 `deploy/aws/motionQaStack.yaml` provisions one Graviton EC2 instance running the compose stack, a private S3 bucket
 (evidence with expiry, model artifacts, releases), Secrets Manager secrets, CloudWatch Logs, and CloudFront for HTTPS.
-Steps and cost assumptions: [docs/SUBMISSION_READINESS.md](docs/SUBMISSION_READINESS.md). **AWS deployment not executed**
-for lack of credentials; no AWS endpoint or cloud measurement exists yet.
+**Deployed on 2026-10-16** at https://d4dqbqmvvujy7.cloudfront.net (operator token required for the API). Twenty
+test-split inspections through CloudFront matched the local decisions 20/20; median inference 450 ms on `t4g.small`,
+server total 779 ms. Record: [evaluation/aws-2026-10-16/README.md](evaluation/aws-2026-10-16/README.md). Plan, cost
+estimate and teardown (by 2026-11-11): [docs/AWS_DEPLOYMENT_PLAN.md](docs/AWS_DEPLOYMENT_PLAN.md).
 
 ## Known limitations
 
@@ -151,8 +153,9 @@ for lack of credentials; no AWS endpoint or cloud measurement exists yet.
 - [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) — five-minute demo
 - [docs/SUBMISSION_DRAFT.md](docs/SUBMISSION_DRAFT.md) — Devpost submission draft (not submitted)
 - [docs/INDEPENDENT_EVALUATION.md](docs/INDEPENDENT_EVALUATION.md) and [docs/PROSPECTIVE_COLLECTION.md](docs/PROSPECTIVE_COLLECTION.md) — sealed prospective protocol, photo-collection tooling, and adapting the profile to another component (NOT RUN)
-- [docs/AWS_FREE_PLAN.md](docs/AWS_FREE_PLAN.md) — Free Tier terms and owner account checks (NOT DEPLOYED)
-- [docs/AWS_DEPLOYMENT_PLAN.md](docs/AWS_DEPLOYMENT_PLAN.md) — resources, cost estimate to 10 Nov 2026, login, deploy and teardown steps (NOT DEPLOYED)
+- [docs/AWS_FREE_PLAN.md](docs/AWS_FREE_PLAN.md) — Free Tier terms and owner account checks
+- [docs/AWS_DEPLOYMENT_PLAN.md](docs/AWS_DEPLOYMENT_PLAN.md) — resources, cost estimate to 10 Nov 2026, permissions, deploy and teardown steps
+- [evaluation/aws-2026-10-16/README.md](evaluation/aws-2026-10-16/README.md) — AWS deployment record: endpoint, smoke test, cloud latency, memory
 - [evaluation/localRun-2026-10-16/README.md](evaluation/localRun-2026-10-16/README.md) — local agent run: tests, reproduction, real-inference demo
 - [evaluation/localRun-2026-10-16b/README.md](evaluation/localRun-2026-10-16b/README.md) — second pass: verification, failure fix, sessions, t4g.small emulation
 - [evaluation/localRun-2026-10-16c/README.md](evaluation/localRun-2026-10-16c/README.md) — third pass: simulated t4g.small host, deployment bug fix, script dry runs

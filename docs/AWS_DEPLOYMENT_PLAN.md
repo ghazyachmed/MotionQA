@@ -1,6 +1,7 @@
-# AWS deployment plan — MotionQA (prepared 2026-10-16; NOT DEPLOYED)
+# AWS deployment plan — MotionQA (prepared and deployed 2026-10-16)
 
-Nothing has been created in AWS. This plan is shown to the owner before any resource is created.
+**Deployed 2026-10-16** after the owner approved the change set: https://d4dqbqmvvujy7.cloudfront.net. Record:
+[evaluation/aws-2026-10-16/README.md](../evaluation/aws-2026-10-16/README.md). Teardown by 2026-11-11 (§ 6).
 
 ## 0. Status
 

@@ -11,14 +11,14 @@ role of human review. Submission is an owner action.
 
 | Requirement | Status 2026-10-16 | Evidence / gap |
 | --- | --- | --- |
-| Technical report: problem, users, architecture, OpenCV 5, AWS deployment, evaluation, limitations, responsible use | Draft below; AWS section blocked | This file + linked docs |
+| Technical report: problem, users, architecture, OpenCV 5, AWS deployment, evaluation, limitations, responsible use | Draft below | This file + linked docs |
 | Judge-accessible repository | Repo exists; all work merged into `master` (2026-10-16) | Confirm judge access (owner) |
 | Pinned dependencies; build, deployment, test instructions | Done | `backend/requirements-*.lock`, `package-lock.json`, `readme.md` |
-| Architecture diagram with OpenCV 5 and AWS components | Done (AWS part is a design) | `docs/ARCHITECTURE.md` |
-| Working web endpoint **or** arranged live screen-share | **Missing** | AWS NOT DEPLOYED; local demo runs (`evaluation/localRun-2026-10-16/`) |
+| Architecture diagram with OpenCV 5 and AWS components | Done (AWS part deployed) | `docs/ARCHITECTURE.md` |
+| Working web endpoint **or** arranged live screen-share | Deployed 2026-10-16 | https://d4dqbqmvvujy7.cloudfront.net; `evaluation/aws-2026-10-16/README.md` |
 | Video ≤ 5 minutes: team, app working, architecture, results | **Missing** | Script: `docs/DEMO_SCRIPT.md` |
 | Evaluation evidence incl. failures and limitations | Development benchmark only; failure analysis done | `docs/EVALUATION.md`, `docs/FAILURE_ANALYSIS.md`, `docs/INDEPENDENT_EVALUATION.md` (NOT RUN) |
-| Core rule: meaningful AWS component | **Not met** | Owner account check pending: `docs/AWS_FREE_PLAN.md` |
+| Core rule: meaningful AWS component | Met | OpenCV 5 inference on EC2 Graviton; S3, Secrets Manager, CloudWatch, CloudFront, CloudFormation |
 
 Special awards: COOL not used; no agentic loop. No special-award eligibility is claimed.
 
@@ -30,10 +30,11 @@ Special awards: COOL not used; no agentic loop. No special-award eligibility is 
 > Single-photo part inspection with OpenCV 5 that answers PASS, FAIL, REVIEW, RETAKE, NO_PART or ERROR, shows its evidence, and sends doubtful parts to a person.
 
 **Built with:** opencv (5.0.0), python, fastapi, onnx, numpy, postgresql, redis, react, typescript, tailwindcss, nginx,
-docker, aws-cloudformation *(add AWS services only after they actually run)*.
+docker, amazon-ec2 (graviton), amazon-s3, amazon-cloudfront, aws-secrets-manager, amazon-cloudwatch, aws-cloudformation,
+aws-systems-manager (all running since 2026-10-16).
 
-**Try it out:** repository link · `TODO(owner)`: endpoint URL only after a verified deployment, otherwise state
-"live screen-share by arrangement".
+**Try it out:** repository link · https://d4dqbqmvvujy7.cloudfront.net (operator token supplied to judges privately;
+live screen-share also possible).
 
 **Video:** `TODO(owner)` after recording (≤ 5 min).
 
@@ -63,10 +64,14 @@ anomaly-map smoothing, connected-component evidence regions, and evidence render
 `cv.findTransformECC`-aligned template differences.
 
 ### AWS
-`TODO(owner)` — complete only after a verified deployment: region, services that actually ran, endpoint, smoke-test
-output, measured cloud latency, cost observed. **Current status: NOT DEPLOYED.** Prepared design: one Graviton
-instance running the compose stack, private S3 evidence bucket with expiry, Secrets Manager, CloudWatch Logs,
-CloudFront (`deploy/aws/motionQaStack.yaml`).
+Deployed on 2026-10-16 in `us-east-1` with CloudFormation (`deploy/aws/motionQaStack.yaml`): one Graviton `t4g.small`
+instance runs the compose stack (nginx, FastAPI with OpenCV 5 inference, PostgreSQL, Redis); evidence goes to a private
+S3 bucket with 30-day expiry; secrets live in Secrets Manager; container logs in CloudWatch Logs; CloudFront provides
+HTTPS. Deployment uses an IAM user with temporary credentials and a CloudFormation execution role limited to the
+stack's resources, with a permissions boundary on the server role. The smoke test passed through CloudFront; twenty
+test-split inspections returned the same decisions as the local evaluation (20/20) with a median of 450 ms inference
+and 779 ms server time. The account stays on the AWS Free plan; the estimated cost to 11 November is about US$17 of
+credits, and the stack is deleted after judging. Record: `evaluation/aws-2026-10-16/README.md`.
 
 ### Evaluation (measured, development data)
 Public VisA `pcb1` benchmark (HC-SR04 boards; CC BY 4.0, Zou et al. ECCV 2022). On the reused test split

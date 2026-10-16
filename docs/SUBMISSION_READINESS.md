@@ -2,7 +2,11 @@
 
 > **Evaluation qualification (2026-10-15):** Existing VisA results are exploratory, not a fresh independent test. Capture gates changed after test inspection; official-test AUROC includes validation anomalies. Independent evaluation has NOT RUN. Follow [the prospective protocol](INDEPENDENT_EVALUATION.md).
 
-**Status: not submission-ready.** The AWS requirement is unmet (deployment not executed), there is no working web endpoint,
+**Update 2026-10-16 (evening): AWS deployed** — endpoint https://d4dqbqmvvujy7.cloudfront.net, smoke test passed, record in
+`evaluation/aws-2026-10-16/README.md`. Remaining blockers: video, judge access to the repository, and the owner's
+final review of the write-up.
+
+**Earlier status: not submission-ready.** The AWS requirement is unmet (deployment not executed), there is no working web endpoint,
 and no video exists. Everything that can run locally has been implemented and verified locally, including the container
 build and a docker compose smoke test.
 
@@ -39,12 +43,12 @@ Judging runs 27 October – 9 November; winners are scheduled for 10 November.
 | Requirement (paraphrased) | Status | Evidence | Remaining work |
 | --- | --- | --- | --- |
 | OpenCV 5 used for substantive image or video analysis | **Met locally** | `opencv-python-headless==5.0.0.93`; `cv.dnn` new engine runs the feature model; OpenCV does localization, capture gates, preprocessing, anomaly maps, evidence (ARCHITECTURE.md). Runtime version recorded in results JSON; checked inside the Linux aarch64 container. | — |
-| A meaningful component runs on AWS | **Not met** | Stack prepared (EC2 inference host, S3 evidence storage, Secrets Manager, CloudWatch, CloudFront); cfn-lint clean; deployer role and change-set preview prepared; linux/arm64 stack fits t4g.small-like memory limits in local emulation. | Owner account checks, then the sequence in AWS_FREE_PLAN.md; run `deploy/smokeTest.sh` against the CloudFront URL, record endpoint and measurements. |
+| A meaningful component runs on AWS | **Met (2026-10-16)** | OpenCV 5 inference runs on EC2 Graviton `t4g.small` (us-east-1) behind CloudFront; evidence in S3; secrets in Secrets Manager; logs in CloudWatch; deployed by CloudFormation through a least-privilege execution role. 20/20 cloud decisions equal the local evaluation; median inference 450 ms. `evaluation/aws-2026-10-16/README.md`. | Keep it running through judging; tear down by 2026-11-11. |
 | Technical report: problem, users, architecture, OpenCV 5 implementation, AWS deployment, evaluation, limitations, responsible use | **Partial** | README, ARCHITECTURE, EVALUATION, REVIEW_AND_CHANGES, responsible-use notes below. | Add the measured AWS deployment section after deployment; assemble the Devpost write-up from these docs. |
 | Judge-accessible repository or archive | **Partial** | `github.com/ghazyachmed/MotionQA`; all work is on `master` (2026-10-16). | Confirm judges can access it (repository visibility or invitations). |
 | Pinned dependencies; build, deployment, test instructions | **Met locally** | `pyproject.toml` exact pins, `requirements-runtime.lock`, `requirements-dev.lock`, `package-lock.json` + `npm ci`; README commands; both Docker images built and the compose stack smoke-tested locally. | Pin base images by digest if strict reproducibility is required. |
-| Architecture diagram with OpenCV 5 and AWS components | **Met (design)** | Mermaid diagram in ARCHITECTURE.md; AWS part labelled "prepared, not deployed". | Update labels after deployment. |
-| Working web endpoint or arranged live screen-share | **Not met** | Local run only. | Deploy, or arrange a live screen-share with organizers. |
+| Architecture diagram with OpenCV 5 and AWS components | **Met** | Mermaid diagram in ARCHITECTURE.md; AWS part deployed 2026-10-16. | — |
+| Working web endpoint or arranged live screen-share | **Met** | https://d4dqbqmvvujy7.cloudfront.net; smoke test passed (health, model, auth, inspection, retry, evidence). | Give judges the operator token through the submission's private channel, or demonstrate live. |
 | Video ≤ 5 minutes: team, working app, architecture, principal results | **Not met** | DEMO_SCRIPT.md. | Record. |
 | Evaluation evidence including failures and limitations | **Met (benchmark, development data)** | EVALUATION.md, FAILURE_ANALYSIS.md, `evaluation/results/`. | Target-domain data and an independent test (INDEPENDENT_EVALUATION.md). |
 
