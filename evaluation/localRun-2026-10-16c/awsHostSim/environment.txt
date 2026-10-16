@@ -1,0 +1,5 @@
+date: 2026-10-16T07:40:18Z
+hostMemoryCap: 1700m
+inner docker 29.9.0 arm64
+Docker Compose version v5.6.0
+8

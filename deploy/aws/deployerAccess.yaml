@@ -2,9 +2,10 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: >-
   Least-privilege access for deploying the MotionQA stack with temporary credentials. Creates (1) a CloudFormation
   service role that creates only the MotionQA stack's resource types, with EC2 launches limited to small Graviton
-  types, and (2) a managed policy for the human deployer (attach it to an IAM Identity Center permission set or an
-  assumable role; do not create long-lived access keys). Billing, plan, and payment actions are not granted.
-  Deploy this template once, as an administrator, before `previewChangeSet.sh`.
+  types, and (2) a managed policy for the human deployer. Attach it, with SignInLocalDevelopmentAccess, to the IAM user
+  that signs in through `aws login` (no access keys). On a Free plan account do not use IAM Identity Center permission
+  sets: they need AWS Organizations, and joining Organizations upgrades the account to the Paid plan.
+  Billing, plan, and payment actions are not granted. Deploy once, as an administrator, before `previewChangeSet.sh`.
 
 Parameters:
   StackNamePrefix:
@@ -215,6 +216,23 @@ Resources:
           - Sid: CommandResults
             Effect: Allow
             Action: [ssm:GetCommandInvocation, ssm:ListCommandInvocations]
+            Resource: "*"
+          - Sid: TeardownRetainedBucket
+            Effect: Allow
+            Action: [s3:ListBucket, s3:GetBucketVersioning, s3:DeleteBucket]
+            Resource: !Sub "arn:${AWS::Partition}:s3:::${StackNamePrefix}-*"
+          - Sid: TeardownBucketObjects
+            Effect: Allow
+            Action: [s3:GetObject, s3:DeleteObject]
+            Resource: !Sub "arn:${AWS::Partition}:s3:::${StackNamePrefix}-*/*"
+          - Sid: TeardownVerification
+            Effect: Allow
+            Action:
+              - ec2:DescribeVolumes
+              - ec2:DescribeAddresses
+              - logs:DescribeLogGroups
+              - secretsmanager:ListSecrets
+              - cloudfront:ListDistributions
             Resource: "*"
           - Sid: ReadOperatorTokenOfThisStack
             Effect: Allow

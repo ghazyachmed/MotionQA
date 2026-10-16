@@ -82,7 +82,9 @@ services:
     environment:
       MOTIONQA_POSTGRES_DSN: postgresql+asyncpg://${POSTGRES_USER:-motionqa_admin}:${POSTGRES_PASSWORD}@postgresDb:5432/${POSTGRES_DB:-motionqa_logs}
       MOTIONQA_REDIS_URL: redis://redisCache:6379/0
-      MOTIONQA_RTSP_URL: ${MOTIONQA_RTSP_URL:?Set the RTSP URL of the stationary inspection camera}
+      # Not ":?": compose interpolates every service, even this opt-in profile, so a hard requirement here broke
+      # `up` for the web stack. edgeProcessor.py refuses to start without a URL.
+      MOTIONQA_RTSP_URL: ${MOTIONQA_RTSP_URL:-}
       MOTIONQA_LINE_ID: ${MOTIONQA_LINE_ID:-LINE_01}
       MOTIONQA_STATION_ID: ${MOTIONQA_STATION_ID:-STATION_01}
     volumes:

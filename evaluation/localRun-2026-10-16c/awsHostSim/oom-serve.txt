@@ -1,0 +1,5 @@
+/app-frontendUi-1 oomKilled=false restarts=0 status=running
+/app-backendApi-1 oomKilled=false restarts=0 status=running
+/app-postgresDb-1 oomKilled=false restarts=0 status=running
+/app-redisCache-1 oomKilled=false restarts=0 status=running
+host oomKilled=false status=running

@@ -27,3 +27,6 @@ backend/.venv/
 
 # Full-resolution demo evidence (regenerate with motionQa.evaluation.runLocalDemo)
 artifacts/local-demo-*/*-overlay.jpg
+
+# Local AWS inventory and teardown records (account and resource ids)
+deploy/aws/private/

@@ -152,8 +152,10 @@ for lack of credentials; no AWS endpoint or cloud measurement exists yet.
 - [docs/SUBMISSION_DRAFT.md](docs/SUBMISSION_DRAFT.md) — Devpost submission draft (not submitted)
 - [docs/INDEPENDENT_EVALUATION.md](docs/INDEPENDENT_EVALUATION.md) and [docs/PROSPECTIVE_COLLECTION.md](docs/PROSPECTIVE_COLLECTION.md) — sealed prospective protocol, photo-collection tooling, and adapting the profile to another component (NOT RUN)
 - [docs/AWS_FREE_PLAN.md](docs/AWS_FREE_PLAN.md) — Free Tier terms and owner account checks (NOT DEPLOYED)
+- [docs/AWS_DEPLOYMENT_PLAN.md](docs/AWS_DEPLOYMENT_PLAN.md) — resources, cost estimate to 10 Nov 2026, login, deploy and teardown steps (NOT DEPLOYED)
 - [evaluation/localRun-2026-10-16/README.md](evaluation/localRun-2026-10-16/README.md) — local agent run: tests, reproduction, real-inference demo
 - [evaluation/localRun-2026-10-16b/README.md](evaluation/localRun-2026-10-16b/README.md) — second pass: verification, failure fix, sessions, t4g.small emulation
+- [evaluation/localRun-2026-10-16c/README.md](evaluation/localRun-2026-10-16c/README.md) — third pass: simulated t4g.small host, deployment bug fix, script dry runs
 - [prd.md](prd.md) — product scope and goals
 
 ## Attribution

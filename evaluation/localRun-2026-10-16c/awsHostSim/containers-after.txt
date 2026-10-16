@@ -1,0 +1,4 @@
+app-frontendUi-1 8.863MiB / 7.748GiB
+app-backendApi-1 206.5MiB / 7.748GiB
+app-postgresDb-1 43.45MiB / 7.748GiB
+app-redisCache-1 13.38MiB / 7.748GiB

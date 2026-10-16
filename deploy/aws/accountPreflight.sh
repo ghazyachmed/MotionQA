@@ -1,6 +1,6 @@
 #!/bin/bash
 # Read-only AWS account preflight for MotionQA. Changes nothing; never upgrades plans or touches billing settings.
-# Run with temporary credentials (aws sso login / assumed role), not root and not long-lived access keys.
+# Run with temporary credentials (aws login as an IAM user, or an assumed role), not root and not long-lived access keys.
 # Usage: AWS_REGION=us-east-1 deploy/aws/accountPreflight.sh
 set -uo pipefail
 region="${AWS_REGION:?Set AWS_REGION}"
@@ -9,10 +9,10 @@ echo "== caller (must not be root)"
 arn=$(aws sts get-caller-identity --query Arn --output text) || { echo "No valid credentials" >&2; exit 1; }
 echo "$arn"
 case "$arn" in
-  *":root") echo "Refusing to continue with root credentials. Use IAM Identity Center or an assumed role." >&2; exit 1 ;;
+  *":root") echo "Refusing to continue with root credentials. Sign in with aws login as an IAM user instead." >&2; exit 1 ;;
 esac
-if [ -z "${AWS_SESSION_TOKEN:-}" ] && ! aws configure get sso_session >/dev/null 2>&1 && ! aws configure get role_arn >/dev/null 2>&1; then
-  echo "WARNING: credentials do not look temporary (no session token, SSO, or role). Prefer short-lived credentials."
+if [ -z "${AWS_SESSION_TOKEN:-}" ] && ! aws configure get login_session >/dev/null 2>&1 && ! aws configure get sso_session >/dev/null 2>&1 && ! aws configure get role_arn >/dev/null 2>&1; then
+  echo "WARNING: credentials do not look temporary (no aws login session, session token, SSO, or role). Prefer short-lived credentials."
 fi
 
 echo "== account plan (Free or Paid), if this CLI version supports it"

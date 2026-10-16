@@ -1,0 +1,17 @@
+# Local simulation only, layered after dockerComposeAws.yml by localAwsHostCheck.sh.
+# Replaces the two AWS-only pieces (CloudWatch log driver, S3 evidence store); everything else is the AWS configuration.
+services:
+  postgresDb:
+    logging: !override
+      driver: json-file
+  redisCache:
+    logging: !override
+      driver: json-file
+  backendApi:
+    environment:
+      MOTIONQA_EVIDENCE_BACKEND: local
+    logging: !override
+      driver: json-file
+  frontendUi:
+    logging: !override
+      driver: json-file

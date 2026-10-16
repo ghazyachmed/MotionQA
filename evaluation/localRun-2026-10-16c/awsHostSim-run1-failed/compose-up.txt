@@ -1,0 +1,2 @@
+error while interpolating services.edgeProcessor.environment.MOTIONQA_RTSP_URL: required variable MOTIONQA_RTSP_URL is missing a value: Set the RTSP URL of the stationary inspection camera
+exit=1 seconds=0

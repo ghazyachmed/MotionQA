@@ -1,0 +1,12 @@
+{
+  "inspections": 60,
+  "statuses": {
+    "201": 60
+  },
+  "roundTripMsMedian": 699.0,
+  "inferenceMsMedian": 592.1,
+  "serverTotalMsMedian": 677.7,
+  "sessionCreate": 201,
+  "sessionAttempt": 201,
+  "sessionDecision": "PASS"
+}

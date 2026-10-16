@@ -1,5 +1,7 @@
 # AWS credits and low-cost deployment
 
+> Current plan, estimate and teardown: [AWS_DEPLOYMENT_PLAN.md](AWS_DEPLOYMENT_PLAN.md) (2026-10-16, third pass).
+
 Checked 2026-10-15. No resources were provisioned in this review.
 
 ## Account decision
@@ -24,7 +26,9 @@ Burstable instances use standard CPU credits in the template, avoiding unlimited
 - Estimate EC2, public IPv4, EBS, S3, requests, Secrets Manager, CloudWatch and CloudFront in the official calculator. The previous USD 32/month figure is an unverified historical estimate, not a free-deployment promise.
 - Set actual and forecast budget alerts. Check credit balance independently; credits can hide gross resource consumption.
 - Run the documented smoke test, record the endpoint and measure cloud latency.
-- Stop EC2 between development sessions if appropriate. EBS and retained storage can still incur charges. Resume and test before demonstrations.
+- Do **not** stop and restart the instance to save money: its public IPv4 address and DNS name change, and the CloudFront
+  origin (fixed at stack creation) then points nowhere. Delete the stack and recreate it instead (see
+  [AWS_DEPLOYMENT_PLAN.md](AWS_DEPLOYMENT_PLAN.md)). EBS and retained storage incur charges regardless.
 - Preserve availability during judging, or arrange the permitted live demonstration explicitly.
 - After judging, back up needed evidence and delete the stack. Its S3 bucket is retained; inspect and delete that bucket separately when no longer needed. Check Billing for remaining resources.
 
@@ -95,9 +99,12 @@ Prepared and validated locally (cfn-lint 1.57.2, no findings; scripts `bash -n` 
 Owner sequence (each step stops before any charge-bearing action without your decision):
 
 1. Sign in yourself; complete the read-only console checks listed above (plan, credits, expiry, account creation date).
-2. As an administrator, deploy `deployerAccess.yaml` once and attach the `motionqa-deployer` policy to an IAM Identity
-   Center permission set (or an assumable role with MFA). Do not create IAM user access keys.
-3. `aws configure sso` → `aws sso login` (or `aws sts assume-role ... --duration-seconds 3600`).
+2. As an administrator, deploy `deployerAccess.yaml` once and attach the `motionqa-deployer` policy, plus
+   `SignInLocalDevelopmentAccess`, to an IAM user with console password and MFA. Do not create access keys.
+   **Correction (2026-10-16, third pass):** do not use IAM Identity Center permission sets on a Free plan account —
+   they need AWS Organizations, and joining Organizations upgrades the account to the Paid plan.
+3. `aws login --profile motionqa-deploy` (AWS CLI ≥ 2.32.0; browser sign-in as that IAM user; temporary credentials
+   refreshed for up to 12 hours).
 4. `AWS_REGION=<region> deploy/aws/accountPreflight.sh` — continue only if the plan, credits, and `t4g.small` eligibility support a no-charge or approved budget.
 5. Optional, owner decision: create an actual and forecast budget alert (alerts are not caps).
 6. `deploy/aws/localT4gSmallCheck.sh` results must show no OOM kills under the emulated limits.

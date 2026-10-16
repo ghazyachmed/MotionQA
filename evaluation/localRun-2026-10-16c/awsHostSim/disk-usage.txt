@@ -1,0 +1,7 @@
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          4         4         1.168GB   0B (0%)
+Containers      4         4         110.6kB   0B (0%)
+Local Volumes   3         3         47.81MB   0B (0%)
+Build Cache     37        0         1.112GB   1.036GB
+Filesystem                Size      Used Available Use% Mounted on
+/dev/vda1               223.6G     14.1G    198.1G   7% /etc/hostname
