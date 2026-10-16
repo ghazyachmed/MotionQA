@@ -1,6 +1,6 @@
 # MotionQA Demo Script (≤ 5 minutes)
 
-Limit source: the final submission requirements on https://opencv26.devpost.com/ (accessed 2026-10-15) ask for a
+Limit source: the final submission requirements on https://opencv26.devpost.com/ (re-read 2026-10-16) ask for a
 judge-accessible video of at most five minutes covering the team, the working application, its architecture, and its
 principal results.
 
@@ -23,8 +23,15 @@ Pick from the **test split** only (`evaluation/visaPcb1Split.json` → `splits.t
 (`artifacts/local-demo-001/demo_results.json`, recorded with `python -m motionQa.evaluation.runLocalDemo`) observed:
 `Normal/0011` → PASS, `Anomaly/000` → FAIL, `Normal/0027` → REVIEW, `Anomaly/048` → **PASS (a missed defect)**,
 `Anomaly/043` → NO_PART, a synthetic blur of `Normal/0011` → RETAKE, and any image with the profile missing → ERROR.
-Show the missed defect: it is the honest failure case. Do not use memory-bank images (`Normal/0000`–`0002`) as
-evidence of a correct PASS; they are part of the model.
+That run used decision policy 1. Under policy 2 (current profile) `Anomaly/043` → **REVIEW · PART_IDENTITY_UNCERTAIN**
+(regression test `testSevereMissingPartsAreReviewedNotDeclaredAbsent`); the other six are unchanged. Show the missed
+defect: it is the honest failure case. Do not use memory-bank images (`Normal/0000`–`0002`) as evidence of a correct
+PASS; they are part of the model. All these images are development data; say so.
+
+Recapture session (one part, several photos): in REAL INFERENCE, inspect a blurred copy of a test image → `RETAKE`;
+the session tile shows attempt 1 of 3 and the guidance "same fixture, camera and lighting". Inspect the sharp original
+→ the session closes with that decision. Three `RETAKE`s in a row → `ESCALATED`, final `REVIEW · RECAPTURE_LIMIT_REACHED`,
+and the last attempt enters the review queue. *New part* starts a new session.
 
 ## Shot list
 
@@ -36,10 +43,10 @@ evidence of a correct PASS; they are part of the model.
 | 1:10–1:40 | Inspect the normal test image | Decision `PASS`; raw anomaly score under the PASS threshold; latency split into inference and end-to-end. |
 | 1:40–2:20 | Inspect the anomalous test image | Decision `FAIL`; heatmap and boxes in the evidence overlay; review status `PENDING`; click *Confirm FAIL*; machine decision stays on record. |
 | 2:20–2:45 | Inspect the REVIEW image | Score between thresholds → `REVIEW`, not a forced PASS/FAIL. |
-| 2:45–3:15 | Blurred copy, then other-object image | `RETAKE · BLURRED`; `NO_PART · PART_NOT_RECOGNIZED`. Absence of a defect alone never produces PASS. |
+| 2:45–3:15 | Blurred copy, then the sharp original (same session), then `Anomaly/043` | `RETAKE · BLURRED` → retake in the same session → final decision; all photos kept in one session. 043: board present but unrecognizable → `REVIEW`, not "no part". |
 | 3:15–3:35 | Stop the API's model (rename profile) or show the `MODEL_UNAVAILABLE` test | Missing model → `ERROR`, never PASS. |
 | 3:35–3:55 | Switch mode bar to **SIMULATED DEMO**, run a forced scenario | Clearly labelled heuristic; stored as `SIMULATED_DEMO`; excluded from the decision trend. |
 | 3:55–4:40 | `docs/EVALUATION.md` table | Test-split missed-defect rate, false-rejection rate, REVIEW/RETAKE rates, AUROC vs the OpenCV-only baseline, latency on Apple M2. |
-| 4:40–5:00 | `docs/SUBMISSION_READINESS.md` | Remaining gaps: target-domain data, AWS deployment, target-site validation. |
+| 4:40–5:00 | `docs/FAILURE_ANALYSIS.md`, `docs/SUBMISSION_READINESS.md` | The missed missing-pin defect and why; orientation confound; remaining gaps: target-domain data, AWS deployment, independent evaluation. |
 
 Keep the recording under 5:00 including titles.

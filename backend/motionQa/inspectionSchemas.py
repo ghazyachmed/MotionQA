@@ -107,3 +107,31 @@ class DecisionTrendBucket(BaseModel):
 class DecisionTrendResponse(BaseModel):
     processingMode: ProcessingMode
     buckets: list[DecisionTrendBucket]
+
+
+class SessionCreateRequest(BaseModel):
+    sessionId: str | None = Field(default=None, pattern=identifierPattern)
+    componentId: str | None = Field(default=None, pattern=identifierPattern)
+    lineId: str | None = Field(default=None, min_length=3, max_length=40)
+    maxAttempts: int = Field(default=3, ge=1, le=5)
+
+
+class InspectionSessionView(BaseModel):
+    sessionId: str
+    componentId: str | None
+    lineId: str
+    stationId: str
+    maxAttempts: int
+    status: str
+    finalDecision: str | None
+    finalReasonCode: str | None
+    nextAttemptAllowed: bool
+    guidance: str
+    createdAt: datetime
+    closedAt: datetime | None
+    attempts: list[InspectionResult]
+
+
+class SessionAttemptResponse(BaseModel):
+    session: InspectionSessionView
+    inspection: InspectionResult

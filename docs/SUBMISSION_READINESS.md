@@ -10,12 +10,19 @@ build and a docker compose smoke test.
 submission text drafted in [SUBMISSION_DRAFT.md](SUBMISSION_DRAFT.md). AWS account eligibility NOT CHECKED (owner steps in
 [AWS_FREE_PLAN.md](AWS_FREE_PLAN.md)); AWS NOT DEPLOYED; prospective evaluation NOT RUN.
 
+**Update 2026-10-16, second pass:** overview, rules and updates re-read (deadline and requirements unchanged). Added:
+failure analysis and decision policy 2 ([FAILURE_ANALYSIS.md](FAILURE_ANALYSIS.md)), recapture sessions, owner-component
+profile tooling, least-privilege deployer access, change-set preview, and a local linux/arm64 check under t4g.small-like
+limits (no OOM; `evaluation/localRun-2026-10-16b/`). Still: AWS NOT CHECKED / NOT DEPLOYED, no endpoint, no video,
+independent evaluation NOT RUN.
+
 ## Sources
 
 | Source | URL | Accessed | Method |
 | --- | --- | --- | --- |
-| Competition overview | https://opencv26.devpost.com/ | 2026-10-15 | In-app browser (direct HTTP fetch returned 403) |
-| Official rules | https://opencv26.devpost.com/rules | 2026-10-15 | In-app browser |
+| Competition overview | https://opencv26.devpost.com/ | 2026-10-15, 2026-10-16 (twice) | In-app browser (direct HTTP fetch returned 403) |
+| Official rules | https://opencv26.devpost.com/rules | 2026-10-15, 2026-10-16 | In-app browser |
+| Updates | https://opencv26.devpost.com/updates | 2026-10-16 | In-app browser; one post (grant notifications) |
 | OpenCV releases | https://github.com/opencv/opencv/releases | 2026-10-15 | 5.0.0 listed as latest release (06 Jun 2026) |
 | OpenCV Python wheels | https://pypi.org/pypi/opencv-python-headless/5.0.0.93/json | 2026-10-15 | Wheels uploaded 2026-07-02 for macOS arm64/x86_64, manylinux x86_64/aarch64, Windows |
 
@@ -32,14 +39,14 @@ Judging runs 27 October – 9 November; winners are scheduled for 10 November.
 | Requirement (paraphrased) | Status | Evidence | Remaining work |
 | --- | --- | --- | --- |
 | OpenCV 5 used for substantive image or video analysis | **Met locally** | `opencv-python-headless==5.0.0.93`; `cv.dnn` new engine runs the feature model; OpenCV does localization, capture gates, preprocessing, anomaly maps, evidence (ARCHITECTURE.md). Runtime version recorded in results JSON; checked inside the Linux aarch64 container. | — |
-| A meaningful component runs on AWS | **Not met** | Stack prepared (EC2 inference host, S3 evidence storage, Secrets Manager, CloudWatch, CloudFront); cfn-lint clean. | Deploy with authorized credentials, run `deploy/smokeTest.sh` against the CloudFront URL, record endpoint and measurements. |
+| A meaningful component runs on AWS | **Not met** | Stack prepared (EC2 inference host, S3 evidence storage, Secrets Manager, CloudWatch, CloudFront); cfn-lint clean; deployer role and change-set preview prepared; linux/arm64 stack fits t4g.small-like memory limits in local emulation. | Owner account checks, then the sequence in AWS_FREE_PLAN.md; run `deploy/smokeTest.sh` against the CloudFront URL, record endpoint and measurements. |
 | Technical report: problem, users, architecture, OpenCV 5 implementation, AWS deployment, evaluation, limitations, responsible use | **Partial** | README, ARCHITECTURE, EVALUATION, REVIEW_AND_CHANGES, responsible-use notes below. | Add the measured AWS deployment section after deployment; assemble the Devpost write-up from these docs. |
-| Judge-accessible repository or archive | **Partial** | `github.com/ghazyachmed/MotionQA` exists; this branch is local only. | Push/merge (owner decision); confirm judges can access it. |
+| Judge-accessible repository or archive | **Partial** | `github.com/ghazyachmed/MotionQA`; all work is on `master` (2026-10-16). | Confirm judges can access it (repository visibility or invitations). |
 | Pinned dependencies; build, deployment, test instructions | **Met locally** | `pyproject.toml` exact pins, `requirements-runtime.lock`, `requirements-dev.lock`, `package-lock.json` + `npm ci`; README commands; both Docker images built and the compose stack smoke-tested locally. | Pin base images by digest if strict reproducibility is required. |
 | Architecture diagram with OpenCV 5 and AWS components | **Met (design)** | Mermaid diagram in ARCHITECTURE.md; AWS part labelled "prepared, not deployed". | Update labels after deployment. |
 | Working web endpoint or arranged live screen-share | **Not met** | Local run only. | Deploy, or arrange a live screen-share with organizers. |
 | Video ≤ 5 minutes: team, working app, architecture, principal results | **Not met** | DEMO_SCRIPT.md. | Record. |
-| Evaluation evidence including failures and limitations | **Met (benchmark)** | EVALUATION.md, `evaluation/results/visaPcb1Results.json`. | Target-domain data (see EVALUATION.md). |
+| Evaluation evidence including failures and limitations | **Met (benchmark, development data)** | EVALUATION.md, FAILURE_ANALYSIS.md, `evaluation/results/`. | Target-domain data and an independent test (INDEPENDENT_EVALUATION.md). |
 
 Overall rubric (rules page): technical execution 30 %, innovation 20 %, real-world impact 20 %, user experience 10 %,
 documentation and presentation 10 %, cloud delivery / reproducibility / responsible operation 10 %.
@@ -51,6 +58,7 @@ agent plan, tool call, or action — MotionQA has no agent loop; the review queu
 ## Responsible-use notes
 
 - Decisions are framed as inspection support: `FAIL` and `REVIEW` require a person; the machine decision stays on record.
+- When identity is uncertain, or retakes run out, the part goes to a person rather than being declared absent or failed.
 - The model is evaluated on a public electronics benchmark only. Using it on other parts without new validation data would
   misrepresent its performance.
 - Evidence images may show workers' hands or the workplace. Evidence is private (token-protected API, private bucket)

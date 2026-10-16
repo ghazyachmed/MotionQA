@@ -12,9 +12,10 @@ HC-SR04 sensor boards), and its results say nothing about motorcycle parts.
 | Capability | Status |
 | --- | --- |
 | Inspection pipeline, decision states, evidence, review, demo/real separation | Implemented, tested locally |
+| Recapture sessions (one part, limited retakes, escalation to a reviewer) | Implemented, tested locally |
 | Anomaly model on VisA `pcb1` | Evaluated on benchmark data ([docs/EVALUATION.md](docs/EVALUATION.md)) |
 | OpenCV 5 runtime (`opencv-python-headless==5.0.0.93`, `cv.dnn` new engine) | Verified locally |
-| AWS deployment (CloudFormation, S3 evidence, CloudFront) | Prepared, **AWS deployment not executed** |
+| AWS deployment (CloudFormation, S3 evidence, CloudFront) | Prepared; Linux ARM64 checked under t4g.small-like limits locally; **AWS deployment not executed** |
 | Validation on target components / target workplace | Not done |
 
 ## Inspection task
@@ -28,7 +29,8 @@ bent, scratch. Details, provenance, and the domain gap are in [docs/EVALUATION.m
 
 ## Exploratory results (reused test split, Apple M2 CPU)
 
-Independent evaluation has not run. See [the prospective protocol](docs/INDEPENDENT_EVALUATION.md).
+Independent evaluation has not run. See [the prospective protocol](docs/INDEPENDENT_EVALUATION.md). Every VisA image,
+including this test split, has influenced development; these are development numbers.
 See [AWS Free Plan guidance](docs/AWS_FREE_PLAN.md) before provisioning resources.
 
 | Metric (deployed operating point) | MotionQA | OpenCV-only baseline |
@@ -36,12 +38,15 @@ See [AWS Free Plan guidance](docs/AWS_FREE_PLAN.md) before provisioning resource
 | Image AUROC, official VisA 1cls test split | 0.974 | 0.861 |
 | Missed-defect rate (anomalous → PASS) | 1.9 % (1/53) | 0 % (0/53) |
 | False-rejection rate (normal → FAIL) | 4.0 % (4/100) | 7.0 % |
-| REVIEW rate | 26.1 % | 37.9 % |
-| RETAKE / NO_PART on clean test images | 0 % / 0.7 % | 0 % / 0 % |
+| REVIEW rate | 26.8 % | 37.9 % |
+| RETAKE / NO_PART on clean test images | 0 % / 0 % | 0 % / 0 % |
 | Synthetic blur, exposure, cut-off, empty scene (360 cases), other objects (50) | 0 PASS | — |
-| Server latency per 1404×1070 image (median) | 92 ms inference, 191 ms end-to-end | — |
+| Server latency per 1404×1070 image (median of one run; 3 runs ranged 92–137 / 155–233 ms) | 94 ms inference, 155 ms end-to-end | — |
 
 Scores are raw nearest-neighbour feature distances, not probabilities. Thresholds were chosen on validation data only.
+Decision policy 2 sends parts whose identity falls between validated targets and validated other objects to `REVIEW`
+instead of `NO_PART`. Known failures — a missed missing-pin defect (`Anomaly/048`) and an orientation confound in the
+data — are analysed in [docs/FAILURE_ANALYSIS.md](docs/FAILURE_ANALYSIS.md).
 
 ## Setup
 
@@ -128,6 +133,9 @@ for lack of credentials; no AWS endpoint or cloud measurement exists yet.
 - Benchmark-only model; no motorcycle-part data. Needed data is listed in [docs/EVALUATION.md](docs/EVALUATION.md).
 - About a third of good boards on the test split go to `REVIEW` at the deployed operating point (zero validation misses);
   other operating points are tabulated in the evaluation.
+- A missing component that exposes ordinary background can be passed (`Anomaly/048`); the patch memory has no notion of
+  where a component should be.
+- Recapture guidance keeps the fixture, camera, and lighting fixed; other viewpoints are not supported.
 - Capture gates and identity thresholds are calibrated to one benchmark setup; a new station needs new validation images.
 - Occlusion is not detected explicitly; dimensional measurement is not supported (no calibration or scale reference).
 - Single operator-token model, single instance, no database migrations (`inspection_records` replaces `components_log`).
@@ -137,13 +145,15 @@ for lack of credentials; no AWS endpoint or cloud measurement exists yet.
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — pipeline, decision states, counting, API, AWS design
 - [docs/EVALUATION.md](docs/EVALUATION.md) — dataset, splits, thresholds, results, latency
+- [docs/FAILURE_ANALYSIS.md](docs/FAILURE_ANALYSIS.md) — Anomaly/048 and 043, policy comparison, orientation confound
 - [docs/REVIEW_AND_CHANGES.md](docs/REVIEW_AND_CHANGES.md) — historical findings, verification, changes
 - [docs/SUBMISSION_READINESS.md](docs/SUBMISSION_READINESS.md) — competition requirements and blockers
 - [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) — five-minute demo
 - [docs/SUBMISSION_DRAFT.md](docs/SUBMISSION_DRAFT.md) — Devpost submission draft (not submitted)
-- [docs/INDEPENDENT_EVALUATION.md](docs/INDEPENDENT_EVALUATION.md) and [docs/PROSPECTIVE_COLLECTION.md](docs/PROSPECTIVE_COLLECTION.md) — sealed prospective protocol and photo-collection tooling (NOT RUN)
+- [docs/INDEPENDENT_EVALUATION.md](docs/INDEPENDENT_EVALUATION.md) and [docs/PROSPECTIVE_COLLECTION.md](docs/PROSPECTIVE_COLLECTION.md) — sealed prospective protocol, photo-collection tooling, and adapting the profile to another component (NOT RUN)
 - [docs/AWS_FREE_PLAN.md](docs/AWS_FREE_PLAN.md) — Free Tier terms and owner account checks (NOT DEPLOYED)
 - [evaluation/localRun-2026-10-16/README.md](evaluation/localRun-2026-10-16/README.md) — local agent run: tests, reproduction, real-inference demo
+- [evaluation/localRun-2026-10-16b/README.md](evaluation/localRun-2026-10-16b/README.md) — second pass: verification, failure fix, sessions, t4g.small emulation
 - [prd.md](prd.md) — product scope and goals
 
 ## Attribution

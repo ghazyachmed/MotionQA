@@ -1,0 +1,4 @@
+/motionqa-t4g-backendApi-1 oomKilled=false restarts=0 status=running
+/motionqa-t4g-frontendUi-1 oomKilled=false restarts=0 status=running
+/motionqa-t4g-postgresDb-1 oomKilled=false restarts=0 status=running
+/motionqa-t4g-redisCache-1 oomKilled=false restarts=0 status=running

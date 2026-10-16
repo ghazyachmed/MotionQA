@@ -4,9 +4,16 @@
 
 > **Reproduction (2026-10-16):** a clean rebuild reproduced every artifact checksum, all thresholds, and all 153 test-split decisions (`evaluation/localRun-2026-10-16/reproducibility.json`). This shows determinism on one machine, not independence or accuracy.
 
+> **Decision policy 2 (2026-10-16, second pass):** after the failure analysis of `Anomaly/043` and `Anomaly/048`
+> ([FAILURE_ANALYSIS.md](FAILURE_ANALYSIS.md)), part identity now has three bands: recognized, uncertain → `REVIEW`, and
+> not recognized → `NO_PART`. The model, memory bank, and score thresholds are unchanged (artifacts byte-identical). Every
+> VisA image examined, including the reused test split, is now **development data**. The policy-1 profile is kept as a
+> comparator (`evaluation/policies/visaPcb1-policy1-profile.json`, results in
+> `evaluation/results/history/visaPcb1Results-run3-policy1.json`).
+
 All numbers come from `evaluation/results/visaPcb1Results.json`, written by
-`python -m motionQa.evaluation.runEvaluation` on 2026-10-15. They describe a **public benchmark task**, not motorcycle
-components or any production line.
+`python -m motionQa.evaluation.runEvaluation` (policy 2, 2026-10-16). They describe a **public benchmark task**, not
+motorcycle components or any production line.
 
 ## 1. Task and claims
 
@@ -60,7 +67,7 @@ same split. If several images show the same board, validation and test results a
 | Memory bank | 16,000 patches (greedy coreset from a 25 % sample of masked patches of 804 images) + 804 global features; SHA-256 `396c4d74…8124` |
 | Output interpretation | Image score = maximum of the Gaussian-smoothed (σ = 4) patch distance map inside the scoring region. Raw distance, **not a probability**. Identity distance = 1 − max cosine similarity of the image's mean patch feature to the bank images' features. |
 | Class mapping | None; anomalies are reported as `anomaly` with regions |
-| Build time | 118.6 s for the bank on the Apple M2 (CPU) |
+| Build time | 118.6–276.7 s for the bank on the Apple M2 (CPU), depending on machine load (147.1 s in the current results file) |
 
 Model selection used validation data only, with a 300-image bank:
 
@@ -79,7 +86,8 @@ Model selection used validation data only, with a 300-image bank:
 | --- | --- | --- |
 | `passBelow` | 2.160 | Highest value at which validation missed defects ≤ 2 % (0 of 47 allowed) |
 | `failAtOrAbove` | 2.594 | Lowest value at which validation false rejections ≤ 2 % (2 of 100 allowed) |
-| `identityMaxDistance` | 0.151 | Midpoint between the largest validation target distance (0.084) and the smallest other-object validation distance (0.217) |
+| `identityMaxDistance` | 0.0844 | Largest validation target distance (normal or defective board): at or below → recognized |
+| `identityNoPartMinDistance` | 0.2167 | Smallest other-object validation distance: at or above → `NO_PART · PART_NOT_RECOGNIZED`; in between → `REVIEW · PART_IDENTITY_UNCERTAIN` (policy 1 used one midpoint, 0.151) |
 | Region threshold | 2.160 | Connected regions of the anomaly map ≥ `passBelow` become evidence boxes |
 | Capture gates | see results JSON `thresholds.capture` | Margins around the range of validation normals: frame mean luminance [0.236, 0.764], frame clipping (dark ≤ 0.150, bright ≤ 0.210), background median luminance [0.245, 0.741], part area fraction [0.197, 0.423], silhouette edge sharpness ≥ 114.3 (0.85 × 1st percentile) |
 
@@ -115,15 +123,17 @@ Inspection decisions at the deployed operating point:
 | True class | PASS | FAIL | REVIEW | RETAKE | NO_PART | ERROR |
 | --- | --- | --- | --- | --- | --- | --- |
 | Normal (100) | 60 | 4 | 36 | 0 | 0 | 0 |
-| Anomalous (53) | **1** | 47 | 4 | 0 | 1 | 0 |
+| Anomalous (53) | **1** | 47 | 5 | 0 | 0 | 0 |
+
+(Policy 1: anomalous 1 / 47 / 4 / 0 / **1** / 0 — `Anomaly/043` was `NO_PART`.)
 
 | Key metric | Model | Baseline |
 | --- | --- | --- |
 | Missed-defect rate (anomalous → PASS) | **1.9 %** (1/53) | 0.0 % (0/53) |
 | False-rejection rate (normal → FAIL) | 4.0 % (4/100) | 7.0 % (7/100) |
-| REVIEW rate (all test images) | 26.1 % | 37.9 % |
+| REVIEW rate (all test images) | 26.8 % (41/153; policy 1: 26.1 %) | 37.9 % |
 | RETAKE rate | 0.0 % | 0.0 % |
-| NO_PART rate | 0.7 % (1 anomalous image) | 0.0 % |
+| NO_PART rate | 0.0 % (policy 1: 0.7 %) | 0.0 % |
 | Automatic decisions (PASS + FAIL) | 73.2 % | 62.1 % |
 | Accuracy of automatic decisions | 95.5 % | 92.6 % |
 
@@ -135,30 +145,37 @@ Per defect label (anomalous test images):
 | Label | n | PASS | FAIL | REVIEW | NO_PART |
 | --- | --- | --- | --- | --- | --- |
 | melt | 23 | 0 | 21 | 2 | 0 |
-| missing | 9 | 1 | 6 | 1 | 1 |
+| missing | 9 | 1 | 6 | 2 | 0 |
 | bent | 7 | 0 | 7 | 0 | 0 |
 | scratch | 7 | 0 | 7 | 0 | 0 |
 | combinations (bent+melt, melt+missing, melt+scratch ×3, melt+scratch+missing, scratch+missing) | 7 | 0 | 6 | 1 | 0 |
 
-Failure analysis:
+Failure analysis (details and reproduction: [FAILURE_ANALYSIS.md](FAILURE_ANALYSIS.md)):
 
-- The one missed defect (`Anomaly/048.JPG`, "missing") scored 2.125, just under `passBelow` (2.160).
-- `Anomaly/043.JPG` ("missing": both transducers absent) scored 5.09 but its identity distance (0.155) exceeded
-  `identityMaxDistance` (0.151), so it was reported as `NO_PART · PART_NOT_RECOGNIZED`. It is not a PASS, but the reason
-  is misleading. Proposed fix (not applied, to avoid another test-informed change): route identity distances between the
-  validated target maximum and the other-object minimum to `REVIEW`.
+- The one missed defect (`Anomaly/048.JPG`, a missing GND header pin) scored 2.125, under `passBelow` (2.160). Its highest
+  anomaly value is *outside* the defect: the exposed spot looks like normal background to a position-agnostic patch
+  memory. Two structural candidates were tried and rejected; it stays an **unfixed known limitation**, guarded by a
+  strict expected-failure test.
+- `Anomaly/043.JPG` (both transducers absent) scored 5.09 with identity distance 0.155, inside the evidence gap between
+  validated targets (≤ 0.084) and other objects (≥ 0.217). Policy 1 reported `NO_PART`; policy 2 reports
+  `REVIEW · PART_IDENTITY_UNCERTAIN` with the anomaly evidence attached. It is not forced to `FAIL`.
 - The four false rejections (`Normal/0306, 0333, 0730, 0920`) scored 2.60–3.73.
 - 36 % of good boards go to REVIEW: the 0-miss validation target places `passBelow` near the median normal score (2.14).
+- Orientation confound: 49 of 53 defective test boards are photographed pins-down, against 25 of 100 normal ones, and
+  pins-down good boards go to REVIEW far more often (19 of 25 vs 17 of 75). Part of the measured separation reflects
+  orientation rather than defects.
 
 Operating points (thresholds chosen on validation for each missed-defect target, applied unchanged to test):
 
 | Validation miss target | `passBelow` / `failAtOrAbove` | Test missed-defect | Test false-rejection | Test REVIEW | Automatic decisions |
 | --- | --- | --- | --- | --- | --- |
-| ≤ 2 % (deployed) | 2.160 / 2.594 | 1.9 % | 4.0 % | 26.1 % | 73.2 % |
-| ≤ 5 % | 2.502 / 2.594 | 7.5 % | 4.0 % | 1.3 % | 98.0 % |
-| ≤ 10 % | 2.664 / 2.664 | 18.9 % | 3.0 % | 0.0 % | 99.3 % |
+| ≤ 2 % (deployed) | 2.160 / 2.594 | 1.9 % | 4.0 % | 26.8 % | 73.2 % |
+| ≤ 5 % | 2.502 / 2.594 | 7.5 % | 4.0 % | 2.0 % | 98.0 % |
+| ≤ 10 % | 2.664 / 2.664 | 18.9 % | 3.0 % | 0.7 % | 99.3 % |
 
 The REVIEW band is how the system trades human effort for missed defects; the choice belongs to the quality owner.
+Identity-uncertain `REVIEW` (`Anomaly/043`) does not move with the score thresholds, so it remains in every row. (Before
+this was corrected on 2026-10-16, the table re-decided that image from its score alone.)
 
 ## 7. Capture faults and wrong objects (test images)
 
@@ -170,16 +187,27 @@ The REVIEW band is how the system trades human effort for missed defects; the ch
 | Overexposure | 60 RETAKE (OVEREXPOSED) |
 | Part cut off by the frame edge | 60 RETAKE (PART_CUT_OFF) |
 | Empty scene | 60 NO_PART (PART_NOT_FOUND) |
-| 50 real images of other objects (other VisA categories) | 0 PASS, 0 FAIL, 0 REVIEW; 16 NO_PART (11 not recognized, 5 not found), 34 RETAKE (27 underexposed, 3 blurred, 3 scale, 1 cut off) |
+| 50 real images of other objects (other VisA categories) | 0 PASS, 0 FAIL; 2 REVIEW (identity uncertain: `pcb2/Normal/0809`, `0881`, a different PCB type); 14 NO_PART (9 not recognized, 5 not found); 34 RETAKE (27 underexposed, 3 blurred, 3 scale, 1 cut off) |
 
 No synthetic fault or wrong object produced PASS. Wrong objects often receive `RETAKE` because the capture gates run before
-the identity check; the reason then describes a capture mismatch rather than a wrong part.
+the identity check; the reason then describes a capture mismatch rather than a wrong part. Policy 1 gave the two `pcb2`
+boards `NO_PART`; policy 2 sends them to a person because their identity distance lies in the unvalidated gap.
+
+### Old vs new decision policy on all development data
+
+`python -m motionQa.evaluation.comparePolicies` runs both profiles over 1,564 inspections (804 memory-bank, 147 validation,
+153 test, 100 other-object, 360 synthetic capture faults). Three decisions changed, all `NO_PART → REVIEW`
+(`Anomaly/043`, `pcb2/Normal/0809`, `pcb2/Normal/0881`). False PASS stayed 1 (048); false PASS on wrong objects and
+capture faults stayed 0; normal → FAIL stayed 12 (6 bank, 2 validation, 4 test). Totals REVIEW 246 → 249, NO_PART
+88 → 85, RETAKE 373, ERROR 0. Source: `evaluation/results/policyComparison-p1-vs-p2.json`. Memory-bank images are not
+all accepted (632 PASS, 166 REVIEW, 6 FAIL of 804), because the bank keeps a 16,000-patch coreset.
 
 ## 8. Latency
 
 | Item | Value |
 | --- | --- |
 | Hardware | Apple M2 (4 performance + 4 efficiency cores), 16 GiB, macOS 26.6.2, on battery power |
+| Run | `evaluation/results/visaPcb1Results.json`, 2026-10-16T04:28Z |
 | Software | Python 3.11.15, OpenCV 5.0.0 (NEON baseline), NumPy 2.4.6, single process, CPU only |
 | Input | 1404×1070 JPEG (~250 KB) from the test split; model input 448×448 |
 | Samples | 59 sequential inspections (first excluded and reported as cold) |
@@ -187,13 +215,16 @@ the identity check; the reason then describes a capture mismatch rather than a w
 
 | Stage | Median | p95 |
 | --- | --- | --- |
-| JPEG decode (`cv.imdecode`) | 4.4 ms | 4.7 ms |
-| Capture gates (localization, exposure, silhouette sharpness) | 37.1 ms | 39.1 ms |
-| **Inference** (DNN forward + nearest-neighbour scoring + anomaly map) | **91.6 ms** | 93.3 ms |
-| Evidence rendering, JPEG encoding, storage | 56.9 ms | 60.4 ms |
-| **End-to-end, server side** (decode → stored evidence) | **190.6 ms** | 195.3 ms |
-| Cold start: profile + model load | 19.4 ms | — |
-| Cold start: first inspection | 241.4 ms | — |
+| JPEG decode (`cv.imdecode`) | 4.4 ms | 5.0 ms |
+| Capture gates (localization, exposure, silhouette sharpness) | 38.0 ms | 45.7 ms |
+| **Inference** (DNN forward + nearest-neighbour scoring + anomaly map) | **94.4 ms** | 133.2 ms |
+| Evidence rendering, JPEG encoding, storage | 17.8 ms | 20.4 ms |
+| **End-to-end, server side** (decode → stored evidence) | **154.9 ms** | 204.0 ms |
+| Cold start: profile + model load | 13.8 ms | — |
+| Cold start: first inspection | 191.1 ms | — |
+
+Run-to-run variation on the same laptop is large: inference medians were 91.6 ms (2026-10-15), 137.2 ms and 94.4 ms
+(2026-10-16), end-to-end 190.6, 233.2 and 154.9 ms. Treat these as one machine's range, not a benchmark.
 
 Not included: HTTP upload time, database write, browser rendering, Python import/process start. Single smoke-test
 requests through the full stack measured 292 ms (local uvicorn) and 382 ms (docker compose with nginx) server-side
@@ -201,7 +232,12 @@ totals; these are single observations, not benchmarks. No AWS latency has been m
 
 ## 9. Software tests (synthetic fixtures; no accuracy meaning)
 
-- Backend: `cd backend && pytest -q` → 66 passed. Covers decision bands, detector no-PASS rule, capture gates (empty scene,
+- Backend (2026-10-16, second pass): `cd backend && pytest -q` → 91 passed, 1 expected failure (Python 3.11 and 3.12;
+  `evaluation/localRun-2026-10-16b/`). Added since the first round: identity bands (policy 1 and 2), the two known failure
+  cases on real VisA images (`testKnownFailureCases.py`, skipped when the dataset is absent; 048 is a strict `xfail`),
+  recapture sessions (attempt limit, escalation to REVIEW, ordering, replay, auth), and component-profile building on
+  synthetic fixtures.
+- Backend (2026-10-15): `pytest -q` → 66 passed. Covers decision bands, detector no-PASS rule, capture gates (empty scene,
   blur, underexposure, cut-off, local defects not mistaken for capture faults), invalid uploads (empty, wrong type,
   truncated, oversized, tiny), missing model, invalid model output, inference timeout, inference exception, evidence storage
   failure, tampered memory bank, stale profile, session counting (stationary part, re-entry, short dropout, flicker),
@@ -233,9 +269,10 @@ python -m motionQa.evaluation.visaDataset            # needs ../data/downloads/V
 python -m motionQa.evaluation.runEvaluation          # ≈10 min on an Apple M2
 ```
 
-Model selection, the memory bank, and decision thresholds were identical across the three full runs of this round. Capture
-gates changed twice after test outcomes were seen (see REVIEW_AND_CHANGES.md, N10); earlier result files are in
-`evaluation/results/history/`.
+Model selection, the memory bank, and decision thresholds were identical across the three full runs of 2026-10-15, the
+clean rebuild, and the two policy-2 runs of 2026-10-16 (artifact checksums equal; the second policy-2 run only fixed the
+operating-point table). Capture gates changed twice after test outcomes were seen (see REVIEW_AND_CHANGES.md, N10);
+earlier result files are in `evaluation/results/history/`.
 
 ## 12. Domain gap and data required for target validation
 

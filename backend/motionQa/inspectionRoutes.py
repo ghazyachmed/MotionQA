@@ -39,7 +39,6 @@ async def createInspection(
     redisGateway: RedisGateway = Depends(getRedisGateway),
 ) -> InspectionResult:
     # AI Assisted Logic
-    settings = request.app.state.settings
     request.app.state.inspectionRateLimiter.check(getClientKey(request))
     resolvedInspectionId = inspectionId or f"insp-{uuid.uuid4()}"
     existing = await service.getInspection(resolvedInspectionId)
@@ -47,6 +46,17 @@ async def createInspection(
         response.status_code = status.HTTP_200_OK
         response.headers["Idempotent-Replay"] = "true"
         return existing
+    stored, isCreated = await performInspection(request, response, image, resolvedInspectionId, componentId, lineId, capturedAt, service, pipeline, redisGateway)
+    if not isCreated:
+        response.status_code = status.HTTP_200_OK
+        response.headers["Idempotent-Replay"] = "true"
+    return stored
+
+
+async def performInspection(request: Request, response: Response, image: UploadFile, inspectionId: str, componentId: str | None, lineId: str | None,
+                            capturedAt: datetime | None, service: InspectionService, pipeline: InspectionPipeline, redisGateway: RedisGateway) -> tuple[InspectionResult, bool]:
+    """Decode, inspect, persist, and publish one capture. Shared by single inspections and session attempts."""
+    settings = request.app.state.settings
     payload = await image.read(settings.maxUploadBytes + 1)
     decodeStart = time.perf_counter()
     try:
@@ -55,7 +65,7 @@ async def createInspection(
         raise HTTPException(status_code=invalidImageStatus.get(error.code, status.HTTP_400_BAD_REQUEST), detail={"code": error.code, "message": error.detail}) from error
     decodeMs = (time.perf_counter() - decodeStart) * 1000
     inspectionRequest = InspectionRequest(
-        inspectionId=resolvedInspectionId,
+        inspectionId=inspectionId,
         lineId=lineId or settings.lineId,
         stationId=settings.stationId,
         componentId=componentId,
@@ -64,9 +74,7 @@ async def createInspection(
     result = await pipeline.inspect(decoded.image, inspectionRequest, decodeMs=decodeMs)
     stored, isCreated = await service.recordInspection(result)
     if not isCreated:
-        response.status_code = status.HTTP_200_OK
-        response.headers["Idempotent-Replay"] = "true"
-        return stored
+        return stored, False
     logger.info("inspection %s decision=%s reason=%s mode=%s totalMs=%.1f", stored.inspectionId, stored.decision, stored.reasonCode, stored.processingMode, stored.latency.totalMs)
     try:
         await redisGateway.publishLiveEvent(stored)
@@ -74,7 +82,7 @@ async def createInspection(
     except Exception as error:
         logger.warning("live publish failed for %s: %s", stored.inspectionId, error)
         response.headers["X-MotionQA-Live-Publish"] = "failed"
-    return stored
+    return stored, True
 
 
 @router.get("", response_model=list[InspectionResult])

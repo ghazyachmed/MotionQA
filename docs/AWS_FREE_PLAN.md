@@ -77,3 +77,45 @@ Official terms re-read on 2026-10-16 (public pages, no login):
 
 If zero-cost eligibility cannot be established from these values, do not deploy; use the live screen-share option for
 judging instead.
+
+## Deployment preparation with temporary credentials (2026-10-16, second pass)
+
+Status re-checked: still no connected owner browser, AWS CLI, or credentials on the agent's machine.
+**Account plan, credits, expiry, and service availability remain NOT CHECKED. AWS: NOT DEPLOYED.**
+
+Prepared and validated locally (cfn-lint 1.57.2, no findings; scripts `bash -n` clean):
+
+| File | Purpose |
+| --- | --- |
+| `deploy/aws/deployerAccess.yaml` | Admin deploys once: a CloudFormation service role limited to this stack's resource types (EC2 launches only `t4g.small`/`t4g.medium`, instance roles named `<stack>-*`, only the SSM core managed policy), and a deployer managed policy for temporary credentials. No billing, plan, or payment permissions. |
+| `deploy/aws/accountPreflight.sh` | Read-only: refuses root credentials, warns on non-temporary credentials, prints plan state (if the CLI supports `freetier get-account-plan-state`), Free Tier eligible instance types in the region, and budgets. |
+| `deploy/aws/previewChangeSet.sh` | Creates a change set through the service role and prints every resource; **never executes it**. |
+| `deploy/aws/dockerComposeT4gSmall.yml`, `deploy/aws/localT4gSmallCheck.sh` | Local Linux ARM64 emulation of a 2 GiB / 2 vCPU budget before deployment (results in `evaluation/localRun-2026-10-16b/t4gSmall/`). |
+
+Owner sequence (each step stops before any charge-bearing action without your decision):
+
+1. Sign in yourself; complete the read-only console checks listed above (plan, credits, expiry, account creation date).
+2. As an administrator, deploy `deployerAccess.yaml` once and attach the `motionqa-deployer` policy to an IAM Identity
+   Center permission set (or an assumable role with MFA). Do not create IAM user access keys.
+3. `aws configure sso` → `aws sso login` (or `aws sts assume-role ... --duration-seconds 3600`).
+4. `AWS_REGION=<region> deploy/aws/accountPreflight.sh` — continue only if the plan, credits, and `t4g.small` eligibility support a no-charge or approved budget.
+5. Optional, owner decision: create an actual and forecast budget alert (alerts are not caps).
+6. `deploy/aws/localT4gSmallCheck.sh` results must show no OOM kills under the emulated limits.
+7. `AWS_REGION=<region> deploy/aws/previewChangeSet.sh motionqa <service-role-arn>` → review every resource and its cost.
+8. Only then, and only if you decide to: execute the printed change set, run `deploy/aws/publishRelease.sh`, and
+   `deploy/smokeTest.sh`. Record the real endpoint, region, smoke output, and measured latency.
+
+### Local Linux ARM64 emulation result (2026-10-16)
+
+Docker Desktop linux/arm64 VM on the Apple M2, containers capped at API 1 GiB + 2 CPUs, Postgres 256 MiB, Redis 64 MiB,
+nginx 64 MiB (≈ 1.4 GiB, leaving ≈ 0.6 GiB of a t4g.small for the OS, Docker and agents). **Emulation, not a t4g
+measurement**; the instance's CPU-credit baseline is not emulated.
+
+- Frontend build and backend lock-file install both succeed under a 1 GiB cap; OpenCV 5.0.0 imports on linux/arm64.
+- 40 sequential + 20 four-way-concurrent inspections: all 201; peak API memory 556.5 MiB of 1 GiB; no OOM kills or
+  restarts. Inference median 496 ms sequential (2 OpenCV threads), about 1.3–1.5 inspections/s in total.
+- Through nginx: a recapture session works; a 15-request burst gets 11 × 201 and 4 × 429.
+
+Implication for step 6: memory fits with margin. CPU is the constraint. In **standard** credit mode (the stack's
+setting), sustained load above the t4g.small baseline throttles the instance instead of adding charges; do not switch to
+unlimited mode without a budget decision. Details: `evaluation/localRun-2026-10-16b/README.md` § 6.

@@ -1,0 +1,25 @@
+# Local emulation of a t4g.small budget (2 vCPU, 2 GiB RAM) for the application containers.
+# About 0.5 GiB is left for Amazon Linux, the Docker daemon, the SSM agent, and the awslogs driver.
+#   docker compose -f dockerCompose.yml -f deploy/aws/dockerComposeT4gSmall.yml -p motionqa-t4g up -d --build
+# This is an emulation on a different host CPU (Apple M2 under Docker Desktop's Linux VM); it is not a t4g measurement.
+services:
+  postgresDb:
+    platform: linux/arm64
+    mem_limit: 256m
+    cpus: 0.5
+  redisCache:
+    platform: linux/arm64
+    mem_limit: 64m
+    cpus: 0.25
+  backendApi:
+    platform: linux/arm64
+    environment:
+      # Raised only by localT4gSmallCheck.sh for its direct-to-API load measurement; deployed default is 30.
+      MOTIONQA_INSPECTION_RATE_LIMIT_PER_MINUTE: ${MOTIONQA_INSPECTION_RATE_LIMIT_PER_MINUTE:-30}
+    mem_limit: 1024m
+    memswap_limit: 1024m
+    cpus: 2
+  frontendUi:
+    platform: linux/arm64
+    mem_limit: 64m
+    cpus: 0.25

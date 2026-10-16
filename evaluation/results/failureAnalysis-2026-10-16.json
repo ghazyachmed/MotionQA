@@ -1,0 +1,118 @@
+{
+  "generatedAt": "2026-10-16T04:08:29.711441+00:00",
+  "status": "DEVELOPMENT_DATA_ANALYSIS_NOT_EVALUATION",
+  "profile": "visa-pcb1-patchcore-mnv2",
+  "groundTruthOverlap": [
+    {
+      "image": "Anomaly/048",
+      "imageScore": 2.1249,
+      "identityDistance": 0.007,
+      "groundTruthPixelsAtModelInput": 289,
+      "groundTruthInsideScoringRegion": 1.0,
+      "maxScoreInsideGroundTruth": 2.0974,
+      "maxScoreOutsideGroundTruth": 2.1249,
+      "passBelow": 2.159876585006714
+    },
+    {
+      "image": "Anomaly/043",
+      "imageScore": 5.0855,
+      "identityDistance": 0.1554,
+      "groundTruthPixelsAtModelInput": 35750,
+      "groundTruthInsideScoringRegion": 1.0,
+      "maxScoreInsideGroundTruth": 5.0855,
+      "maxScoreOutsideGroundTruth": 3.322,
+      "passBelow": 2.159876585006714
+    },
+    {
+      "image": "Anomaly/000",
+      "imageScore": 2.7422,
+      "identityDistance": 0.0109,
+      "groundTruthPixelsAtModelInput": 262,
+      "groundTruthInsideScoringRegion": 1.0,
+      "maxScoreInsideGroundTruth": 2.7422,
+      "maxScoreOutsideGroundTruth": 2.7252,
+      "passBelow": 2.159876585006714
+    }
+  ],
+  "templateBaseline": {
+    "validationNormal": {
+      "p50": 1.7512,
+      "p90": 9.8123,
+      "p95": 11.9402,
+      "p98": 12.1938,
+      "p100": 12.3977
+    },
+    "anomaly048": 12.0285,
+    "note": "048 scores inside the normal range; high normal scores are pins-down boards (alignment), so this channel cannot separate 048"
+  },
+  "positionalPrototype": {
+    "bankImages": 402,
+    "bankFractionRotated": 0.157,
+    "validationImageAuroc": 0.8604,
+    "validationNormal": {
+      "p50": 1.2631,
+      "p90": 1.8939,
+      "p95": 2.8104,
+      "p98": 3.0775,
+      "p100": 3.2363
+    },
+    "anomaly048": 1.5362,
+    "note": "Not adopted: 048 stays well inside the normal range and validation AUROC is below the deployed scorer"
+  },
+  "identity": {
+    "validationTargetMax": 0.0844,
+    "testTargetsAboveValidationMax": [
+      {
+        "image": "pcb1/Data/Images/Anomaly/043.JPG",
+        "identity": 0.1554
+      }
+    ],
+    "otherObjectValidationMin": 0.2167,
+    "otherObjectTestMin": 0.2022,
+    "anomaly043": 0.1554
+  },
+  "orientationConfound": {
+    "source": "visaPcb1Results-run3-policy1.json",
+    "decisionsByLabelAndOrientation": {
+      "normal|pinsUp": {
+        "PASS": 55,
+        "FAIL": 3,
+        "REVIEW": 17,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "normal|pinsDown": {
+        "PASS": 5,
+        "FAIL": 1,
+        "REVIEW": 19,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "anomaly|pinsUp": {
+        "PASS": 0,
+        "FAIL": 3,
+        "REVIEW": 1,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "anomaly|pinsDown": {
+        "PASS": 1,
+        "FAIL": 44,
+        "REVIEW": 3,
+        "RETAKE": 0,
+        "NO_PART": 1,
+        "ERROR": 0
+      }
+    },
+    "medianAnomalyScore": {
+      "normal|pinsUp": 2.1119,
+      "normal|pinsDown": 2.2303,
+      "anomaly|pinsUp": 2.9386,
+      "anomaly|pinsDown": 3.202
+    },
+    "note": "Pins-down boards are under-represented among bank normals but make up most anomalies; reported metrics partly reflect orientation."
+  }
+}

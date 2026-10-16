@@ -1,0 +1,33 @@
+# Run 1 (2026-10-16T04:11Z), superseded: requests went through nginx and the API at deployed rate limits (API 30/min -> 429, nginx 60/min burst 10 -> 503).
+# Latency figures below are therefore not usable. Memory samples during run 1: backendApi 362.8-363.9 MiB of 1 GiB, postgres 86-88 MiB of 256, redis 39-40 MiB of 64, nginx 17 MiB of 64; no OOM, no restarts.
+== build-memory check: frontend and backend builds under a 1 GiB cap
+FRONTEND_BUILD_OK
+BACKEND_DEPS_OK 5.0.0
+== stack under t4g.small-like limits
+{
+ "sequentialRequests": 40,
+ "sequentialStatuses": [
+  201,
+  429
+ ],
+ "roundTripMs": {
+  "median": 610.6,
+  "p95": 781.2
+ },
+ "inferenceMs": {
+  "median": 495.5,
+  "p95": 659.9
+ },
+ "concurrent4Requests": 20,
+ "concurrentStatuses": [
+  429,
+  503
+ ],
+ "concurrentRoundTripMsMax": 27.4
+}
+/motionqa-t4g-backendApi-1 oomKilled=false restarts=0 status=running
+/motionqa-t4g-frontendUi-1 oomKilled=false restarts=0 status=running
+/motionqa-t4g-postgresDb-1 oomKilled=false restarts=0 status=running
+/motionqa-t4g-redisCache-1 oomKilled=false restarts=0 status=running
+results in evaluation/localRun-2026-10-16b/t4gSmall
+exit=0

@@ -1,5 +1,9 @@
 {
-  "generatedAt": "2026-10-15T07:18:22.495588+00:00",
+  "evaluationStatus": "EXPLORATORY_TEST_INFORMED",
+  "decisionPolicy": 2,
+  "independentEvaluationCompleted": false,
+  "qualification": "Capture gates were revised after test inspection; officialTest includes validation anomalies.",
+  "generatedAt": "2026-10-16T04:28:14.230166+00:00",
   "command": "python -m motionQa.evaluation.runEvaluation",
   "environment": {
     "python": "3.11.15",
@@ -92,7 +96,7 @@
   },
   "model": {
     "profileId": "visa-pcb1-patchcore-mnv2",
-    "version": "2026.10.15",
+    "version": "2026.10.16",
     "backbone": {
       "file": "models/image_classification_mobilenetv2_2022apr.onnx",
       "sha256": "c0c3f76d93fa3fd6580652a45618618a220fced18babf65774ed169de0432ad5",
@@ -115,13 +119,14 @@
     },
     "inputSize": 448,
     "scoringMask": "dilated",
-    "buildSeconds": 118.6
+    "buildSeconds": 147.1
   },
   "thresholds": {
     "decision": {
       "passBelow": 2.159876585006714,
       "failAtOrAbove": 2.5937364101409917,
-      "identityMaxDistance": 0.15055954456329346,
+      "identityMaxDistance": 0.0844113826751709,
+      "identityNoPartMinDistance": 0.21670770645141602,
       "regionThreshold": 2.159876585006714,
       "missedDefectTarget": 0.02,
       "falseRejectTarget": 0.02
@@ -195,9 +200,9 @@
         "testKeyMetrics": {
           "missedDefectRate": 0.0189,
           "falseRejectionRate": 0.04,
-          "reviewRate": 0.2614,
+          "reviewRate": 0.268,
           "retakeRate": 0.0,
-          "noPartRate": 0.0065,
+          "noPartRate": 0.0,
           "automaticDecisionRate": 0.732,
           "automaticDecisionAccuracy": 0.9554
         }
@@ -212,9 +217,9 @@
         "testKeyMetrics": {
           "missedDefectRate": 0.0755,
           "falseRejectionRate": 0.04,
-          "reviewRate": 0.0131,
+          "reviewRate": 0.0196,
           "retakeRate": 0.0,
-          "noPartRate": 0.0065,
+          "noPartRate": 0.0,
           "automaticDecisionRate": 0.9804,
           "automaticDecisionAccuracy": 0.9467
         }
@@ -229,9 +234,9 @@
         "testKeyMetrics": {
           "missedDefectRate": 0.1887,
           "falseRejectionRate": 0.03,
-          "reviewRate": 0.0,
+          "reviewRate": 0.0065,
           "retakeRate": 0.0,
-          "noPartRate": 0.0065,
+          "noPartRate": 0.0,
           "automaticDecisionRate": 0.9935,
           "automaticDecisionAccuracy": 0.9145
         }
@@ -255,17 +260,17 @@
         "decisions": {
           "PASS": 1,
           "FAIL": 47,
-          "REVIEW": 4,
+          "REVIEW": 5,
           "RETAKE": 0,
-          "NO_PART": 1,
+          "NO_PART": 0,
           "ERROR": 0
         },
         "rates": {
           "PASS": 0.0189,
           "FAIL": 0.8868,
-          "REVIEW": 0.0755,
+          "REVIEW": 0.0943,
           "RETAKE": 0.0,
-          "NO_PART": 0.0189,
+          "NO_PART": 0.0,
           "ERROR": 0.0
         }
       },
@@ -291,9 +296,9 @@
       "keyMetrics": {
         "missedDefectRate": 0.0189,
         "falseRejectionRate": 0.04,
-        "reviewRate": 0.2614,
+        "reviewRate": 0.268,
         "retakeRate": 0.0,
-        "noPartRate": 0.0065,
+        "noPartRate": 0.0,
         "automaticDecisionRate": 0.732,
         "automaticDecisionAccuracy": 0.9554
       }
@@ -350,9 +355,9 @@
       "missing": {
         "PASS": 1,
         "FAIL": 6,
-        "REVIEW": 1,
+        "REVIEW": 2,
         "RETAKE": 0,
-        "NO_PART": 1,
+        "NO_PART": 0,
         "ERROR": 0
       },
       "scratch": {
@@ -539,16 +544,17 @@
         "decisions": {
           "PASS": 0,
           "FAIL": 0,
-          "REVIEW": 0,
+          "REVIEW": 2,
           "RETAKE": 34,
-          "NO_PART": 16,
+          "NO_PART": 14,
           "ERROR": 0
         },
         "reasonCodes": {
           "BLURRED": 3,
           "PART_CUT_OFF": 1,
+          "PART_IDENTITY_UNCERTAIN": 2,
           "PART_NOT_FOUND": 5,
-          "PART_NOT_RECOGNIZED": 11,
+          "PART_NOT_RECOGNIZED": 9,
           "PART_SCALE_OUT_OF_RANGE": 3,
           "UNDEREXPOSED": 27
         }
@@ -561,43 +567,43 @@
     "imageResolution": "1404x1070",
     "modelInput": "448x448",
     "coldStart": {
-      "profileAndModelLoadMs": 19.4,
-      "firstInspectionTotalMs": 241.44
+      "profileAndModelLoadMs": 13.8,
+      "firstInspectionTotalMs": 191.12
     },
     "decodeMs": {
       "count": 59,
       "mean": 4.46,
-      "median": 4.43,
-      "p95": 4.7,
-      "max": 4.96
+      "median": 4.35,
+      "p95": 5.0,
+      "max": 7.38
     },
     "captureChecksMs": {
       "count": 59,
-      "mean": 37.22,
-      "median": 37.06,
-      "p95": 39.12,
-      "max": 41.04
+      "mean": 39.57,
+      "median": 37.98,
+      "p95": 45.69,
+      "max": 71.75
     },
     "inferenceMs": {
       "count": 59,
-      "mean": 91.72,
-      "median": 91.57,
-      "p95": 93.29,
-      "max": 94.71
+      "mean": 100.19,
+      "median": 94.38,
+      "p95": 133.24,
+      "max": 180.11
     },
     "evidenceMs": {
       "count": 59,
-      "mean": 56.89,
-      "median": 56.88,
-      "p95": 60.43,
-      "max": 61.19
+      "mean": 18.0,
+      "median": 17.8,
+      "p95": 20.42,
+      "max": 22.47
     },
     "endToEndMs": {
       "count": 59,
-      "mean": 190.81,
-      "median": 190.57,
-      "p95": 195.34,
-      "max": 200.83
+      "mean": 162.82,
+      "median": 154.9,
+      "p95": 204.02,
+      "max": 267.85
     }
   },
   "records": {
@@ -1722,8 +1728,8 @@
         "image": "pcb1/Data/Images/Anomaly/043.JPG",
         "label": "anomaly",
         "defectType": "missing",
-        "decision": "NO_PART",
-        "reasonCode": "PART_NOT_RECOGNIZED",
+        "decision": "REVIEW",
+        "reasonCode": "PART_IDENTITY_UNCERTAIN",
         "anomalyScore": 5.085483074188232,
         "identityDistance": 0.1553756594657898
       },
@@ -4409,16 +4415,16 @@
         "scenario": "other_object",
         "label": "other_object",
         "image": "pcb2/Data/Images/Normal/0809.JPG",
-        "decision": "NO_PART",
-        "reasonCode": "PART_NOT_RECOGNIZED",
+        "decision": "REVIEW",
+        "reasonCode": "PART_IDENTITY_UNCERTAIN",
         "identityDistance": 0.2122347354888916
       },
       {
         "scenario": "other_object",
         "label": "other_object",
         "image": "pcb2/Data/Images/Normal/0881.JPG",
-        "decision": "NO_PART",
-        "reasonCode": "PART_NOT_RECOGNIZED",
+        "decision": "REVIEW",
+        "reasonCode": "PART_IDENTITY_UNCERTAIN",
         "identityDistance": 0.20215177536010742
       },
       {

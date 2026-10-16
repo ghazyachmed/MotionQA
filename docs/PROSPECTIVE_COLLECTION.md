@@ -114,3 +114,36 @@ A prospective experiment uses a fully documented new development/test collection
   `InspectionPipeline` on **synthetic** fixtures (`backend/tests/testProspectiveCollection.py`). The fixture IDs and labels
   are test data, not a collection.
 - No real collection, labels, or metrics exist.
+
+## 8. Adapting to the owner's component (prepared 2026-10-16)
+
+The VisA profile is not assumed to fit any other board or part. `motionQa.evaluation.buildComponentProfile` provides:
+
+```bash
+# a) Does the existing VisA profile fit your station? (development photos only; expect mostly RETAKE/NO_PART if not)
+python -m motionQa.evaluation.buildComponentProfile fit-check \
+  --profile models/visaPcb1/inspectionProfile.json --manifest /private/manifest.json --images /private/images
+
+# b) Build a separate profile from DEVELOPMENT rows only (test rows are never read):
+python -m motionQa.evaluation.buildComponentProfile build \
+  --manifest /private/manifest.json --images /private/images --dev-labels /private/dev-labels.json \
+  --profile-id <component>-v1 --component-name "<component name>" --output-dir models/<component>-v1
+```
+
+- `dev-labels.json` maps development images only to `normal`, `anomaly`, `capture_fault`, or `wrong_object`. The tool
+  refuses a label file that names any test image.
+- Normal development parts are split by `physicalPartId` into memory-bank and calibration groups (all views of a part stay
+  together). Capture gates, identity bands, and PASS/FAIL thresholds come from the calibration group only.
+- With fewer than 5 development defect images the tool refuses to set a FAIL threshold unless `--allow-normal-only` is
+  given; the profile then states `NORMAL-ONLY … FAIL threshold NOT validated on defects`.
+- Without development wrong-object images, unrecognized objects go to `REVIEW` rather than `NO_PART`.
+- Output: `inspectionProfile.json`, `featureExtractor.onnx`, `memoryBank.npz`, `developmentReport.json`
+  (status `DEVELOPMENT_PROFILE_NOT_VALIDATED`).
+
+Freeze before the final test: commit all code, run `frozenProtocol seal` with the new profile, record the seal, then use
+`frozenInference predict` on test images from **different parts and sessions**. Any change after seeing test results
+retires that test set into development.
+
+Minimum development inputs enforced by the tool: 20 memory-bank normal images and 10 calibration normal images (more
+parts are better; these are software floors, not a sample-size justification). Verified only on synthetic fixtures
+(`backend/tests/testComponentProfile.py`).

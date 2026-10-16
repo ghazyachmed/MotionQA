@@ -1,0 +1,383 @@
+{
+  "generatedAt": "2026-10-16T01:27:49.356775+00:00",
+  "status": "DEVELOPMENT_DATA_BEHAVIOUR_COMPARISON_NOT_EVALUATION",
+  "oldProfile": {
+    "path": "inspectionProfile.policy1.json",
+    "policy": 1,
+    "decision": {
+      "passBelow": 2.159876585006714,
+      "failAtOrAbove": 2.5937364101409917,
+      "identityMaxDistance": 0.15055954456329346,
+      "identityNoPartMinDistance": null,
+      "regionThreshold": 2.159876585006714,
+      "missedDefectTarget": 0.02,
+      "falseRejectTarget": 0.02
+    }
+  },
+  "newProfile": {
+    "path": "inspectionProfile.json",
+    "policy": 2,
+    "decision": {
+      "passBelow": 2.159876585006714,
+      "failAtOrAbove": 2.5937364101409917,
+      "identityMaxDistance": 0.0844113826751709,
+      "identityNoPartMinDistance": 0.21670770645141602,
+      "regionThreshold": 2.159876585006714,
+      "missedDefectTarget": 0.02,
+      "falseRejectTarget": 0.02
+    }
+  },
+  "old": {
+    "byStratum": {
+      "bank|normal": {
+        "PASS": 632,
+        "FAIL": 6,
+        "REVIEW": 166,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "otherObjectTest|wrong_object": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 34,
+        "NO_PART": 16,
+        "ERROR": 0
+      },
+      "otherObjectValidation|wrong_object": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 39,
+        "NO_PART": 11,
+        "ERROR": 0
+      },
+      "synthetic_blur_mild|capture_fault": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 60,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "synthetic_blur_strong|capture_fault": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 60,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "synthetic_cut_off|capture_fault": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 60,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "synthetic_empty_scene|capture_fault": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 0,
+        "NO_PART": 60,
+        "ERROR": 0
+      },
+      "synthetic_overexposed|capture_fault": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 60,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "synthetic_underexposed|capture_fault": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 60,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "test|anomaly": {
+        "PASS": 1,
+        "FAIL": 47,
+        "REVIEW": 4,
+        "RETAKE": 0,
+        "NO_PART": 1,
+        "ERROR": 0
+      },
+      "test|normal": {
+        "PASS": 60,
+        "FAIL": 4,
+        "REVIEW": 36,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "validation|anomaly": {
+        "PASS": 0,
+        "FAIL": 44,
+        "REVIEW": 3,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "validation|normal": {
+        "PASS": 61,
+        "FAIL": 2,
+        "REVIEW": 37,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      }
+    },
+    "byLabel": {
+      "anomaly": {
+        "PASS": 1,
+        "FAIL": 91,
+        "REVIEW": 7,
+        "RETAKE": 0,
+        "NO_PART": 1,
+        "ERROR": 0
+      },
+      "capture_fault": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 300,
+        "NO_PART": 60,
+        "ERROR": 0
+      },
+      "normal": {
+        "PASS": 753,
+        "FAIL": 12,
+        "REVIEW": 239,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "wrong_object": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 73,
+        "NO_PART": 27,
+        "ERROR": 0
+      }
+    },
+    "falsePass": {
+      "anomaly": 1,
+      "wrong_object": 0,
+      "capture_fault": 0
+    },
+    "falseFailNormal": 12,
+    "totals": {
+      "PASS": 754,
+      "FAIL": 103,
+      "REVIEW": 246,
+      "RETAKE": 373,
+      "NO_PART": 88,
+      "ERROR": 0
+    },
+    "count": 1564
+  },
+  "new": {
+    "byStratum": {
+      "bank|normal": {
+        "PASS": 632,
+        "FAIL": 6,
+        "REVIEW": 166,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "otherObjectTest|wrong_object": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 2,
+        "RETAKE": 34,
+        "NO_PART": 14,
+        "ERROR": 0
+      },
+      "otherObjectValidation|wrong_object": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 39,
+        "NO_PART": 11,
+        "ERROR": 0
+      },
+      "synthetic_blur_mild|capture_fault": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 60,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "synthetic_blur_strong|capture_fault": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 60,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "synthetic_cut_off|capture_fault": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 60,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "synthetic_empty_scene|capture_fault": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 0,
+        "NO_PART": 60,
+        "ERROR": 0
+      },
+      "synthetic_overexposed|capture_fault": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 60,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "synthetic_underexposed|capture_fault": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 60,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "test|anomaly": {
+        "PASS": 1,
+        "FAIL": 47,
+        "REVIEW": 5,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "test|normal": {
+        "PASS": 60,
+        "FAIL": 4,
+        "REVIEW": 36,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "validation|anomaly": {
+        "PASS": 0,
+        "FAIL": 44,
+        "REVIEW": 3,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "validation|normal": {
+        "PASS": 61,
+        "FAIL": 2,
+        "REVIEW": 37,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      }
+    },
+    "byLabel": {
+      "anomaly": {
+        "PASS": 1,
+        "FAIL": 91,
+        "REVIEW": 8,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "capture_fault": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 0,
+        "RETAKE": 300,
+        "NO_PART": 60,
+        "ERROR": 0
+      },
+      "normal": {
+        "PASS": 753,
+        "FAIL": 12,
+        "REVIEW": 239,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "wrong_object": {
+        "PASS": 0,
+        "FAIL": 0,
+        "REVIEW": 2,
+        "RETAKE": 73,
+        "NO_PART": 25,
+        "ERROR": 0
+      }
+    },
+    "falsePass": {
+      "anomaly": 1,
+      "wrong_object": 0,
+      "capture_fault": 0
+    },
+    "falseFailNormal": 12,
+    "totals": {
+      "PASS": 754,
+      "FAIL": 103,
+      "REVIEW": 249,
+      "RETAKE": 373,
+      "NO_PART": 85,
+      "ERROR": 0
+    },
+    "count": 1564
+  },
+  "changedDecisions": [
+    {
+      "image": "pcb1/Data/Images/Anomaly/043.JPG",
+      "stratum": "test",
+      "label": "anomaly",
+      "oldDecision": "NO_PART",
+      "oldReason": "PART_NOT_RECOGNIZED",
+      "newDecision": "REVIEW",
+      "newReason": "PART_IDENTITY_UNCERTAIN",
+      "identityDistance": 0.1553756594657898,
+      "anomalyScore": 5.085483074188232
+    },
+    {
+      "image": "pcb2/Data/Images/Normal/0809.JPG",
+      "stratum": "otherObjectTest",
+      "label": "wrong_object",
+      "oldDecision": "NO_PART",
+      "oldReason": "PART_NOT_RECOGNIZED",
+      "newDecision": "REVIEW",
+      "newReason": "PART_IDENTITY_UNCERTAIN",
+      "identityDistance": 0.2122347354888916,
+      "anomalyScore": 4.402626991271973
+    },
+    {
+      "image": "pcb2/Data/Images/Normal/0881.JPG",
+      "stratum": "otherObjectTest",
+      "label": "wrong_object",
+      "oldDecision": "NO_PART",
+      "oldReason": "PART_NOT_RECOGNIZED",
+      "newDecision": "REVIEW",
+      "newReason": "PART_IDENTITY_UNCERTAIN",
+      "identityDistance": 0.20215177536010742,
+      "anomalyScore": 4.623815059661865
+    }
+  ],
+  "transitionCounts": {
+    "anomaly: NO_PART -> REVIEW": 1,
+    "wrong_object: NO_PART -> REVIEW": 2
+  }
+}

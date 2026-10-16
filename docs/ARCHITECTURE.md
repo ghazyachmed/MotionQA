@@ -60,15 +60,33 @@ Parity with ONNX Runtime was checked during development (max absolute difference
 
 | State | Meaning | Produced when |
 | --- | --- | --- |
-| `NO_PART` | Target component absent | No foreground object, or the object's global feature is farther from every normal bank image than the validated identity threshold |
+| `NO_PART` | Target component absent | No foreground object, or (decision policy 2) an object whose identity distance is at or beyond the closest validated *other* object |
 | `RETAKE` | Capture cannot support an inspection | Under/over-exposure, blur, part touching the frame edge, part scale outside the validated range |
-| `REVIEW` | Evidence supports neither PASS nor FAIL | Anomaly score between `passBelow` and `failAtOrAbove` |
+| `REVIEW` | Evidence supports neither PASS nor FAIL | Anomaly score between `passBelow` and `failAtOrAbove`, **or** (policy 2) an object is present but its identity distance lies between every validated target image and every validated other object (`PART_IDENTITY_UNCERTAIN`: possibly incomplete or a different part), **or** a recapture session reached its attempt limit |
 | `PASS` | No anomaly above the validated pass threshold | Score `< passBelow` **and** every gate passed **and** the model loaded and produced valid output |
 | `FAIL` | Anomaly at or above the fail threshold | Score `≥ failAtOrAbove`; candidate regions attached as evidence |
 | `ERROR` | Processing failed | Missing/tampered model artifacts, invalid model output, timeout, exception, evidence storage failure |
 
 `FAIL` and `REVIEW` start with review status `PENDING`. A reviewer resolves them to `PASS` or `FAIL`; the machine
 decision, reason, scores, and thresholds are never overwritten (`reviewerDecision`, `finalDecision` are separate fields).
+
+### Identity: presence versus recognition (decision policy 2, 2026-10-16)
+
+Presence comes from localization (a foreground object separated from the background). Recognition compares the object's
+mean patch feature with the memory-bank images (cosine identity distance). Policy 2 only decides where validation has
+evidence: at or below the largest validated target distance → recognized; at or above the smallest validated other-object
+distance → `NO_PART`; in between → `REVIEW · PART_IDENTITY_UNCERTAIN`. Policy 1 profiles (single midpoint threshold)
+still load and behave as before; `evaluation/policies/visaPcb1-policy1-profile.json` is kept as the comparator.
+
+### Recapture sessions
+
+`POST /api/v1/sessions` opens a session for one physical part (default 3 attempts, maximum 5). Each
+`POST /api/v1/sessions/{id}/attempts` runs a normal inspection with id `<session>-aNN`, so retries of the same attempt
+number replay. PASS, FAIL, or REVIEW closes the session (`COMPLETED`). RETAKE, NO_PART, or ERROR allow another attempt with
+guidance to re-seat the part in the same fixture, camera position, and lighting; the profile is not validated for other
+views, so guidance never asks for a new angle. At the limit (or immediately when the model is unavailable) the session is
+`ESCALATED` with final decision REVIEW and the last attempt enters the human review queue; every attempt, photo, and
+machine decision stays stored.
 
 ### Counting physical inspections
 
@@ -101,10 +119,13 @@ decision, reason, scores, and thresholds are never overwritten (`reviewerDecisio
 | `POST /api/v1/inspections/{id}/review` | bearer | Human resolution to PASS or FAIL |
 | `GET /api/v1/inspections/{id}/evidence/{kind}` | bearer | Evidence bytes streamed from local disk or S3 |
 | `POST /api/v1/live-events` | bearer | Simulated demo event (always stored as `SIMULATED_DEMO`) |
+| `POST /api/v1/sessions`, `GET /api/v1/sessions/{id}` | bearer | Open / read a recapture session for one part |
+| `POST /api/v1/sessions/{id}/attempts` | bearer | One capture inside a session (multipart image + `attemptNumber`) |
 | `WS /ws/qc-stream?token=` | token | Live inspection results |
 
 Security controls: bearer tokens compared in constant time (`MOTIONQA_API_TOKENS`), auth required by default, per-client
-rate limits (API and nginx), 8 MB upload limit, JPEG/PNG magic-byte check, pixel-count limit, identifier patterns that
+rate limits (API 30 inspections/min per client, shared by single inspections and session attempts; nginx 60/min with a
+burst of 10 on both paths; both answer 429), 8 MB upload limit, JPEG/PNG magic-byte check, pixel-count limit, identifier patterns that
 reject path characters, evidence keys confined to the evidence root, CORS restricted to configured origins without
 credentials, non-root container user.
 

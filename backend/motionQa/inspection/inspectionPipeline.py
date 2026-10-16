@@ -53,6 +53,17 @@ def decideFromAnomalyScore(score: float, passBelow: float, failAtOrAbove: float)
     return InspectionDecision.review, "ANOMALY_SCORE_IN_REVIEW_BAND"
 
 
+def classifyIdentity(distance: float, acceptMax: float, noPartMin: float | None) -> str:
+    """RECOGNIZED, UNCERTAIN, or NOT_RECOGNIZED. Without noPartMin (policy 1) there is no uncertain band."""
+    if not np.isfinite(distance):
+        return "INVALID"
+    if distance <= acceptMax:
+        return "RECOGNIZED"
+    if noPartMin is not None and distance < noPartMin:
+        return "UNCERTAIN"
+    return "NOT_RECOGNIZED"
+
+
 def reviewStatusFor(decision: InspectionDecision) -> ReviewStatus:
     return ReviewStatus.pending if decision in (InspectionDecision.review, InspectionDecision.failed) else ReviewStatus.notRequired
 
@@ -140,7 +151,7 @@ class InspectionPipeline:
         assert self.profile is not None and self.scorer is not None
         profile = self.profile
         captureThresholds: CaptureThresholds = profile.captureThresholds
-        thresholds = {**captureThresholds.toDict(), **{key: float(value) for key, value in profile.decision.model_dump().items()}}
+        thresholds = {**captureThresholds.toDict(), **{key: float(value) for key, value in profile.decision.model_dump().items() if value is not None}}
         captureStart = time.perf_counter()
         location = locatePart(image)
         metrics = measureCapture(image, location)
@@ -159,11 +170,12 @@ class InspectionPipeline:
         inferenceMs = (time.perf_counter() - inferenceStart) * 1000
         scores["anomalyScore"] = anomaly.imageScore
         scores["identityDistance"] = anomaly.identityDistance
-        if anomaly.identityDistance > profile.decision.identityMaxDistance:
+        identity = classifyIdentity(anomaly.identityDistance, profile.decision.identityMaxDistance, profile.decision.identityNoPartMinDistance)
+        if identity in ("NOT_RECOGNIZED", "INVALID"):
             return AnalysisOutcome(
-                InspectionDecision.noPart,
-                "PART_NOT_RECOGNIZED",
-                f"Object differs from the validated component (identity distance {anomaly.identityDistance:.3f} > {profile.decision.identityMaxDistance:.3f})",
+                InspectionDecision.noPart if identity == "NOT_RECOGNIZED" else InspectionDecision.error,
+                "PART_NOT_RECOGNIZED" if identity == "NOT_RECOGNIZED" else "INVALID_MODEL_OUTPUT",
+                f"Object differs from every validated target image (identity distance {anomaly.identityDistance:.3f})",
                 scores,
                 thresholds,
                 location,
@@ -171,6 +183,10 @@ class InspectionPipeline:
                 inferenceMs=inferenceMs,
             )
         decision, reasonCode = decideFromAnomalyScore(anomaly.imageScore, profile.decision.passBelow, profile.decision.failAtOrAbove)
+        if identity == "UNCERTAIN":
+            # An object is present, but its overall appearance lies between every validated target image and every
+            # validated other object. Neither PASS, FAIL, nor NO_PART is supported, so a person decides.
+            decision, reasonCode = InspectionDecision.review, "PART_IDENTITY_UNCERTAIN"
         x0, y0, side = cropBox
         scale = side / inputSize
         regions = [
@@ -184,6 +200,10 @@ class InspectionPipeline:
             for region in extractAnomalyRegions(anomaly.anomalyMap, profile.decision.regionThreshold)
         ]
         detail = f"Anomaly score {anomaly.imageScore:.3f}; PASS below {profile.decision.passBelow:.3f}, FAIL at or above {profile.decision.failAtOrAbove:.3f}"
+        if identity == "UNCERTAIN":
+            detail = (f"Part present but not recognized with confidence: identity distance {anomaly.identityDistance:.3f} is above every validated "
+                      f"target image ({profile.decision.identityMaxDistance:.3f}) and below every validated other object "
+                      f"({profile.decision.identityNoPartMinDistance:.3f}). It may be incomplete or a different part. {detail}")
         return AnalysisOutcome(decision, reasonCode, detail, scores, thresholds, location, regions, anomaly.anomalyMap, cropBox, captureMs, inferenceMs)
 
     async def inspect(self, image: np.ndarray, request: InspectionRequest, decodeMs: float = 0.0) -> InspectionResult:

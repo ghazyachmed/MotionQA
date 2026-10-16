@@ -4,6 +4,10 @@ Status: NOT RUN. No new independent dataset has been supplied (rechecked 2026-10
 
 The existing VisA pcb1 results are exploratory development evidence. Capture gates were revised after viewing test outcomes. Also, 47 official-test anomalies entered validation/model selection, so AUROC on the entire official test set is not an independent estimate. Preserve every historical result; do not relabel it as fresh evidence.
 
+Step 9 was applied on 2026-10-16: two test-split failures (`Anomaly/043`, `Anomaly/048`) were analysed and decision policy 2
+was adopted because of them, so the entire VisA split, test included, is now development data. A final claim for policy 2
+needs a new prospective test set ([FAILURE_ANALYSIS.md](FAILURE_ANALYSIS.md)).
+
 ## Required prospective procedure
 
 1. Assign a dataset custodian. Inventory all previously used images and their physical-part and capture-session identifiers. Unknown identifiers are a limitation; never invent them.

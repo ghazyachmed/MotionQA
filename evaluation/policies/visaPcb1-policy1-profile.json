@@ -1,0 +1,75 @@
+{
+  "profileId": "visa-pcb1-patchcore-mnv2",
+  "version": "2026.10.15",
+  "task": "Single-board stationary visual inspection on the public VisA pcb1 benchmark (normal-only anomaly detection)",
+  "domainNote": "Benchmark task only. Not validated on motorcycle components or any customer production line.",
+  "backbone": {
+    "file": "models/image_classification_mobilenetv2_2022apr.onnx",
+    "sha256": "c0c3f76d93fa3fd6580652a45618618a220fced18babf65774ed169de0432ad5",
+    "source": "https://huggingface.co/opencv/image_classification_mobilenet/resolve/main/image_classification_mobilenetv2_2022apr.onnx",
+    "license": "Apache-2.0"
+  },
+  "featureModel": {
+    "file": "featureExtractor.onnx",
+    "sha256": "742edd5417d1f4f11ec372cbd088f282036d3630208b8e15d0ed1ccae6a041a6",
+    "source": "derived from image_classification_mobilenetv2_2022apr.onnx by motionQa.inspection.featureExtractor.buildFeatureModel",
+    "license": "Apache-2.0"
+  },
+  "memoryBank": {
+    "file": "memoryBank.npz",
+    "sha256": "396c4d74e8ae5459a768a848f76008aa6a5b815a88c198dfa856e8ff3d158124",
+    "source": "VisA pcb1 bank split (804 normal images), 16000-patch greedy coreset",
+    "license": "CC BY 4.0 (derived from VisA)"
+  },
+  "outputNames": [
+    "365",
+    "426"
+  ],
+  "preprocessing": {
+    "inputSize": 448,
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "scoringMask": "dilated"
+  },
+  "capture": {
+    "minFrameMeanLuminance": 0.23612925738498397,
+    "maxFrameMeanLuminance": 0.7644066443841961,
+    "maxFrameDarkFraction": 0.15004260191176078,
+    "maxFrameBrightFraction": 0.2095341747210906,
+    "minPartContrast": 21.118711471557617,
+    "minPartAreaFraction": 0.19652193509615384,
+    "maxPartAreaFraction": 0.4226825420673077,
+    "minBackgroundLuminance": 0.24470588235294116,
+    "maxBackgroundLuminance": 0.7411764705882353,
+    "minEdgeSharpness": 114.25084367370606
+  },
+  "decision": {
+    "passBelow": 2.159876585006714,
+    "failAtOrAbove": 2.5937364101409917,
+    "identityMaxDistance": 0.15055954456329346,
+    "regionThreshold": 2.159876585006714,
+    "missedDefectTarget": 0.02,
+    "falseRejectTarget": 0.02
+  },
+  "dataset": {
+    "name": "VisA",
+    "category": "pcb1",
+    "license": "CC BY 4.0",
+    "source": "https://amazon-visual-anomaly.s3.us-west-2.amazonaws.com/VisA_20220922.tar",
+    "archiveSha256": "2eb8690c803ab37de0324772964100169ec8ba1fa3f7e94291c9ca673f40f362",
+    "splitSeed": 20261015
+  },
+  "validationSummary": {
+    "normalCount": 100,
+    "anomalyCount": 47,
+    "hasReviewBand": true
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "note": "Local Docker emulation on Apple M2 (linux/arm64 VM), t4g.small-like container limits. Phases 1-2 bypass nginx with the API rate limit raised to 600/min; phase 3 uses nginx with its deployed limits. Not an AWS measurement.",
+  "directSequential": {
+    "requests": 40,
+    "statuses": {
+      "201": 40
+    },
+    "roundTripMs": {
+      "median": 679.4,
+      "p95": 786.5,
+      "max": 976.3
+    },
+    "inferenceMs": {
+      "median": 495.8,
+      "p95": 601.2
+    },
+    "serverTotalMs": {
+      "median": 665.8,
+      "p95": 752.9
+    }
+  },
+  "directConcurrent4": {
+    "requests": 20,
+    "statuses": {
+      "201": 20
+    },
+    "roundTripMs": {
+      "median": 3003.3,
+      "p95": 3196.1,
+      "max": 3220.3
+    },
+    "inferenceMs": {
+      "median": 1061.4,
+      "p95": 1385.0
+    },
+    "serverTotalMs": {
+      "median": 2905.2,
+      "p95": 3090.1
+    }
+  },
+  "proxySession": {
+    "createStatus": 201,
+    "attemptStatus": 201,
+    "attemptDecision": "PASS"
+  },
+  "proxyBurst15": {
+    "statuses": {
+      "201": 11,
+      "429": 4
+    },
+    "expectation": "nginx admits about 11 (rate 60/min, burst 10) and answers the rest 429; no 503"
+  },
+  "peakMemoryMiB": {
+    "motionqa-t4g-backendApi-1": 556.5,
+    "motionqa-t4g-frontendUi-1": 9.1,
+    "motionqa-t4g-postgresDb-1": 64.7,
+    "motionqa-t4g-redisCache-1": 10.8
+  }
+}

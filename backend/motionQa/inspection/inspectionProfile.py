@@ -22,11 +22,18 @@ class PreprocessingSpec(BaseModel):
 
 
 class DecisionThresholds(BaseModel):
-    """Thresholds on the raw anomaly score (nearest-neighbour feature distance, not a probability)."""
+    """Thresholds on the raw anomaly score (nearest-neighbour feature distance, not a probability).
+
+    Identity: distances up to `identityMaxDistance` are treated as the validated part. With
+    `identityNoPartMinDistance` set (decision policy 2), distances at or above it are `NO_PART` and the gap between
+    the two is `REVIEW` (an object is present but validation never covered that appearance). Without it
+    (policy 1 profiles), everything above `identityMaxDistance` is `NO_PART`.
+    """
 
     passBelow: float
     failAtOrAbove: float
     identityMaxDistance: float
+    identityNoPartMinDistance: float | None = None
     regionThreshold: float
     missedDefectTarget: float
     falseRejectTarget: float
@@ -45,6 +52,7 @@ class InspectionProfile(BaseModel):
     capture: dict[str, float]
     decision: DecisionThresholds
     dataset: dict[str, object]
+    decisionPolicy: int = 1
     validationSummary: dict[str, object] = Field(default_factory=dict)
 
     @property

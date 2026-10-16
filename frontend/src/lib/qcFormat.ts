@@ -23,6 +23,8 @@ const reasonLabels: Record<string, string> = {
   ANOMALY_SCORE_IN_REVIEW_BAND: "Score between PASS and FAIL thresholds",
   PART_NOT_FOUND: "No object separated from the background",
   PART_NOT_RECOGNIZED: "Object differs from the validated component",
+  PART_IDENTITY_UNCERTAIN: "Part present but not recognized with confidence (may be incomplete)",
+  RECAPTURE_LIMIT_REACHED: "No conclusive result after the allowed recaptures",
   UNDEREXPOSED: "Image too dark",
   OVEREXPOSED: "Image too bright",
   BLURRED: "Image not sharp enough",

@@ -1,0 +1,4 @@
+motionqa-t4g-frontendUi-1 8.059MiB / 64MiB 0.00%
+motionqa-t4g-backendApi-1 94.66MiB / 1GiB 16.17%
+motionqa-t4g-postgresDb-1 26.6MiB / 256MiB 0.07%
+motionqa-t4g-redisCache-1 9.703MiB / 64MiB 0.56%

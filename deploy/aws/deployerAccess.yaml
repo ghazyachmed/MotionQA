@@ -1,0 +1,231 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Least-privilege access for deploying the MotionQA stack with temporary credentials. Creates (1) a CloudFormation
+  service role that creates only the MotionQA stack's resource types, with EC2 launches limited to small Graviton
+  types, and (2) a managed policy for the human deployer (attach it to an IAM Identity Center permission set or an
+  assumable role; do not create long-lived access keys). Billing, plan, and payment actions are not granted.
+  Deploy this template once, as an administrator, before `previewChangeSet.sh`.
+
+Parameters:
+  StackNamePrefix:
+    Type: String
+    Default: motionqa
+    AllowedPattern: "^[a-z][a-z0-9-]{2,30}$"
+    Description: Lower-case name of the MotionQA application stack; scopes bucket, role, and log-group ARNs.
+
+Resources:
+  CloudFormationServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${StackNamePrefix}-cloudformation-service"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: MotionQaStackResources
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: Ec2SmallGravitonOnly
+                Effect: Allow
+                Action: ec2:RunInstances
+                Resource: !Sub "arn:${AWS::Partition}:ec2:*:${AWS::AccountId}:instance/*"
+                Condition:
+                  StringEquals:
+                    ec2:InstanceType: [t4g.small, t4g.medium]
+              - Sid: Ec2LaunchDependencies
+                Effect: Allow
+                Action: ec2:RunInstances
+                Resource:
+                  - !Sub "arn:${AWS::Partition}:ec2:*::image/*"
+                  - !Sub "arn:${AWS::Partition}:ec2:*:${AWS::AccountId}:subnet/*"
+                  - !Sub "arn:${AWS::Partition}:ec2:*:${AWS::AccountId}:network-interface/*"
+                  - !Sub "arn:${AWS::Partition}:ec2:*:${AWS::AccountId}:security-group/*"
+                  - !Sub "arn:${AWS::Partition}:ec2:*:${AWS::AccountId}:volume/*"
+              - Sid: Ec2Lifecycle
+                Effect: Allow
+                Action:
+                  - ec2:TerminateInstances
+                  - ec2:ModifyInstanceAttribute
+                  - ec2:ModifyInstanceCreditSpecification
+                  - ec2:CreateSecurityGroup
+                  - ec2:DeleteSecurityGroup
+                  - ec2:AuthorizeSecurityGroupIngress
+                  - ec2:AuthorizeSecurityGroupEgress
+                  - ec2:RevokeSecurityGroupIngress
+                  - ec2:RevokeSecurityGroupEgress
+                  - ec2:CreateTags
+                  - ec2:Describe*
+                Resource: "*"
+              - Sid: InstanceRoleScopedToStack
+                Effect: Allow
+                Action:
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:GetRole
+                  - iam:TagRole
+                  - iam:PutRolePolicy
+                  - iam:DeleteRolePolicy
+                  - iam:GetRolePolicy
+                  - iam:CreateInstanceProfile
+                  - iam:DeleteInstanceProfile
+                  - iam:GetInstanceProfile
+                  - iam:AddRoleToInstanceProfile
+                  - iam:RemoveRoleFromInstanceProfile
+                Resource:
+                  - !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${StackNamePrefix}-*"
+                  - !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:instance-profile/${StackNamePrefix}-*"
+              - Sid: OnlySsmCoreManagedPolicy
+                Effect: Allow
+                Action: [iam:AttachRolePolicy, iam:DetachRolePolicy]
+                Resource: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${StackNamePrefix}-*"
+                Condition:
+                  ArnEquals:
+                    iam:PolicyARN: !Sub "arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore"
+              - Sid: PassInstanceRoleToEc2
+                Effect: Allow
+                Action: iam:PassRole
+                Resource: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${StackNamePrefix}-*"
+                Condition:
+                  StringEquals:
+                    iam:PassedToService: ec2.amazonaws.com
+              - Sid: ArtifactBucket
+                Effect: Allow
+                Action:
+                  - s3:CreateBucket
+                  - s3:DeleteBucket
+                  - s3:PutBucketPolicy
+                  - s3:DeleteBucketPolicy
+                  - s3:GetBucketPolicy
+                  - s3:PutEncryptionConfiguration
+                  - s3:GetEncryptionConfiguration
+                  - s3:PutBucketPublicAccessBlock
+                  - s3:GetBucketPublicAccessBlock
+                  - s3:PutLifecycleConfiguration
+                  - s3:GetLifecycleConfiguration
+                  - s3:PutBucketOwnershipControls
+                  - s3:GetBucketOwnershipControls
+                  - s3:PutBucketTagging
+                  - s3:GetBucketTagging
+                  - s3:GetBucketLocation
+                Resource: !Sub "arn:${AWS::Partition}:s3:::${StackNamePrefix}-*"
+              - Sid: Secrets
+                Effect: Allow
+                Action:
+                  - secretsmanager:CreateSecret
+                  - secretsmanager:DeleteSecret
+                  - secretsmanager:DescribeSecret
+                  - secretsmanager:UpdateSecret
+                  - secretsmanager:TagResource
+                  - secretsmanager:GetRandomPassword
+                Resource: "*"
+              - Sid: LogGroup
+                Effect: Allow
+                Action: [logs:CreateLogGroup, logs:DeleteLogGroup, logs:PutRetentionPolicy, logs:DeleteRetentionPolicy, logs:DescribeLogGroups, logs:TagResource, logs:TagLogGroup]
+                Resource: "*"
+              - Sid: CloudFront
+                Effect: Allow
+                Action:
+                  - cloudfront:CreateDistribution
+                  - cloudfront:UpdateDistribution
+                  - cloudfront:DeleteDistribution
+                  - cloudfront:GetDistribution
+                  - cloudfront:GetDistributionConfig
+                  - cloudfront:TagResource
+                  - cloudfront:CreateCachePolicy
+                  - cloudfront:UpdateCachePolicy
+                  - cloudfront:DeleteCachePolicy
+                  - cloudfront:GetCachePolicy
+                  - cloudfront:GetOriginRequestPolicy
+                Resource: "*"
+              - Sid: PublicAmiParameter
+                Effect: Allow
+                Action: ssm:GetParameters
+                Resource: !Sub "arn:${AWS::Partition}:ssm:*::parameter/aws/service/ami-amazon-linux-latest/*"
+
+  DeployerPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub "${StackNamePrefix}-deployer"
+      Description: Temporary-credential deployer for MotionQA; no billing or plan changes.
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: StackChangeSetsOnly
+            Effect: Allow
+            Action:
+              - cloudformation:CreateChangeSet
+              - cloudformation:DescribeChangeSet
+              - cloudformation:ExecuteChangeSet
+              - cloudformation:DeleteChangeSet
+              - cloudformation:ListChangeSets
+              - cloudformation:DescribeStacks
+              - cloudformation:DescribeStackEvents
+              - cloudformation:DescribeStackResources
+              - cloudformation:GetTemplate
+              - cloudformation:DeleteStack
+            Resource: !Sub "arn:${AWS::Partition}:cloudformation:*:${AWS::AccountId}:stack/${StackNamePrefix}*/*"
+          - Sid: TemplateValidation
+            Effect: Allow
+            Action: cloudformation:ValidateTemplate
+            Resource: "*"
+          - Sid: PassOnlyTheServiceRole
+            Effect: Allow
+            Action: iam:PassRole
+            Resource: !GetAtt CloudFormationServiceRole.Arn
+            Condition:
+              StringEquals:
+                iam:PassedToService: cloudformation.amazonaws.com
+          - Sid: ReadOnlyLookups
+            Effect: Allow
+            Action:
+              - ec2:DescribeVpcs
+              - ec2:DescribeSubnets
+              - ec2:DescribeManagedPrefixLists
+              - ec2:DescribeInstances
+              - ec2:DescribeInstanceTypes
+              - ec2:DescribeInstanceTypeOfferings
+              - freetier:GetFreeTierUsage
+              - freetier:GetAccountPlanState
+              - budgets:ViewBudget
+              - ce:GetCostAndUsage
+              - sts:GetCallerIdentity
+            Resource: "*"
+          - Sid: ReleaseAndModelUpload
+            Effect: Allow
+            Action: [s3:PutObject, s3:GetObject]
+            Resource:
+              - !Sub "arn:${AWS::Partition}:s3:::${StackNamePrefix}-*/releases/*"
+              - !Sub "arn:${AWS::Partition}:s3:::${StackNamePrefix}-*/models/*"
+          - Sid: DeployViaSsmToStackInstance
+            Effect: Allow
+            Action: ssm:SendCommand
+            Resource: !Sub "arn:${AWS::Partition}:ec2:*:${AWS::AccountId}:instance/*"
+            Condition:
+              StringEquals:
+                ssm:resourceTag/aws:cloudformation:stack-name: !Ref StackNamePrefix
+          - Sid: RunShellDocument
+            Effect: Allow
+            Action: ssm:SendCommand
+            Resource: !Sub "arn:${AWS::Partition}:ssm:*::document/AWS-RunShellScript"
+          - Sid: CommandResults
+            Effect: Allow
+            Action: [ssm:GetCommandInvocation, ssm:ListCommandInvocations]
+            Resource: "*"
+          - Sid: ReadOperatorTokenOfThisStack
+            Effect: Allow
+            Action: secretsmanager:GetSecretValue
+            Resource: "*"
+            Condition:
+              StringEquals:
+                aws:ResourceTag/aws:cloudformation:stack-name: !Ref StackNamePrefix
+
+Outputs:
+  CloudFormationServiceRoleArn:
+    Value: !GetAtt CloudFormationServiceRole.Arn
+  DeployerPolicyArn:
+    Value: !Ref DeployerPolicy

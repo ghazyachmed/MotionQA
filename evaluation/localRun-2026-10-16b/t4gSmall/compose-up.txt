@@ -1,0 +1,182 @@
+ Image motionqa-backend:local Building 
+ Image motionqa-frontend:local Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.25kB done
+#1 DONE 0.0s
+
+#2 [backendApi internal] load build definition from backendDockerfile
+#2 transferring dockerfile: 1.28kB done
+#2 DONE 0.0s
+
+#3 [frontendUi internal] load build definition from frontendDockerfile
+#3 transferring dockerfile: 672B done
+#3 DONE 0.0s
+
+#4 [backendApi internal] load metadata for docker.io/library/python:3.11-slim
+#4 DONE 0.0s
+
+#5 [backendApi internal] load .dockerignore
+#5 transferring context: 109B done
+#5 DONE 0.0s
+
+#6 [frontendUi internal] load metadata for docker.io/library/node:22-alpine
+#6 DONE 0.0s
+
+#7 [backendApi 1/8] FROM docker.io/library/python:3.11-slim@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce
+#7 resolve docker.io/library/python:3.11-slim@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce done
+#7 DONE 0.0s
+
+#8 [backendApi internal] load build context
+#8 transferring context: 36.16kB done
+#8 DONE 0.0s
+
+#9 [backendApi 2/8] WORKDIR /srv/motionQa
+#9 CACHED
+
+#10 [backendApi 3/8] COPY requirements-runtime.lock ./
+#10 CACHED
+
+#11 [backendApi 4/8] RUN pip install --no-cache-dir -r requirements-runtime.lock
+#11 CACHED
+
+#12 [backendApi 5/8] COPY pyproject.toml ./
+#12 CACHED
+
+#13 [backendApi 6/8] COPY motionQa ./motionQa
+#13 DONE 0.0s
+
+#14 [frontendUi internal] load metadata for docker.io/library/nginx:1.27-alpine
+#14 DONE 1.2s
+
+#15 [backendApi 7/8] RUN pip install --no-cache-dir --no-deps .     && useradd --system --uid 10001 motionqa     && mkdir -p /srv/motionQa/evidence /srv/motionQa/models     && chown -R motionqa /srv/motionQa/evidence
+#15 ...
+
+#16 [frontendUi internal] load .dockerignore
+#16 transferring context: 60B done
+#16 DONE 0.0s
+
+#17 [frontendUi build 1/7] FROM docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+#17 resolve docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 0.0s done
+#17 DONE 0.0s
+
+#18 [frontendUi internal] load build context
+#18 transferring context: 3.64kB done
+#18 DONE 0.0s
+
+#19 [frontendUi build 4/7] RUN npm ci
+#19 CACHED
+
+#20 [frontendUi build 2/7] WORKDIR /srv/motionQa
+#20 CACHED
+
+#21 [frontendUi build 6/7] COPY src ./src
+#21 CACHED
+
+#22 [frontendUi build 3/7] COPY package.json package-lock.json ./
+#22 CACHED
+
+#23 [frontendUi build 5/7] COPY index.html viteConfig.ts tailwindConfig.ts tsconfig.json ./
+#23 CACHED
+
+#24 [frontendUi stage-1 1/3] FROM docker.io/library/nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+#24 resolve docker.io/library/nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10 0.0s done
+#24 CACHED
+
+#25 [frontendUi build 7/7] RUN npm run build
+#25 CACHED
+
+#26 [frontendUi stage-1 2/3] COPY nginxConfig.conf /etc/nginx/conf.d/default.conf
+#26 DONE 0.0s
+
+#27 [frontendUi stage-1 3/3] COPY --from=build /srv/motionQa/dist /usr/share/nginx/html
+#27 DONE 0.0s
+
+#28 [frontendUi] exporting to image
+#28 exporting layers 0.1s done
+#28 exporting manifest sha256:1fb495d4b03f7da01a2ae82cc6560ebd56b6024e3703762577e878d745b8a247 0.0s done
+#28 exporting config sha256:b812d8f2c39329b4f99d00719f035098849980ac53a851a377a75e10926dfbb6 done
+#28 exporting attestation manifest sha256:5e2db8e8f28bdf2636190e1fb167df13f01227420448c73ff7684fbde4104bcd done
+#28 exporting manifest list sha256:8e462c80ab157861513c4347610f97495bbb20e1eec14ae8d327f1cdf1889441 done
+#28 naming to docker.io/library/motionqa-frontend:local done
+#28 unpacking to docker.io/library/motionqa-frontend:local 0.0s done
+#28 DONE 0.2s
+
+#29 [frontendUi] resolving provenance for metadata file
+#29 DONE 0.0s
+
+#15 [backendApi 7/8] RUN pip install --no-cache-dir --no-deps .     && useradd --system --uid 10001 motionqa     && mkdir -p /srv/motionQa/evidence /srv/motionQa/models     && chown -R motionqa /srv/motionQa/evidence
+#15 1.782 Processing /srv/motionQa
+#15 1.784   Installing build dependencies: started
+#15 5.490   Installing build dependencies: finished with status 'done'
+#15 5.492   Getting requirements to build wheel: started
+#15 5.878   Getting requirements to build wheel: finished with status 'done'
+#15 5.880   Preparing metadata (pyproject.toml): started
+#15 6.203   Preparing metadata (pyproject.toml): finished with status 'done'
+#15 6.206 Building wheels for collected packages: motionqa-backend
+#15 6.208   Building wheel for motionqa-backend (pyproject.toml): started
+#15 6.529   Building wheel for motionqa-backend (pyproject.toml): finished with status 'done'
+#15 6.529   Created wheel for motionqa-backend: filename=motionqa_backend-0.2.0-py3-none-any.whl size=97059 sha256=28d5ffff7808c6c2fba9ff96d72e5846fc56078f67e4915140e4fe88d29b02d3
+#15 6.529   Stored in directory: /tmp/pip-ephem-wheel-cache-yi_bd9u2/wheels/07/83/41/e0f27cd903f90aadacaa31c60d15283e7c1a149d6666114cc8
+#15 6.532 Successfully built motionqa-backend
+#15 6.533 Installing collected packages: motionqa-backend
+#15 6.575 Successfully installed motionqa-backend-0.2.0
+#15 6.575 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+#15 7.025 
+#15 7.025 [notice] A new release of pip is available: 24.0 -> 26.2.1
+#15 7.025 [notice] To update, run: pip install --upgrade pip
+#15 7.081 useradd warning: motionqa's uid 10001 is greater than SYS_UID_MAX 999
+#15 DONE 7.1s
+
+#30 [backendApi 8/8] RUN python -c "from motionQa.inspection.opencvRuntime import requireOpenCvFive; requireOpenCvFive()"
+#30 DONE 0.3s
+
+#31 [backendApi] exporting to image
+#31 exporting layers 0.1s done
+#31 exporting manifest sha256:e950f257ebbea0a6fdd1c7121ecc5c43fa24676436891b348f93481aebbcf53f done
+#31 exporting config sha256:ee28408d1f5c64d9626dc92ae983652a388036dc850d2d7522b55e39277f1145 done
+#31 exporting attestation manifest sha256:51278e3f6872d92cf33cd4b07a54891f43f20d5b1515bcc9ee75c1bd5d4c9279 done
+#31 exporting manifest list sha256:16485ffd2392c581a70da1b0f6ef91bad28e2fa5e4a8b4808296b7bf78af0702 done
+#31 naming to docker.io/library/motionqa-backend:local done
+#31 unpacking to docker.io/library/motionqa-backend:local 0.0s done
+#31 DONE 0.2s
+
+#32 [backendApi] resolving provenance for metadata file
+#32 DONE 0.0s
+ Image motionqa-frontend:local Built 
+ Image motionqa-backend:local Built 
+ Volume motionqa-t4g_evidence Creating 
+ Volume motionqa-t4g_pgdata Creating 
+ Network motionqa-t4g_default Creating 
+ Volume motionqa-t4g_evidence Creating 
+ Volume motionqa-t4g_pgdata Creating 
+ Network motionqa-t4g_default Creating 
+ Volume motionqa-t4g_redisdata Creating 
+ Volume motionqa-t4g_redisdata Creating 
+ Volume motionqa-t4g_evidence Created 
+ Volume motionqa-t4g_evidence Created 
+ Volume motionqa-t4g_pgdata Created 
+ Volume motionqa-t4g_pgdata Created 
+ Volume motionqa-t4g_redisdata Created 
+ Volume motionqa-t4g_redisdata Created 
+ Network motionqa-t4g_default Created 
+ Network motionqa-t4g_default Created 
+ Container motionqa-t4g-postgresDb-1 Creating 
+ Container motionqa-t4g-redisCache-1 Creating 
+ Container motionqa-t4g-redisCache-1 Created 
+ Container motionqa-t4g-postgresDb-1 Created 
+ Container motionqa-t4g-backendApi-1 Creating 
+ Container motionqa-t4g-backendApi-1 Created 
+ Container motionqa-t4g-frontendUi-1 Creating 
+ Container motionqa-t4g-frontendUi-1 Created 
+ Container motionqa-t4g-redisCache-1 Starting 
+ Container motionqa-t4g-postgresDb-1 Starting 
+ Container motionqa-t4g-redisCache-1 Started 
+ Container motionqa-t4g-postgresDb-1 Started 
+ Container motionqa-t4g-postgresDb-1 Waiting 
+ Container motionqa-t4g-redisCache-1 Waiting 
+ Container motionqa-t4g-redisCache-1 Healthy 
+ Container motionqa-t4g-postgresDb-1 Healthy 
+ Container motionqa-t4g-backendApi-1 Starting 
+ Container motionqa-t4g-backendApi-1 Started 
+ Container motionqa-t4g-frontendUi-1 Starting 
+ Container motionqa-t4g-frontendUi-1 Started 

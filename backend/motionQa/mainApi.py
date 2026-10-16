@@ -20,6 +20,7 @@ from .integrationRoutes import router as integrationRouter
 from .liveEventRoutes import router as liveEventRouter
 from .redisGateway import RedisGateway
 from .redisPersistenceWorker import RedisPersistenceWorker
+from .sessionRoutes import router as sessionRouter
 from .websocketHub import WebsocketHub
 
 logger = logging.getLogger("motionQa.api")
@@ -103,6 +104,7 @@ def createApp() -> FastAPI:
     app.include_router(healthRouter)
     app.include_router(modelRouter)
     app.include_router(inspectionRouter)
+    app.include_router(sessionRouter)
     app.include_router(integrationRouter)
     app.include_router(liveEventRouter)
     mountFrontendAssets(app, settings)

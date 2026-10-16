@@ -85,3 +85,19 @@ export interface ModelStatus {
   domainNote: string | null;
   decisionThresholds: { passBelow: number; failAtOrAbove: number } | null;
 }
+
+export interface InspectionSessionView {
+  sessionId: string;
+  componentId?: string | null;
+  lineId: string;
+  stationId: string;
+  maxAttempts: number;
+  status: "OPEN" | "COMPLETED" | "ESCALATED";
+  finalDecision?: InspectionDecision | null;
+  finalReasonCode?: string | null;
+  nextAttemptAllowed: boolean;
+  guidance: string;
+  createdAt: string;
+  closedAt?: string | null;
+  attempts: InspectionResult[];
+}

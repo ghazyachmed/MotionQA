@@ -56,3 +56,34 @@ Index("idx_inspection_records_decision", InspectionRecord.decision)
 Index("idx_inspection_records_line_id", InspectionRecord.lineId)
 Index("idx_inspection_records_mode", InspectionRecord.processingMode)
 Index("idx_inspection_records_review", InspectionRecord.reviewStatus)
+
+
+class InspectionSessionRecord(Base):
+    """One physical part at one station: up to `maxAttempts` captures, then a conclusive decision or escalation."""
+
+    __tablename__ = "inspection_sessions"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    sessionId: Mapped[str] = mapped_column("session_id", String(80), nullable=False, unique=True)
+    componentId: Mapped[str | None] = mapped_column("component_id", String(80), nullable=True)
+    lineId: Mapped[str] = mapped_column("line_id", String(40), nullable=False)
+    stationId: Mapped[str] = mapped_column("station_id", String(40), nullable=False)
+    maxAttempts: Mapped[int] = mapped_column("max_attempts", Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="OPEN")
+    finalDecision: Mapped[str | None] = mapped_column("final_decision", String(20), nullable=True)
+    finalReasonCode: Mapped[str | None] = mapped_column("final_reason_code", String(60), nullable=True)
+    createdAt: Mapped[datetime] = mapped_column("created_at", DateTime(timezone=True), default=utcNow, nullable=False)
+    closedAt: Mapped[datetime | None] = mapped_column("closed_at", DateTime(timezone=True), nullable=True)
+
+
+class SessionAttemptRecord(Base):
+    __tablename__ = "inspection_session_attempts"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    sessionId: Mapped[str] = mapped_column("session_id", String(80), nullable=False)
+    attemptNumber: Mapped[int] = mapped_column("attempt_number", Integer, nullable=False)
+    inspectionId: Mapped[str] = mapped_column("inspection_id", String(80), nullable=False, unique=True)
+    createdAt: Mapped[datetime] = mapped_column("created_at", DateTime(timezone=True), default=utcNow, nullable=False)
+
+
+Index("idx_session_attempts_session", SessionAttemptRecord.sessionId, SessionAttemptRecord.attemptNumber, unique=True)

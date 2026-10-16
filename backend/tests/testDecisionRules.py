@@ -51,3 +51,19 @@ def testDetectorConfidenceBands():
     assert decideFromDetections([(DefectType.scratch, 0.7, box)], 0.5, True, True)[0] == InspectionDecision.failed
     assert decideFromDetections([(DefectType.scratch, 0.3, box)], 0.5, True, True)[0] == InspectionDecision.review
     assert decideFromDetections([], 0.5, True, True)[0] == InspectionDecision.passed
+
+
+def testIdentityBandsSeparatePresenceFromRecognition():
+    from motionQa.inspection.inspectionPipeline import classifyIdentity
+
+    assert classifyIdentity(0.05, acceptMax=0.0844, noPartMin=0.2167) == "RECOGNIZED"
+    assert classifyIdentity(0.155, acceptMax=0.0844, noPartMin=0.2167) == "UNCERTAIN"
+    assert classifyIdentity(0.30, acceptMax=0.0844, noPartMin=0.2167) == "NOT_RECOGNIZED"
+    assert classifyIdentity(float("nan"), acceptMax=0.0844, noPartMin=0.2167) == "INVALID"
+
+
+def testPolicyOneProfilesKeepTwoWayIdentity():
+    from motionQa.inspection.inspectionPipeline import classifyIdentity
+
+    assert classifyIdentity(0.155, acceptMax=0.1506, noPartMin=None) == "NOT_RECOGNIZED"
+    assert classifyIdentity(0.10, acceptMax=0.1506, noPartMin=None) == "RECOGNIZED"

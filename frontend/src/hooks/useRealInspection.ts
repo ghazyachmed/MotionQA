@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, apiFetch, apiJson, describeError } from "../lib/apiClient";
-import type { InspectionDecision, InspectionResult, ModelStatus } from "../types/qcTypes";
+import type { InspectionDecision, InspectionResult, InspectionSessionView, ModelStatus } from "../types/qcTypes";
 
 export interface RealInspectionState {
   modelStatus: ModelStatus | null;
@@ -9,6 +9,8 @@ export interface RealInspectionState {
   submitError: string | null;
   isSubmitErrorRetryable: boolean;
   lastResult: InspectionResult | null;
+  session: InspectionSessionView | null;
+  startNewPart: () => void;
   submitImage: (image: Blob, componentId?: string) => Promise<void>;
   retryLast: () => Promise<void>;
   reviewInspection: (inspectionId: string, reviewerDecision: Extract<InspectionDecision, "PASS" | "FAIL">, reviewedBy: string) => Promise<InspectionResult | null>;
@@ -23,7 +25,9 @@ export function useRealInspection(apiBaseUrl: string, token: string, lineId: str
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitErrorRetryable, setIsSubmitErrorRetryable] = useState(false);
   const [lastResult, setLastResult] = useState<InspectionResult | null>(null);
-  const pendingRef = useRef<{ inspectionId: string; image: Blob; componentId?: string } | null>(null);
+  const [session, setSession] = useState<InspectionSessionView | null>(null);
+  // One physical part = one session. Recapture after RETAKE / NO_PART / ERROR stays in the same session (bounded attempts).
+  const pendingRef = useRef<{ sessionId: string; attemptNumber: number; image: Blob; componentId?: string; isNewSession: boolean } | null>(null);
 
   const refreshModelStatus = useCallback(async () => {
     try {
@@ -47,20 +51,25 @@ export function useRealInspection(apiBaseUrl: string, token: string, lineId: str
     setIsSubmitting(true);
     setSubmitError(null);
     try {
+      if (pending.isNewSession) {
+        await apiFetch(apiBaseUrl, "/api/v1/sessions", token, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId: pending.sessionId, componentId: pending.componentId, lineId }),
+        });
+        pending.isNewSession = false;
+      }
       const form = new FormData();
       form.append("image", pending.image, "capture.jpg");
-      form.append("inspectionId", pending.inspectionId);
-      form.append("lineId", lineId);
+      form.append("attemptNumber", String(pending.attemptNumber));
       form.append("capturedAt", new Date().toISOString());
-      if (pending.componentId) {
-        form.append("componentId", pending.componentId);
-      }
-      const response = await apiFetch(apiBaseUrl, "/api/v1/inspections", token, { method: "POST", body: form });
-      const result = (await response.json()) as InspectionResult;
+      const response = await apiFetch(apiBaseUrl, `/api/v1/sessions/${encodeURIComponent(pending.sessionId)}/attempts`, token, { method: "POST", body: form });
+      const body = (await response.json()) as { session: InspectionSessionView; inspection: InspectionResult };
       pendingRef.current = null;
-      setLastResult(result);
+      setSession(body.session);
+      setLastResult(body.inspection);
     } catch (error) {
-      // The inspection id is kept, so a retry is idempotent on the server. Client errors (bad image) are not retried.
+      // Session id and attempt number are kept, so a retry replays on the server. Client errors (bad image) are not retried.
       setSubmitError(describeError(error));
       setIsSubmitErrorRetryable(!(error instanceof ApiError) || error.status === 0 || error.status === 429 || error.status >= 500);
     } finally {
@@ -70,11 +79,21 @@ export function useRealInspection(apiBaseUrl: string, token: string, lineId: str
 
   const submitImage = useCallback(
     async (image: Blob, componentId?: string) => {
-      pendingRef.current = { inspectionId: `insp-${crypto.randomUUID()}`, image, componentId: componentId?.trim() || undefined };
+      const continuing = session && session.status === "OPEN" && session.nextAttemptAllowed;
+      pendingRef.current = continuing
+        ? { sessionId: session.sessionId, attemptNumber: session.attempts.length + 1, image, isNewSession: false }
+        : { sessionId: `sess-${crypto.randomUUID()}`, attemptNumber: 1, image, componentId: componentId?.trim() || undefined, isNewSession: true };
       await send();
     },
-    [send],
+    [send, session],
   );
+
+  const startNewPart = useCallback(() => {
+    pendingRef.current = null;
+    setSession(null);
+    setLastResult(null);
+    setSubmitError(null);
+  }, []);
 
   const reviewInspection = useCallback(
     async (inspectionId: string, reviewerDecision: Extract<InspectionDecision, "PASS" | "FAIL">, reviewedBy: string) => {
@@ -101,6 +120,8 @@ export function useRealInspection(apiBaseUrl: string, token: string, lineId: str
     submitError,
     isSubmitErrorRetryable,
     lastResult,
+    session,
+    startNewPart,
     submitImage,
     retryLast: send,
     reviewInspection,

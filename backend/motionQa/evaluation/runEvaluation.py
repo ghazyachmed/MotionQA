@@ -30,6 +30,8 @@ backendRoot = Path(__file__).resolve().parents[2]
 missedDefectTarget = 0.02
 falseRejectTarget = 0.02
 operatingPointMissTargets = (missedDefectTarget, 0.05, 0.10)
+scoreBandReasons = {"ANOMALY_SCORE_BELOW_PASS_THRESHOLD", "ANOMALY_SCORE_IN_REVIEW_BAND", "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD"}
+decisionPolicy = 2
 patchSampleFraction = 0.25
 coresetSize = 16000
 samplingSeed = 7
@@ -309,7 +311,12 @@ def main() -> None:
     targetIdentity = [record["identityDistance"] for record in scored]
     otherIdentity = [value for value in otherValidation if value is not None]
     maxTarget = max(targetIdentity)
-    identityMaxDistance = maxTarget + 0.5 * (min(otherIdentity) - maxTarget) if otherIdentity and min(otherIdentity) > maxTarget else maxTarget * 1.1
+    # Decision policy 2: accept only identity distances validation has seen on target images; NO_PART only at or beyond
+    # the closest validated other object; the gap between them is REVIEW (no validation evidence either way).
+    if otherIdentity and min(otherIdentity) > maxTarget:
+        identityMaxDistance, identityNoPartMinDistance = maxTarget, min(otherIdentity)
+    else:
+        identityMaxDistance = identityNoPartMinDistance = maxTarget
 
     profile = {
         "profileId": "visa-pcb1-patchcore-mnv2",
@@ -326,10 +333,12 @@ def main() -> None:
             "passBelow": decisionThresholds["passBelow"],
             "failAtOrAbove": decisionThresholds["failAtOrAbove"],
             "identityMaxDistance": float(identityMaxDistance),
+            "identityNoPartMinDistance": float(identityNoPartMinDistance),
             "regionThreshold": decisionThresholds["passBelow"],
             "missedDefectTarget": missedDefectTarget,
             "falseRejectTarget": falseRejectTarget,
         },
+        "decisionPolicy": decisionPolicy,
         "dataset": {"name": "VisA", "category": "pcb1", "license": "CC BY 4.0", "source": manifest["source"], "archiveSha256": manifest.get("archive", {}).get("archiveSha256"), "splitSeed": manifest["splitSeed"]},
         "validationSummary": {"normalCount": len(validationNormal), "anomalyCount": len(validationAnomaly), "hasReviewBand": decisionThresholds["hasReviewBand"]},
     }
@@ -416,7 +425,8 @@ def main() -> None:
         pointRecords = []
         for record in testRecords:
             decision = record["decision"]
-            if decision in ("PASS", "REVIEW", "FAIL") and record["anomalyScore"] is not None:
+            # Only score-band decisions move with the thresholds; identity REVIEW (policy 2) stays REVIEW.
+            if record["reasonCode"] in scoreBandReasons and record["anomalyScore"] is not None:
                 decision = decideFromAnomalyScore(record["anomalyScore"], pointThresholds["passBelow"], pointThresholds["failAtOrAbove"])[0].value
             pointRecords.append({"label": record["label"], "decision": decision})
         operatingPoints.append({"validationMissTarget": missTarget, "validationRejectTarget": falseRejectTarget, "thresholds": {key: pointThresholds[key] for key in ("passBelow", "failAtOrAbove")}, "testKeyMetrics": summarizeDecisions(pointRecords).get("keyMetrics")})
@@ -424,6 +434,7 @@ def main() -> None:
     print("[6/6] Writing results", flush=True)
     results = {
         "evaluationStatus": "EXPLORATORY_TEST_INFORMED",
+        "decisionPolicy": decisionPolicy,
         "independentEvaluationCompleted": False,
         "qualification": "Capture gates were revised after test inspection; officialTest includes validation anomalies.",
         "generatedAt": datetime.now(timezone.utc).isoformat(),

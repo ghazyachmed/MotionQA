@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Activity, AlertTriangle, Camera, Fingerprint, Gauge, RotateCcw, Timer } from "lucide-react";
 import { formatDecision, formatMs, formatReason, formatScore, formatTime } from "../lib/qcFormat";
 import type { PublishState } from "../hooks/useCameraDemo";
-import type { InspectionDecision, InspectionResult, ProcessingMode } from "../types/qcTypes";
+import type { InspectionDecision, InspectionResult, InspectionSessionView, ProcessingMode } from "../types/qcTypes";
 import { DecisionPill } from "./statusPill";
 
 interface LiveQcMonitorProps {
@@ -21,6 +21,8 @@ interface LiveQcMonitorProps {
   publishState: PublishState;
   onRetry: () => Promise<void>;
   onReview: (inspectionId: string, decision: Extract<InspectionDecision, "PASS" | "FAIL">, reviewedBy: string) => Promise<unknown>;
+  session: InspectionSessionView | null;
+  onNewPart: () => void;
 }
 
 // AI Assisted Logic
@@ -39,6 +41,8 @@ export function LiveQcMonitor({
   publishState,
   onRetry,
   onReview,
+  session,
+  onNewPart,
 }: LiveQcMonitorProps): JSX.Element {
   const isReal = processingMode === "REAL_INFERENCE";
   const frameWidth = event?.imageWidth && event.imageWidth > 0 ? event.imageWidth : 1600;
@@ -107,6 +111,7 @@ export function LiveQcMonitor({
 
       <div className="grid min-w-0 content-start gap-3 sm:grid-cols-2 lg:grid-cols-1">
         <DecisionTile event={event} onReview={onReview} />
+        {isReal && session ? <SessionTile session={session} onNewPart={onNewPart} /> : null}
         <ScoreTile event={event} isReal={isReal} />
         <InfoTile icon={<Timer className="h-4 w-4" aria-hidden />} label="Latency">
           {event && isReal ? (
@@ -134,6 +139,31 @@ export function LiveQcMonitor({
         </InfoTile>
       </div>
     </section>
+  );
+}
+
+function SessionTile({ session, onNewPart }: { session: InspectionSessionView; onNewPart: () => void }): JSX.Element {
+  const statusText = { OPEN: "Recapture needed", COMPLETED: "Complete", ESCALATED: "Sent to human review" }[session.status];
+  return (
+    <InfoTile icon={<RotateCcw className="h-4 w-4" aria-hidden />} label={`Part session · attempt ${session.attempts.length} of ${session.maxAttempts}`}>
+      <div className="grid gap-2">
+        <div className="flex flex-wrap items-center gap-1">
+          {session.attempts.map((attempt, index) => (
+            <span key={attempt.inspectionId} title={attempt.reasonCode} className="rounded border border-factory-line bg-factory-panel px-1.5 py-0.5 text-xs font-bold">
+              {index + 1}: {attempt.decision}
+            </span>
+          ))}
+        </div>
+        <p className="text-sm font-bold">{statusText}</p>
+        <p className="text-xs text-factory-steel">{session.guidance}</p>
+        {session.status === "OPEN" ? (
+          <p className="text-xs font-semibold text-factory-ink">The next capture is added to this part&apos;s session. Keep the same fixture position, camera, and lighting.</p>
+        ) : null}
+        <button type="button" onClick={onNewPart} className="h-8 justify-self-start rounded border border-factory-line px-2 text-xs font-bold">
+          New part
+        </button>
+      </div>
+    </InfoTile>
   );
 }
 

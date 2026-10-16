@@ -137,6 +137,8 @@ export function App(): JSX.Element {
           publishState={camera.publishState}
           onRetry={real.retryLast}
           onReview={handleReview}
+          session={isReal ? real.session : null}
+          onNewPart={real.startNewPart}
         />
         <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,0.62fr)_minmax(320px,0.38fr)]">
           <DecisionTrend buckets={trends.buckets} isLoading={trends.isLoading} error={trends.error} />
