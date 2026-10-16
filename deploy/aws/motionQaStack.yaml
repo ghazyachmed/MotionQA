@@ -21,7 +21,8 @@ Parameters:
   InstanceType:
     Type: String
     Default: t4g.small
-    AllowedValues: [t4g.small, t4g.medium, t4g.large, c7g.large]
+    # The execution role in deployerAccess.yaml launches only t4g.small (local tests: 710 MiB peak of 2 GiB).
+    AllowedValues: [t4g.small]
   EvidenceRetentionDays:
     Type: Number
     Default: 30
@@ -38,12 +39,6 @@ Parameters:
   LatestAmiId:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64
-
-Conditions:
-  IsBurstableInstance: !Or
-    - !Equals [!Ref InstanceType, t4g.small]
-    - !Equals [!Ref InstanceType, t4g.medium]
-    - !Equals [!Ref InstanceType, t4g.large]
 
 Resources:
   ArtifactBucket:
@@ -95,6 +90,8 @@ Resources:
   OperatorTokenSecret:
     Type: AWS::SecretsManager::Secret
     Properties:
+      # Names under "<stack>/" let deployerAccess.yaml scope secret permissions to this stack.
+      Name: !Sub "${AWS::StackName}/operator-token"
       Description: MotionQA operator bearer token (MOTIONQA_API_TOKENS)
       GenerateSecretString:
         PasswordLength: 40
@@ -103,6 +100,7 @@ Resources:
   DatabasePasswordSecret:
     Type: AWS::SecretsManager::Secret
     Properties:
+      Name: !Sub "${AWS::StackName}/database-password"
       Description: MotionQA PostgreSQL password (container-local database)
       GenerateSecretString:
         PasswordLength: 32
@@ -117,6 +115,8 @@ Resources:
   InstanceRole:
     Type: AWS::IAM::Role
     Properties:
+      # Required by the execution role; created by deployerAccess.yaml (AppStackName = this stack's name).
+      PermissionsBoundary: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/${AWS::StackName}-instance-boundary"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -183,10 +183,9 @@ Resources:
     Properties:
       ImageId: !Ref LatestAmiId
       InstanceType: !Ref InstanceType
-      CreditSpecification: !If
-        - IsBurstableInstance
-        - CPUCredits: standard
-        - !Ref AWS::NoValue
+      # Standard mode: sustained load is throttled to the baseline instead of billed as surplus credits.
+      CreditSpecification:
+        CPUCredits: standard
       IamInstanceProfile: !Ref InstanceProfile
       SubnetId: !Ref PublicSubnetId
       SecurityGroupIds: [!Ref OriginSecurityGroup]

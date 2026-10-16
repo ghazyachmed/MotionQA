@@ -1,7 +1,7 @@
 #!/bin/bash
 # Delete the MotionQA stack and everything it left behind, then verify that nothing billable remains.
 # Destructive: asks you to type the stack name before deleting. Run with the deployer's temporary credentials.
-# Usage: AWS_REGION=<region> deploy/aws/teardownStack.sh <stack-name> <cloudformation-service-role-arn> [evidence-backup-dir]
+# Usage: AWS_REGION=<region> deploy/aws/teardownStack.sh <stack-name> <cloudformation-execution-role-arn> [evidence-backup-dir]
 set -euo pipefail
 stackName="$1"
 serviceRoleArn="$2"

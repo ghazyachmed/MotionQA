@@ -69,6 +69,10 @@ agent plan, tool call, or action — MotionQA has no agent loop; the review queu
 
 ## AWS: exact remaining steps
 
+**Superseded (2026-10-16):** use the least-privilege sequence in [AWS_DEPLOYMENT_PLAN.md](AWS_DEPLOYMENT_PLAN.md) § 6–7
+(deployer IAM user, CloudFormation execution role, change-set preview). The commands below assume administrator
+credentials and are kept only as history.
+
 Prerequisites: an AWS account the team is authorized to bill, AWS CLI v2 configured, the profile artifacts built locally
 (`python -m motionQa.evaluation.runEvaluation`), changes committed (the release archive uses `git archive HEAD`).
 

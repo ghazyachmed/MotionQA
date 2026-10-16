@@ -91,7 +91,7 @@ Prepared and validated locally (cfn-lint 1.57.2, no findings; scripts `bash -n` 
 
 | File | Purpose |
 | --- | --- |
-| `deploy/aws/deployerAccess.yaml` | Admin deploys once: a CloudFormation service role limited to this stack's resource types (EC2 launches only `t4g.small`/`t4g.medium`, instance roles named `<stack>-*`, only the SSM core managed policy), and a deployer managed policy for temporary credentials. No billing, plan, or payment permissions. |
+| `deploy/aws/deployerAccess.yaml` | Admin deploys once: a permissions boundary for the EC2 role, a CloudFormation execution role limited to this stack's resources (EC2 launches only `t4g.small`), and the deployer policy `motionqa-deployer-policy`. No billing, plan, or payment permissions. Revised 2026-10-16, fourth pass — see AWS_DEPLOYMENT_PLAN.md § 7. |
 | `deploy/aws/accountPreflight.sh` | Read-only: refuses root credentials, warns on non-temporary credentials, prints plan state (if the CLI supports `freetier get-account-plan-state`), Free Tier eligible instance types in the region, and budgets. |
 | `deploy/aws/previewChangeSet.sh` | Creates a change set through the service role and prints every resource; **never executes it**. |
 | `deploy/aws/dockerComposeT4gSmall.yml`, `deploy/aws/localT4gSmallCheck.sh` | Local Linux ARM64 emulation of a 2 GiB / 2 vCPU budget before deployment (results in `evaluation/localRun-2026-10-16b/t4gSmall/`). |
@@ -99,7 +99,7 @@ Prepared and validated locally (cfn-lint 1.57.2, no findings; scripts `bash -n` 
 Owner sequence (each step stops before any charge-bearing action without your decision):
 
 1. Sign in yourself; complete the read-only console checks listed above (plan, credits, expiry, account creation date).
-2. As an administrator, deploy `deployerAccess.yaml` once and attach the `motionqa-deployer` policy, plus
+2. As an administrator, deploy `deployerAccess.yaml` once and attach the `motionqa-deployer-policy` policy, plus
    `SignInLocalDevelopmentAccess`, to an IAM user with console password and MFA. Do not create access keys.
    **Correction (2026-10-16, third pass):** do not use IAM Identity Center permission sets on a Free plan account —
    they need AWS Organizations, and joining Organizations upgrades the account to the Paid plan.

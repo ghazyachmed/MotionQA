@@ -1,7 +1,7 @@
 #!/bin/bash
 # Create (but never execute) a CloudFormation change set for the MotionQA stack and print the exact resources.
-# Requires deployerAccess.yaml deployed once and temporary deployer credentials.
-# Usage: AWS_REGION=us-east-1 deploy/aws/previewChangeSet.sh <stack-name> <cloudformation-service-role-arn> [instance-type]
+# Requires deployerAccess.yaml deployed once and temporary deployer credentials (AWS_PROFILE=motionqa after aws login).
+# Usage: AWS_REGION=us-east-1 deploy/aws/previewChangeSet.sh <stack-name> <cloudformation-execution-role-arn> [instance-type]
 set -euo pipefail
 stackName="$1"
 serviceRoleArn="$2"
@@ -10,7 +10,12 @@ region="${AWS_REGION:?Set AWS_REGION}"
 
 prefixList=$(aws ec2 describe-managed-prefix-lists --region "$region" --filters Name=prefix-list-name,Values=com.amazonaws.global.cloudfront.origin-facing --query 'PrefixLists[0].PrefixListId' --output text)
 vpcId=$(aws ec2 describe-vpcs --region "$region" --filters Name=isDefault,Values=true --query 'Vpcs[0].VpcId' --output text)
-subnetId=$(aws ec2 describe-subnets --region "$region" --filters Name=vpc-id,Values="$vpcId" Name=default-for-az,Values=true --query 'Subnets[0].SubnetId' --output text)
+# Only AZs that offer the instance type (in us-east-1, t4g.small is not offered in us-east-1e).
+offeredZones=$(aws ec2 describe-instance-type-offerings --region "$region" --location-type availability-zone \
+  --filters Name=instance-type,Values="$instanceType" --query 'InstanceTypeOfferings[].Location' --output text | tr '\t' ',')
+[ -n "$offeredZones" ] || { echo "$instanceType is not offered in any availability zone of $region" >&2; exit 1; }
+subnetId=$(aws ec2 describe-subnets --region "$region" --filters Name=vpc-id,Values="$vpcId" Name=default-for-az,Values=true \
+  Name=availability-zone,Values="$offeredZones" --query 'sort_by(Subnets, &AvailabilityZone)[0].SubnetId' --output text)
 if aws cloudformation describe-stacks --region "$region" --stack-name "$stackName" >/dev/null 2>&1; then changeSetType=UPDATE; else changeSetType=CREATE; fi
 changeSetName="preview-$(date -u +%Y%m%dT%H%M%S)"
 
