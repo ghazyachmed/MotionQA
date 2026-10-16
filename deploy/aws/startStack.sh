@@ -6,6 +6,19 @@ source /opt/motionqa/stack.env
 appDir=/opt/motionqa/app
 cd "$appDir"
 
+# Amazon Linux 2023's docker package has no buildx >= 0.17, which Docker Compose v5 needs to build images
+# (first AWS deployment, 2026-10-16). Install a pinned, checksum-verified release once; later deploys reuse it.
+buildxVersion=v0.37.2
+buildxSha256=efa38cb7aa7db2dbb9ad049b00b0a9737f66f033626177b5a4e845184ad7ab29
+if ! docker buildx version 2>/dev/null | grep -q " $buildxVersion "; then
+  mkdir -p /usr/local/lib/docker/cli-plugins
+  curl -fsSL -o /tmp/docker-buildx "https://github.com/docker/buildx/releases/download/$buildxVersion/buildx-$buildxVersion.linux-arm64"
+  echo "$buildxSha256  /tmp/docker-buildx" | sha256sum -c -
+  install -m 0755 /tmp/docker-buildx /usr/local/lib/docker/cli-plugins/docker-buildx
+  rm -f /tmp/docker-buildx
+fi
+docker buildx version | grep " $buildxVersion " || { echo "docker buildx $buildxVersion is not the active plugin" >&2; exit 1; }
+
 operatorToken=$(aws secretsmanager get-secret-value --secret-id "$MOTIONQA_OPERATOR_TOKEN_SECRET" --query SecretString --output text)
 databasePassword=$(aws secretsmanager get-secret-value --secret-id "$MOTIONQA_DATABASE_PASSWORD_SECRET" --query SecretString --output text)
 
