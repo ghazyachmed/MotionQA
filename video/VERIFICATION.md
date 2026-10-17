@@ -1,138 +1,106 @@
 # Verification report: MotionQA submission video
 
-Date: 2026-10-17. Output: **`out/MotionQA_Draft.mp4` (draft, version 2)**. The final render is blocked because no
-narration audio exists (see [section 5](#5-blockers-for-the-final-render)). The project is committed to `master`
-locally; nothing was pushed, deployed or submitted.
+Date: 2026-10-17. Output: **`out/MotionQA_Final.mp4`** (version 3, with narration). The final gate
+(`npm run render:final`) passed: real footage present, narration track present and synced, judge links re-checked, QR
+code decodes to the endpoint, no placeholders, no draft watermark. Committed to `master`; nothing was pushed, deployed
+or submitted.
 
-Version 2 follows the team's reference video (an explainer on grid paper): every beat builds one diagram in sync with
-the narration. New in version 2, all from real data: a zoom onto the bent pin of Anomaly/000 with its ground-truth size
-(262 px of the 448 × 448 input, failure-analysis JSON); an animated decision path; a 20-board unit chart of the AWS
-check; zooming score rulers on every clip; the 048 miss dissected on the real anomaly map; the identity-gap ruler for
-043; seven real pipeline stages for one photo; one request travelling through the AWS diagram; the data-origin flow; and
-all 153 test images as dots on the score axis.
+## What changed in version 3
+
+| Feedback | Change |
+| --- | --- |
+| Too much text on screen | One message per beat: the title states the point, one visual, at most one or two short labels. Figure lines, panel lines and secondary notes were removed. Narration cut from 563 to 462 words. |
+| Audio with natural pronunciation and intonation | Narration synthesised locally with Kokoro-82M (Apache-2.0), generic voice `af_heart`, normal speed. Each cue has a spoken form for hard tokens (for example "Open C V five", "zero point nine seven four five", "engine X"). |
+| QR code for the live endpoint | `public/assets/qr/live-endpoint.png`, generated offline from `src/data/links.json`; `npm run verify` decodes it back and requires the exact URL. |
+| AWS shown too early | New order: problem → how it decides and the real app → under the hood (OpenCV 5) → hard cases → live on AWS → results → limits and scan-to-try. |
+| Judge appeal | Clear chapter kickers, hero numbers (0.13 %, 20/20, 0.9745), progressive diagrams, and a closing scan-to-try card. |
 
 ## 1. Checkout and inputs
 
 | Item | Result |
 | --- | --- |
-| Checkout | `master` at `c77ac5e`, clean, equal to `origin/master` after `git fetch` (https://github.com/ghazyachmed/MotionQA). No user changes, so work happened in this checkout; no worktree was needed. |
-| `AGENTS.md` | Not found in the repository or user folders. |
-| `MASTER-PROMPT.md`, `SKILL.md` | Found in `~/Downloads` (general prompt library; humanizer skill with ASD-STE100 "Mode D"). Narration follows Mode D: one idea per sentence, active voice, no em dash or semicolon. |
-| `docs/submission/SUBMISSION_PACKAGE.md`, `MotionQA_SubmissionPackage.md` | **Not found.** The narration is based on `docs/DEMO_SCRIPT.md` and `docs/SUBMISSION_DRAFT.md`. |
-| Facts used | `evaluation/results/visaPcb1Results.json` (policy 2, 2026-10-16T04:28Z, including the 153 per-image records), `evaluation/results/history/visaPcb1Results-run1/run2/run3-*.json`, `evaluation/results/failureAnalysis-2026-10-16.json`, `evaluation/visaPcb1Split.json`, `evaluation/policies/visaPcb1-policy1-profile.json`, `evaluation/aws-2026-10-16/README.md`, `docs/EVALUATION.md`, `docs/ARCHITECTURE.md`, `docs/FAILURE_ANALYSIS.md`, `docs/INDEPENDENT_EVALUATION.md` (status NOT RUN). SHA-256 of each machine source is stored in `src/data/verified-results.json`. |
-| Toolchain | Node 25.9.0, npm 11.12.1. No system FFmpeg; Remotion's bundled `ffmpeg`/`ffprobe` n7.1 were used. Remotion 4.0.536 for every `@remotion/*` package, exact versions, `package-lock.json` committed with the project. Capture used the installed Chrome 155 through `playwright-core` 1.64.1 (no browser download). Fonts: Inter, JetBrains Mono, Caveat (all OFL-1.1, from `@fontsource`, served locally). |
-| Reference video | `~/Downloads/ssstik.io_@ryanaidilp_1792215875348.mp4` (227 s, 576 × 1024), viewed as 57 sampled frames for style only. Nothing from it is in the video. |
+| Checkout | `master`, started at `c77ac5e` (clean, equal to `origin/master`); work committed locally on `master` as requested. |
+| `AGENTS.md`, submission package | Not found. Narration basis: `docs/DEMO_SCRIPT.md`, `docs/SUBMISSION_DRAFT.md`. `MASTER-PROMPT.md` and `SKILL.md` were found in `~/Downloads`; narration follows the ASD-STE100 style (short, active, no em dash or semicolon). |
+| Facts | `evaluation/results/visaPcb1Results.json` (policy 2, with 153 per-image records), the run1–run3 history files, `failureAnalysis-2026-10-16.json`, `visaPcb1Split.json`, `visaPcb1-policy1-profile.json`, `evaluation/aws-2026-10-16/README.md`, `docs/EVALUATION.md`. SHA-256 of each source is in `src/data/verified-results.json`. |
+| Reference video | `~/Downloads/ssstik.io_@ryanaidilp_1792215875348.mp4`, viewed as sampled frames for style only; nothing from it is in the video. |
+| Toolchain | Node 25.9.0, npm 11.12.1, Remotion 4.0.536 (exact versions, lockfile committed), bundled FFmpeg/ffprobe n7.1, Chrome 155 via `playwright-core` for capture. TTS: separate Python 3.11 venv outside the repo with `kokoro` 0.9.4, `torch` 2.14.1, and Homebrew `espeak-ng` 1.52.0 (installed for this task; used only to phonemise words missing from Kokoro's dictionary, because the pip-bundled eSpeak exits on a build-machine path). |
 
-## 2. Numbers: brief versus machine output
+## 2. Numbers
 
-`npm run verify` derives every on-screen number from the files above and fails on any difference.
+Every number comes from `src/data/verified-results.json`, rebuilt and compared by `npm run verify`.
 
-| Metric | Brief | JSON | Shown in video |
+| Metric | Brief | Machine output | Shown |
 | --- | --- | --- | --- |
-| Image AUROC, MotionQA / baseline | 0.9745 / 0.8689 | 0.9745 / 0.8689 | same, labelled "threshold-free ranking; not accuracy" |
-| Anomalous → PASS | 1/53 · 0/53 | 1/53 · 0/53 | same |
-| Normal → FAIL | 4/100 · 7/100 | 4/100 · 7/100 | same |
-| REVIEW, baseline | 58/153 | 58/153 | same |
-| REVIEW, MotionQA | **40/153** | **41/153** (current, policy 2) · 40/153 (policy-1 history) | 41/153, with the policy-1 value and its source as a footnote |
+| Image AUROC, MotionQA / baseline | 0.9745 / 0.8689 | same; AUROC recomputed from the 153 scores = 0.9745 | same, "a ranking score, not accuracy" |
+| Defective → PASS | 1/53 · 0/53 | same | same |
+| Good → FAIL | 4/100 · 7/100 | same | same |
+| REVIEW, baseline | 58/153 | same | same |
+| REVIEW, MotionQA | **40/153** | **41/153** (policy 2) · 40/153 (policy-1 run, 2026-10-15) | 41/153, and "REVIEW 40 / 153 → 41 / 153" on the 043 policy beat |
 
-### Source conflicts (reported, not silently resolved)
+Source conflicts, reported and not resolved silently:
 
-1. **REVIEW 40/153 versus 41/153.** 40/153 comes from the policy-1 run of 2026-10-15, where `Anomaly/043` was `NO_PART`.
-   The current results file uses decision policy 2 and sends 043 to `REVIEW · PART_IDENTITY_UNCERTAIN`. The video shows
-   41/153 and states "Policy 1 run (2026-10-15): REVIEW 40/153, NO_PART 1/153 (Anomaly/043). Same denominator."
-2. **Submission package missing.** Neither named file exists; see section 1.
-3. **`docs/SUBMISSION_DRAFT.md` is internally inconsistent.** Its limitations list "no AWS deployment yet", while its
-   AWS section and `evaluation/aws-2026-10-16/README.md` record the deployment of 2026-10-16. The video follows the
-   deployment record. The draft file was not edited.
+1. **40/153 vs 41/153**: 40 is the policy-1 run where `Anomaly/043` was `NO_PART`; the current file (policy 2) sends 043 to
+   REVIEW. Both runs keep all 153 images in every denominator.
+2. **Submission package missing** (neither named file exists).
+3. **`docs/SUBMISSION_DRAFT.md`** lists "no AWS deployment yet" although its AWS section and the deployment record say
+   deployed on 2026-10-16. The video follows the deployment record; the draft was not edited.
 
-### Specific checks
+Specific checks: 043 is `NO_PART` in the policy-1 history and REVIEW now; 048 is a test-split PASS at 2.125 < 2.160, with
+2.097 inside the defect (failure-analysis JSON and the pipeline export agree). The problem hook's "0.13 %" is the
+ground-truth area of Anomaly/000 at the 448 × 448 model input (262 of 200,704 px, failure-analysis JSON).
 
-- `Anomaly/043.JPG`: `NO_PART · PART_NOT_RECOGNIZED` in the policy-1 history (identity 0.155 above the single threshold
-  0.151); `REVIEW · PART_IDENTITY_UNCERTAIN` in the current results. It stays in every denominator (153).
-- `Anomaly/048.JPG`: in the test split; `PASS` with score 2.125 below 2.160 (current results, the policy-1 history and the
-  local footage). Highest anomaly value inside the defect 2.097, outside 2.125 (failure-analysis JSON).
-- Labels: "Exploratory development results" is on screen; "Not an independent evaluation" and the reasons (capture gates
-  revised after test outcomes, 47 official-test anomalies in validation, failure analysis on test images, per-image
-  rates, orientation confound 49/53 versus 25/100) are on screen and in the captions. The verifier fails on "accuracy"
-  outside a "not accuracy" statement, on an independence claim, on AHM/Astra, and on production claims.
+## 3. Footage and generated assets
 
-## 3. Application footage
+| Asset | Provenance |
+| --- | --- |
+| `local-01…06` clips | Real inference on the local stack at commit `c77ac5e` (clean `backend/` and `frontend/`), profile 2026.10.16, OpenCV 5.0.0, recorded 2026-10-17 04:54–04:55 UTC; each clip starts from a fresh page. All five test-image results equal the evaluation records (`npm run verify`). Labelled "Local demonstration". |
+| `aws-01…03` clips | The deployed endpoint without a token, recorded 2026-10-17 04:35 UTC: UI (model status visible, data panels HTTP 401), `/api/v1/model/status`, `/api/v1/health`. No authenticated AWS inference was recorded: the AWS CLI session had expired and Secrets Manager was not accessed. The 20/20 cloud result is from the 2026-10-16 deployment record and is labelled with it. |
+| `assets/pipeline/*` | Real intermediate outputs of the backend pipeline (`scripts/export_pipeline_stages.py`), cross-checked against the evaluation records. |
+| `assets/qr/live-endpoint.png` | `qrcode` 1.5.4, error correction M; decoded by `jsQR` to `https://d4dqbqmvvujy7.cloudfront.net`. |
+| `audio/narration.wav` | Kokoro-82M v1.0, voice `af_heart`, speed 1.0; model file sha256 `496dba11…ad1e4`. 462 words in 168.4 s of speech (2.74 words/s). Normalised by `scripts/normalize-audio.mjs` from −23.3 to −16.4 LUFS, true peak −1.49 dBTP, 48 kHz mono; cue onsets unchanged. |
 
-| Clip | Label | Recorded (UTC) | Length (s) | Result recorded from the API |
-| --- | --- | --- | --- | --- |
-| `local-01-pass` | Local demonstration | 2026-10-17T04:54:47Z | 10.52 | PASS, score 2.056 (Normal/0011) |
-| `local-02-fail` | Local demonstration | 2026-10-17T04:55:01Z | 11.52 | FAIL, score 2.742 (Anomaly/000), then Confirm FAIL |
-| `local-03-review` | Local demonstration | 2026-10-17T04:55:16Z | 9.41 | REVIEW, score 2.165 (Normal/0027) |
-| `local-04-missed-048` | Local demonstration | 2026-10-17T04:55:28Z | 9.42 | PASS, score 2.125 (Anomaly/048, defective) |
-| `local-05-identity-043` | Local demonstration | 2026-10-17T04:55:41Z | 9.42 | REVIEW · identity uncertain, score 5.085 (Anomaly/043) |
-| `local-06-retake-session` | Local demonstration | 2026-10-17T04:55:53Z | 13.94 | RETAKE (synthetic blur), then PASS 2.056 in the same session |
-| `aws-01-ui-status` | AWS, no token | 2026-10-17T04:35:23Z | 8 | Deployed UI; model status line; panels answer HTTP 401 |
-| `aws-02-model-status` | AWS, no token | 2026-10-17T04:35:33Z | 7 | `ready: true`, OpenCV 5.0.0, profile 2026.10.16 |
-| `aws-03-health` | AWS, no token | 2026-10-17T04:35:42Z | 5 | postgres, redis, model: ok |
-
-- **Local demonstration** ran at commit `c77ac5e` with a clean `backend/` and `frontend/` tree: uvicorn with the
-  `visa-pcb1-patchcore-mnv2` 2026.10.16 profile (OpenCV 5.0.0), Homebrew PostgreSQL 16 (database `motionqa_video`,
-  created for this capture) and Redis (db 5), Vite dev server, Apple M2. All five test-image results match the
-  evaluation records exactly (decision equal, score within 0.001); `npm run verify` re-checks this.
-- **AWS**: the endpoint was checked first. `GET /` 200, `/api/v1/model/status` `ready: true` on OpenCV 5.0.0,
-  `/api/v1/health` ok (last check 2026-10-17T04:39:28Z, `src/data/links.json`). The AWS CLI session for profile
-  `motionqa` had expired, so **no authenticated inference was recorded on AWS** and Secrets Manager was not accessed.
-  The cloud inference claim in the video comes only from the deployment record (20/20 identical decisions, median
-  450 ms inference, 779 ms server, 2026-10-16) and is labelled with that source.
-- **Token handling**: a local test token was generated into a 0600 file outside the repository and placed in the tab's
-  `sessionStorage` before page load. It was never typed, printed, recorded or written to any asset.
-- **Not synthetic**: no UI animation imitates the app, and no heatmap was drawn. The pipeline stages and the 048
-  anomaly map come from `scripts/export_pipeline_stages.py`, which calls the backend's own functions with the deployed
-  profile; its outputs reproduce the evaluation records (000: FAIL 2.742; 048: PASS 2.125, inside-defect maximum 2.097)
-  and `npm run verify` re-checks them. The VisA ground-truth outlines are labelled as dataset labels. Camera moves
-  (crop and zoom) are applied to the recordings. Annotation arrows point at the recordings from outside, on the AWS
-  status clip only, and fade before the camera moves.
-- **Illustration, labelled**: the "manual check" log in Fig. 2 is an illustration and says so on screen. The 20 board
-  icons in Fig. 5 are grouped by decision (7 / 3 / 10 from the deployment record), not in request order.
-- **Dot plot**: every dot is one record of the results JSON. The axis is broken above 3.3 and marked with a red "//".
-  AUROC recomputed from the 153 scores (Mann-Whitney) is 0.9745, equal to the stored value.
-- **Fixed during review**: the first recordings showed the previous clip's result for about 1.5 s at the start of each
-  clip (for example, a PASS screen under the FAIL title). The capture now reloads the page before each clip, and every
-  clip starts at "Awaiting capture".
+Not synthetic: no UI animation imitates the app and no heatmap was drawn. The "bare check log" on the problem beat is
+labelled as an illustration. The 20 board icons are grouped by decision (7 / 3 / 10 from the deployment record). The
+voice is a generic model voice; the user's voice was not imitated. The local test token lived in a 0600 file outside
+the repository and never appears in any asset (checked by searching the project for it before committing).
 
 ## 4. Checks run
 
 | Check | Result |
 | --- | --- |
 | `npm run typecheck`, `npm run lint` | pass |
-| `npm run verify` | `verify-results: ok (9 sources, 7 footage results, brief table 8/8 match)`, plus AUROC from records and pipeline-export checks; `verify-assets: ok (43 public files, 51 cues)`, including highlight phrases on one caption line |
-| `npm run verify:final` / `npm run render:final` | **fail as designed**: narration audio missing; `narration.json` still `TEXT ONLY` |
-| Composition guard | `remotion still … --props=props/final.json` throws `Final render blocked: missing narration audio` |
-| Sample frames | `npm run stills`: 113 frames (start, middle, end of all 25 segments and both sides of every cut), `out/contact-sheet-01..05.jpg` |
-| Visual issues found and fixed (v1) | stale result at clip starts; header chips past the right safe margin; zoom cutting the evidence image; deployment diagram text overflowing boxes; "112 / 153" wrapping; "Apache-/2.0" line break; JetBrains Mono ligature turning `https://` into `https: //` |
-| Visual issues found and fixed (v2) | margin note running under the record card; record card spilling into the caption band; an AWS arrow outliving its zoom; decision-tree labels overflowing boxes; MISSED DEFECT stamp covering text; figure labels past the right margin; an arrow drawn before its image; ruler labels colliding; dot-plot annotations on top of dots; access cards overlapping the credits |
-| Encoded output | 26 frames extracted from the MP4 across 4–270 s (`out/contact-sheet-mp4-1.jpg`, `-2.jpg`); decisions, scores, overlays, diagrams and captions are legible |
-| Layout rules | font sizes ≥ 32 px (captions 38 px), checked in source; 96 px safe margin; captions at most 2 lines of 52 characters in a reserved band; no transition covers a result (8-frame fades only) |
+| `npm run verify` | `verify-results: ok (9 sources, 7 footage results, brief table 8/8 match)`; `verify-assets: ok (45 public files, 51 cues)` |
+| `npm run verify:final` | **pass** (narration present and synced, status updated, links verified, no placeholders) |
+| Narration fit | Every cue fits before the next at normal speed (the script stops instead of speeding up); two tight beats were given more time. Silence detection finds speech within 0.25 s of each cue start, except three cues that follow the previous one with less than 0.35 s of silence. |
+| Captions | ≤ 2 lines of ≤ 52 characters, ≥ 1.5 s on screen, ≤ 3.0 words/s, highlights on one line, timed to the audio |
+| Sample frames | 113 frames over all 25 segments and every cut (`out/contact-sheet-01..05.jpg`, final props) |
+| Visual fixes in v3 | 048 note colliding with the ruler label; team line touching the repository card; empty first frames of the dissection; the v1 and v2 fixes still hold |
 
-### ffprobe: `out/MotionQA_Draft.mp4`
+### ffprobe: `out/MotionQA_Final.mp4`
 
 ```text
-format: mov,mp4  duration 280.000000 s  size 22,572,834 bytes  bit_rate 645 kb/s
-stream 0: video h264 (High), 1920x1080, yuv420p, r_frame_rate 30/1, avg_frame_rate 30/1, nb_frames 8400
-audio: none (draft without narration)
-sha256 c2d6f8962b00f5ecaca4d18517d7290da62539177eb1be860a51de1f1209782e
+format: mov,mp4  duration 280.000000 s  size 29,525,866 bytes  bit_rate 844 kb/s
+stream 0: video h264 (High), 1920x1080, yuv420p, r_frame_rate 30/1, avg_frame_rate 30/1, nb_frames 8400, 280.000 s
+stream 1: audio aac (LC), 48000 Hz, 2 channels, 280.000 s
+loudness: -13.4 LUFS integrated (mono narration on both channels), true peak -1.5 dBTP
+sha256 1b9ffe5c5c1b14c2adb987a7586fd0e47b4c491859e2d4972fa9c273123fd348
 ```
 
-## 5. Blockers for the final render
+Frames extracted from this file at 26 points from 3 s to 276 s (`out/contact-sheet-mp4-1.jpg`, `-2.jpg`) show every beat,
+the captions and the QR code as designed, with no draft watermark.
 
-1. **Narration audio.** No recording was found (searched the repository, Downloads, Desktop, Documents, Music, Movies).
-   No authorized TTS was available: macOS system voices are licensed for personal, non-commercial use only, Amazon
-   Polly needs the expired AWS session, and no other TTS licence was supplied. The user's voice was not imitated. To
-   finish: record `NARRATION.md` (545 words, about 2.5 words/s), save it as `public/audio/narration.wav`, re-time
-   `src/data/narration.json` to the recording, change its `status`, then run `npm run captions`,
-   `node scripts/verify-assets.mjs --write-manifest` and `npm run render:final`.
-2. **Optional, owner decision:** footage of an authenticated inspection on the AWS endpoint. It needs the operator token
-   entered by the owner (the agent does not type tokens into a non-local site) or a renewed `aws login`. The draft
-   separates the AWS status footage from the local inference footage, so this is not required for the final render.
+## 5. Remaining owner decisions
+
+- Listen to the narration once before submitting: the voice is synthetic; names (Kia Kiu, Institut Teknologi Bandung)
+  are pronounced by an English model.
+- Optional: footage of an authenticated inspection on the AWS endpoint needs the owner to enter the operator token (or
+  a renewed `aws login`). The video separates AWS status footage from local inference footage, so this is not required.
+- The endpoint is planned to be torn down by 2026-11-11 (deployment record); the QR code stops working after that.
 
 ## 6. Left in place on this machine
 
-- Local servers started for capture (uvicorn on 127.0.0.1:8000, Vite on 127.0.0.1:5173) were stopped after recording.
-- PostgreSQL database `motionqa_video` and Redis db 5 hold the demo inspection records; drop them with
-  `dropdb motionqa_video` and `redis-cli -n 5 flushdb` if not needed.
-- `.claude/launch.json` (ignored by git) gained a `motionqa-backend-demo` entry that points at a scratch launcher.
+- PostgreSQL database `motionqa_video` and Redis db 5 hold the demo inspection records (`dropdb motionqa_video`,
+  `redis-cli -n 5 flushdb` to remove).
+- Homebrew package `espeak-ng` (`brew uninstall espeak-ng` to remove), the TTS venv in the session scratchpad, and the
+  Kokoro model in `~/.cache/huggingface`.
+- `.claude/launch.json` (ignored by git) has a `motionqa-backend-demo` entry pointing at a scratch launcher.

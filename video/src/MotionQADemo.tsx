@@ -44,7 +44,7 @@ export const MotionQADemo: React.FC<MotionQADemoProps> = (props) => {
         <ReviewScene available={available} />
       </Sequence>
       <Sequence from={scenes.architecture.from} durationInFrames={scenes.architecture.duration} name="4 Architecture">
-        <ArchitectureScene />
+        <ArchitectureScene available={available} />
       </Sequence>
       <Sequence from={scenes.evaluation.from} durationInFrames={scenes.evaluation.duration} name="5 Evaluation">
         <EvaluationScene />

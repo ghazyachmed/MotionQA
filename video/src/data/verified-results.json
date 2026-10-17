@@ -1,0 +1,1696 @@
+{
+  "label": "Exploratory development results",
+  "notAccuracyNote": "Image AUROC is a threshold-free ranking measure, not accuracy.",
+  "sources": {
+    "results": {
+      "path": "evaluation/results/visaPcb1Results.json",
+      "sha256": "f0624af8fb33e139865483d213e094af4922571b21c679ad13b695b1e42ecd01"
+    },
+    "policy1": {
+      "path": "evaluation/results/history/visaPcb1Results-run3-policy1.json",
+      "sha256": "d6d3986cfc0d2fa68d95a174503a57f53dc26cf4ffb7b74b74526f18b5e7164d"
+    },
+    "failureAnalysis": {
+      "path": "evaluation/results/failureAnalysis-2026-10-16.json",
+      "sha256": "35695523b7b9fb8000797a7c864abf6ece219f810af8d6b7cb4087a2041ab90a"
+    },
+    "split": {
+      "path": "evaluation/visaPcb1Split.json",
+      "sha256": "3e674b7ee49c0d855892e34f21ea6461b679a28fb7412f2abb85abe8ad8d3ad6"
+    },
+    "policy1Profile": {
+      "path": "evaluation/policies/visaPcb1-policy1-profile.json",
+      "sha256": "6b67c21456ba573f25def99ac82b00c3dea560320ef946427667235a3402e919"
+    },
+    "run1": {
+      "path": "evaluation/results/history/visaPcb1Results-run1-wholePartGates.json",
+      "sha256": "e2f24be40a68bc1771ea8b96d18b09dd950cc1a2dc4b042c98a70187c6265d81"
+    },
+    "run2": {
+      "path": "evaluation/results/history/visaPcb1Results-run2-tileMedianGates.json",
+      "sha256": "26919e7108b50b783372fc3d506fcf57a695cd12727f3bf54f70c7dfa4970e43"
+    },
+    "evaluationDoc": {
+      "path": "docs/EVALUATION.md",
+      "sha256": "a86cb9c4ab68f9e975800b9b9a8c2774830e3921b10661172e1d16ac52c0ad71"
+    },
+    "awsRecord": {
+      "path": "evaluation/aws-2026-10-16/README.md",
+      "sha256": "0b5eb5c454a09ed997080bf6eb7565b464318d2818cd11f0134ee99dbc6c8b19"
+    }
+  },
+  "evaluation": {
+    "generatedAt": "2026-10-16T04:28:14.230166+00:00",
+    "evaluationStatus": "EXPLORATORY_TEST_INFORMED",
+    "decisionPolicy": 2,
+    "independentEvaluationCompleted": false,
+    "qualification": "Capture gates were revised after test inspection; officialTest includes validation anomalies.",
+    "dataset": "VisA pcb1",
+    "datasetLicense": "CC BY 4.0",
+    "opencvVersion": "5.0.0",
+    "profile": "visa-pcb1-patchcore-mnv2 2026.10.16"
+  },
+  "split": {
+    "testNormal": 100,
+    "testAnomaly": 53,
+    "testTotal": 153,
+    "validationNormal": 100,
+    "validationAnomaly": 47,
+    "bankNormal": 804
+  },
+  "thresholds": {
+    "passBelow": 2.16,
+    "failAtOrAbove": 2.594,
+    "identityRecognizedMax": 0.0844,
+    "identityNoPartMin": 0.2167,
+    "policy1IdentitySingleThreshold": 0.1506
+  },
+  "metrics": {
+    "imageAuroc": {
+      "motionqa": 0.9745,
+      "baseline": 0.8689
+    },
+    "officialSplitAuroc": {
+      "motionqa": 0.974,
+      "baseline": 0.8611
+    },
+    "anomalyToPass": {
+      "motionqa": {
+        "n": 1,
+        "d": 53
+      },
+      "baseline": {
+        "n": 0,
+        "d": 53
+      }
+    },
+    "normalToFail": {
+      "motionqa": {
+        "n": 4,
+        "d": 100
+      },
+      "baseline": {
+        "n": 7,
+        "d": 100
+      }
+    },
+    "review": {
+      "motionqa": {
+        "n": 41,
+        "d": 153
+      },
+      "baseline": {
+        "n": 58,
+        "d": 153
+      }
+    },
+    "noPart": {
+      "motionqa": {
+        "n": 0,
+        "d": 153
+      },
+      "baseline": {
+        "n": 0,
+        "d": 153
+      }
+    },
+    "automatic": {
+      "motionqa": {
+        "n": 112,
+        "d": 153
+      },
+      "baseline": {
+        "n": 95,
+        "d": 153
+      }
+    }
+  },
+  "decisions": {
+    "motionqa": {
+      "normal": {
+        "PASS": 60,
+        "FAIL": 4,
+        "REVIEW": 36,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "anomaly": {
+        "PASS": 1,
+        "FAIL": 47,
+        "REVIEW": 5,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      }
+    },
+    "baseline": {
+      "normal": {
+        "PASS": 66,
+        "FAIL": 7,
+        "REVIEW": 27,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      },
+      "anomaly": {
+        "PASS": 0,
+        "FAIL": 22,
+        "REVIEW": 31,
+        "RETAKE": 0,
+        "NO_PART": 0,
+        "ERROR": 0
+      }
+    }
+  },
+  "policy1": {
+    "source": "evaluation/results/history/visaPcb1Results-run3-policy1.json",
+    "generatedAt": "2026-10-15T07:18:22.495588+00:00",
+    "review": {
+      "n": 40,
+      "d": 153
+    },
+    "noPart": {
+      "n": 1,
+      "d": 153
+    },
+    "anomalyToPass": {
+      "n": 1,
+      "d": 53
+    },
+    "normalToFail": {
+      "n": 4,
+      "d": 100
+    },
+    "imageAuroc": 0.9745,
+    "anomaly043": {
+      "image": "pcb1/Data/Images/Anomaly/043.JPG",
+      "defectType": "missing",
+      "decision": "NO_PART",
+      "reasonCode": "PART_NOT_RECOGNIZED",
+      "anomalyScore": 5.085,
+      "identityDistance": 0.1554
+    }
+  },
+  "cases": {
+    "anomaly048": {
+      "image": "pcb1/Data/Images/Anomaly/048.JPG",
+      "defectType": "missing",
+      "decision": "PASS",
+      "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+      "anomalyScore": 2.125,
+      "identityDistance": 0.007,
+      "inTestSplit": true,
+      "maxScoreInsideGroundTruth": 2.0974,
+      "maxScoreOutsideGroundTruth": 2.1249
+    },
+    "anomaly043": {
+      "image": "pcb1/Data/Images/Anomaly/043.JPG",
+      "defectType": "missing",
+      "decision": "REVIEW",
+      "reasonCode": "PART_IDENTITY_UNCERTAIN",
+      "anomalyScore": 5.085,
+      "identityDistance": 0.1554,
+      "inTestSplit": true
+    },
+    "normal0027": {
+      "image": "pcb1/Data/Images/Normal/0027.JPG",
+      "defectType": "normal",
+      "decision": "REVIEW",
+      "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+      "anomalyScore": 2.165,
+      "identityDistance": 0.0049
+    },
+    "falseRejects": [
+      "Normal/0306.JPG",
+      "Normal/0333.JPG",
+      "Normal/0730.JPG",
+      "Normal/0920.JPG"
+    ]
+  },
+  "orientation": {
+    "source": "evaluation/results/failureAnalysis-2026-10-16.json",
+    "basis": "visaPcb1Results-run3-policy1.json",
+    "anomalyPinsDown": {
+      "n": 49,
+      "d": 53
+    },
+    "normalPinsDown": {
+      "n": 25,
+      "d": 100
+    },
+    "normalPinsDownReview": {
+      "n": 19,
+      "d": 25
+    },
+    "normalPinsUpReview": {
+      "n": 17,
+      "d": 75
+    }
+  },
+  "latency": {
+    "localM2": {
+      "inferenceMedianMs": 94.38,
+      "endToEndMedianMs": 154.9,
+      "samples": 59
+    },
+    "aws": {
+      "source": "evaluation/aws-2026-10-16/README.md",
+      "instance": "t4g.small (2 vCPU, Graviton)",
+      "requests": 20,
+      "identicalToLocal": 20,
+      "decisions": {
+        "PASS": 7,
+        "REVIEW": 3,
+        "FAIL": 10
+      },
+      "inferenceMedianMs": 450,
+      "serverMedianMs": 779,
+      "stackCreateCompleteUtc": "2026-10-16 16:45:36"
+    }
+  },
+  "problemDefect": {
+    "image": "Anomaly/000",
+    "defectType": "bent",
+    "groundTruthPixels": 262,
+    "modelInputPixels": 200704,
+    "inputSize": 448
+  },
+  "dataOrigin": {
+    "source": "https://amazon-visual-anomaly.s3.us-west-2.amazonaws.com/VisA_20220922.tar",
+    "license": "CC BY 4.0",
+    "archiveBytes": 1929840640,
+    "pcb1Normal": 1004,
+    "pcb1Anomaly": 100,
+    "memoryBankPatches": 16000,
+    "otherObjectValidation": 50,
+    "otherObjectTest": 50
+  },
+  "latencyStages": {
+    "decodeMs": 4.35,
+    "captureMs": 37.98,
+    "inferenceMs": 94.38,
+    "evidenceMs": 17.8,
+    "endToEndMs": 154.9
+  },
+  "history": [
+    {
+      "run": "Run 1 · whole-part capture gates",
+      "generatedAt": "2026-10-15T06:59:54.918866+00:00",
+      "source": "evaluation/results/history/visaPcb1Results-run1-wholePartGates.json"
+    },
+    {
+      "run": "Run 2 · gates revised after test outcomes",
+      "generatedAt": "2026-10-15T07:08:26.463355+00:00",
+      "source": "evaluation/results/history/visaPcb1Results-run2-tileMedianGates.json"
+    },
+    {
+      "run": "Run 3 · decision policy 1",
+      "generatedAt": "2026-10-15T07:18:22.495588+00:00",
+      "source": "evaluation/results/history/visaPcb1Results-run3-policy1.json"
+    },
+    {
+      "run": "Policy 2 · after the 043 / 048 failure analysis",
+      "generatedAt": "2026-10-16T04:28:14.230166+00:00",
+      "source": "evaluation/results/visaPcb1Results.json"
+    }
+  ],
+  "testRecords": [
+    {
+      "id": "Normal/0011",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.056
+    },
+    {
+      "id": "Normal/0013",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0812
+    },
+    {
+      "id": "Normal/0016",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1166
+    },
+    {
+      "id": "Normal/0024",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0821
+    },
+    {
+      "id": "Normal/0026",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0375
+    },
+    {
+      "id": "Normal/0027",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.165
+    },
+    {
+      "id": "Normal/0046",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.152
+    },
+    {
+      "id": "Normal/0100",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1454
+    },
+    {
+      "id": "Normal/0107",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.1696
+    },
+    {
+      "id": "Normal/0159",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2731
+    },
+    {
+      "id": "Normal/0168",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0387
+    },
+    {
+      "id": "Normal/0170",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1309
+    },
+    {
+      "id": "Normal/0172",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 1.9923
+    },
+    {
+      "id": "Normal/0174",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0995
+    },
+    {
+      "id": "Normal/0178",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0598
+    },
+    {
+      "id": "Normal/0187",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2256
+    },
+    {
+      "id": "Normal/0196",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1181
+    },
+    {
+      "id": "Normal/0208",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0761
+    },
+    {
+      "id": "Normal/0214",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0746
+    },
+    {
+      "id": "Normal/0215",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0743
+    },
+    {
+      "id": "Normal/0237",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.1798
+    },
+    {
+      "id": "Normal/0261",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0747
+    },
+    {
+      "id": "Normal/0286",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2118
+    },
+    {
+      "id": "Normal/0294",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.219
+    },
+    {
+      "id": "Normal/0297",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1116
+    },
+    {
+      "id": "Normal/0303",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1119
+    },
+    {
+      "id": "Normal/0306",
+      "label": "normal",
+      "decision": "FAIL",
+      "score": 2.9204
+    },
+    {
+      "id": "Normal/0320",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0991
+    },
+    {
+      "id": "Normal/0333",
+      "label": "normal",
+      "decision": "FAIL",
+      "score": 2.763
+    },
+    {
+      "id": "Normal/0363",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.033
+    },
+    {
+      "id": "Normal/0377",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1243
+    },
+    {
+      "id": "Normal/0394",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1578
+    },
+    {
+      "id": "Normal/0400",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0928
+    },
+    {
+      "id": "Normal/0402",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.1749
+    },
+    {
+      "id": "Normal/0417",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0427
+    },
+    {
+      "id": "Normal/0423",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.1956
+    },
+    {
+      "id": "Normal/0427",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1029
+    },
+    {
+      "id": "Normal/0457",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0956
+    },
+    {
+      "id": "Normal/0469",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1226
+    },
+    {
+      "id": "Normal/0479",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1233
+    },
+    {
+      "id": "Normal/0483",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0314
+    },
+    {
+      "id": "Normal/0484",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0656
+    },
+    {
+      "id": "Normal/0488",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1529
+    },
+    {
+      "id": "Normal/0490",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 1.9741
+    },
+    {
+      "id": "Normal/0514",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.167
+    },
+    {
+      "id": "Normal/0518",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 1.9677
+    },
+    {
+      "id": "Normal/0520",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.009
+    },
+    {
+      "id": "Normal/0525",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0727
+    },
+    {
+      "id": "Normal/0545",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1524
+    },
+    {
+      "id": "Normal/0552",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.1739
+    },
+    {
+      "id": "Normal/0569",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2877
+    },
+    {
+      "id": "Normal/0615",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.227
+    },
+    {
+      "id": "Normal/0617",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0804
+    },
+    {
+      "id": "Normal/0619",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2309
+    },
+    {
+      "id": "Normal/0621",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2845
+    },
+    {
+      "id": "Normal/0629",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2303
+    },
+    {
+      "id": "Normal/0631",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2952
+    },
+    {
+      "id": "Normal/0648",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0716
+    },
+    {
+      "id": "Normal/0654",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2308
+    },
+    {
+      "id": "Normal/0657",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1534
+    },
+    {
+      "id": "Normal/0659",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1048
+    },
+    {
+      "id": "Normal/0674",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1377
+    },
+    {
+      "id": "Normal/0684",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2372
+    },
+    {
+      "id": "Normal/0685",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.1885
+    },
+    {
+      "id": "Normal/0688",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.1856
+    },
+    {
+      "id": "Normal/0690",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1134
+    },
+    {
+      "id": "Normal/0694",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.5538
+    },
+    {
+      "id": "Normal/0705",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2459
+    },
+    {
+      "id": "Normal/0725",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.1621
+    },
+    {
+      "id": "Normal/0730",
+      "label": "normal",
+      "decision": "FAIL",
+      "score": 2.6032
+    },
+    {
+      "id": "Normal/0735",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1542
+    },
+    {
+      "id": "Normal/0739",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.1828
+    },
+    {
+      "id": "Normal/0751",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.3675
+    },
+    {
+      "id": "Normal/0755",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1036
+    },
+    {
+      "id": "Normal/0764",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2372
+    },
+    {
+      "id": "Normal/0768",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2589
+    },
+    {
+      "id": "Normal/0779",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2562
+    },
+    {
+      "id": "Normal/0784",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.1772
+    },
+    {
+      "id": "Normal/0796",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.1803
+    },
+    {
+      "id": "Normal/0797",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2366
+    },
+    {
+      "id": "Normal/0800",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2323
+    },
+    {
+      "id": "Normal/0804",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2616
+    },
+    {
+      "id": "Normal/0811",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.2076
+    },
+    {
+      "id": "Normal/0844",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1113
+    },
+    {
+      "id": "Normal/0869",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0955
+    },
+    {
+      "id": "Normal/0871",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 1.9434
+    },
+    {
+      "id": "Normal/0892",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0329
+    },
+    {
+      "id": "Normal/0900",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1542
+    },
+    {
+      "id": "Normal/0920",
+      "label": "normal",
+      "decision": "FAIL",
+      "score": 3.7325
+    },
+    {
+      "id": "Normal/0923",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 1.9938
+    },
+    {
+      "id": "Normal/0935",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0316
+    },
+    {
+      "id": "Normal/0940",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 1.9894
+    },
+    {
+      "id": "Normal/0952",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.016
+    },
+    {
+      "id": "Normal/0957",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1496
+    },
+    {
+      "id": "Normal/0964",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1381
+    },
+    {
+      "id": "Normal/0971",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.061
+    },
+    {
+      "id": "Normal/0974",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.0659
+    },
+    {
+      "id": "Normal/0989",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1051
+    },
+    {
+      "id": "Normal/0994",
+      "label": "normal",
+      "decision": "REVIEW",
+      "score": 2.1724
+    },
+    {
+      "id": "Normal/1000",
+      "label": "normal",
+      "decision": "PASS",
+      "score": 2.1288
+    },
+    {
+      "id": "Anomaly/000",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 2.7422
+    },
+    {
+      "id": "Anomaly/001",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.6131
+    },
+    {
+      "id": "Anomaly/003",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 4.3374
+    },
+    {
+      "id": "Anomaly/008",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 4.6167
+    },
+    {
+      "id": "Anomaly/009",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 4.4071
+    },
+    {
+      "id": "Anomaly/010",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 4.7225
+    },
+    {
+      "id": "Anomaly/011",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 4.599
+    },
+    {
+      "id": "Anomaly/013",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.7768
+    },
+    {
+      "id": "Anomaly/015",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 2.7065
+    },
+    {
+      "id": "Anomaly/016",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 4.0483
+    },
+    {
+      "id": "Anomaly/017",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 2.5971
+    },
+    {
+      "id": "Anomaly/020",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 2.9514
+    },
+    {
+      "id": "Anomaly/021",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.5068
+    },
+    {
+      "id": "Anomaly/022",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 2.8016
+    },
+    {
+      "id": "Anomaly/024",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 2.942
+    },
+    {
+      "id": "Anomaly/025",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 2.5974
+    },
+    {
+      "id": "Anomaly/027",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 2.7583
+    },
+    {
+      "id": "Anomaly/032",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.6573
+    },
+    {
+      "id": "Anomaly/036",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.0331
+    },
+    {
+      "id": "Anomaly/037",
+      "label": "anomaly",
+      "decision": "REVIEW",
+      "score": 2.3301
+    },
+    {
+      "id": "Anomaly/038",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.221
+    },
+    {
+      "id": "Anomaly/039",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.4254
+    },
+    {
+      "id": "Anomaly/040",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 4.2166
+    },
+    {
+      "id": "Anomaly/042",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.9639
+    },
+    {
+      "id": "Anomaly/043",
+      "label": "anomaly",
+      "decision": "REVIEW",
+      "score": 5.0855
+    },
+    {
+      "id": "Anomaly/044",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 4.0294
+    },
+    {
+      "id": "Anomaly/045",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 4.2034
+    },
+    {
+      "id": "Anomaly/047",
+      "label": "anomaly",
+      "decision": "REVIEW",
+      "score": 2.4714
+    },
+    {
+      "id": "Anomaly/048",
+      "label": "anomaly",
+      "decision": "PASS",
+      "score": 2.1249
+    },
+    {
+      "id": "Anomaly/051",
+      "label": "anomaly",
+      "decision": "REVIEW",
+      "score": 2.5759
+    },
+    {
+      "id": "Anomaly/053",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 2.929
+    },
+    {
+      "id": "Anomaly/054",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 4.1626
+    },
+    {
+      "id": "Anomaly/055",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.7984
+    },
+    {
+      "id": "Anomaly/056",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.1811
+    },
+    {
+      "id": "Anomaly/066",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 2.8684
+    },
+    {
+      "id": "Anomaly/067",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.1852
+    },
+    {
+      "id": "Anomaly/069",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.0543
+    },
+    {
+      "id": "Anomaly/070",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.3535
+    },
+    {
+      "id": "Anomaly/073",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 2.6293
+    },
+    {
+      "id": "Anomaly/074",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 2.6475
+    },
+    {
+      "id": "Anomaly/075",
+      "label": "anomaly",
+      "decision": "REVIEW",
+      "score": 2.2754
+    },
+    {
+      "id": "Anomaly/076",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 2.7982
+    },
+    {
+      "id": "Anomaly/079",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 2.9927
+    },
+    {
+      "id": "Anomaly/080",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.2823
+    },
+    {
+      "id": "Anomaly/081",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 2.7602
+    },
+    {
+      "id": "Anomaly/082",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.0755
+    },
+    {
+      "id": "Anomaly/085",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 2.5976
+    },
+    {
+      "id": "Anomaly/086",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.1362
+    },
+    {
+      "id": "Anomaly/088",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.202
+    },
+    {
+      "id": "Anomaly/091",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 2.8147
+    },
+    {
+      "id": "Anomaly/092",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.7958
+    },
+    {
+      "id": "Anomaly/093",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.7293
+    },
+    {
+      "id": "Anomaly/099",
+      "label": "anomaly",
+      "decision": "FAIL",
+      "score": 3.6929
+    }
+  ],
+  "footage": {
+    "local-01-pass": {
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:54:47.575Z",
+      "durationSeconds": 10.52,
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "inputs": [
+        "data/visa/pcb1/Data/Images/Normal/0011.JPG"
+      ],
+      "events": [
+        {
+          "atSeconds": 2.5,
+          "label": "upload Normal/0011.JPG"
+        },
+        {
+          "atSeconds": 3.22,
+          "label": "result PASS ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+          "decision": "PASS",
+          "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+          "anomalyScore": 2.055962324142456
+        }
+      ],
+      "results": [
+        {
+          "decision": "PASS",
+          "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+          "anomalyScore": 2.056,
+          "inferenceMs": 150.65,
+          "totalMs": 235.09,
+          "modelVersion": "2026.10.16",
+          "processingMode": "REAL_INFERENCE",
+          "sessionStatus": "COMPLETED",
+          "sessionAttempts": 1
+        }
+      ]
+    },
+    "local-02-fail": {
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:55:01.573Z",
+      "durationSeconds": 11.52,
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "inputs": [
+        "data/visa/pcb1/Data/Images/Anomaly/000.JPG"
+      ],
+      "events": [
+        {
+          "atSeconds": 1.5,
+          "label": "upload Anomaly/000.JPG"
+        },
+        {
+          "atSeconds": 2.12,
+          "label": "result FAIL ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+          "decision": "FAIL",
+          "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+          "anomalyScore": 2.7421865463256836
+        },
+        {
+          "atSeconds": 6.12,
+          "label": "reviewer clicks Confirm FAIL"
+        },
+        {
+          "atSeconds": 6.21,
+          "label": "final decision shown; machine decision kept"
+        }
+      ],
+      "results": [
+        {
+          "decision": "FAIL",
+          "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+          "anomalyScore": 2.742,
+          "inferenceMs": 91.48,
+          "totalMs": 150.79,
+          "modelVersion": "2026.10.16",
+          "processingMode": "REAL_INFERENCE",
+          "sessionStatus": "COMPLETED",
+          "sessionAttempts": 1
+        }
+      ]
+    },
+    "local-03-review": {
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:55:16.243Z",
+      "durationSeconds": 9.41,
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "inputs": [
+        "data/visa/pcb1/Data/Images/Normal/0027.JPG"
+      ],
+      "events": [
+        {
+          "atSeconds": 1.5,
+          "label": "upload Normal/0027.JPG"
+        },
+        {
+          "atSeconds": 2.11,
+          "label": "result REVIEW ANOMALY_SCORE_IN_REVIEW_BAND",
+          "decision": "REVIEW",
+          "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+          "anomalyScore": 2.165032148361206
+        }
+      ],
+      "results": [
+        {
+          "decision": "REVIEW",
+          "reasonCode": "ANOMALY_SCORE_IN_REVIEW_BAND",
+          "anomalyScore": 2.165,
+          "inferenceMs": 89.61,
+          "totalMs": 145.21,
+          "modelVersion": "2026.10.16",
+          "processingMode": "REAL_INFERENCE",
+          "sessionStatus": "COMPLETED",
+          "sessionAttempts": 1
+        }
+      ]
+    },
+    "local-04-missed-048": {
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:55:28.939Z",
+      "durationSeconds": 9.42,
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "inputs": [
+        "data/visa/pcb1/Data/Images/Anomaly/048.JPG"
+      ],
+      "events": [
+        {
+          "atSeconds": 1.5,
+          "label": "upload Anomaly/048.JPG"
+        },
+        {
+          "atSeconds": 2.12,
+          "label": "result PASS ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+          "decision": "PASS",
+          "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+          "anomalyScore": 2.124938488006592
+        }
+      ],
+      "results": [
+        {
+          "decision": "PASS",
+          "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+          "anomalyScore": 2.125,
+          "inferenceMs": 90.45,
+          "totalMs": 147.38,
+          "modelVersion": "2026.10.16",
+          "processingMode": "REAL_INFERENCE",
+          "sessionStatus": "COMPLETED",
+          "sessionAttempts": 1
+        }
+      ]
+    },
+    "local-05-identity-043": {
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:55:41.297Z",
+      "durationSeconds": 9.42,
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "inputs": [
+        "data/visa/pcb1/Data/Images/Anomaly/043.JPG"
+      ],
+      "events": [
+        {
+          "atSeconds": 1.5,
+          "label": "upload Anomaly/043.JPG"
+        },
+        {
+          "atSeconds": 2.11,
+          "label": "result REVIEW PART_IDENTITY_UNCERTAIN",
+          "decision": "REVIEW",
+          "reasonCode": "PART_IDENTITY_UNCERTAIN",
+          "anomalyScore": 5.085483074188232
+        }
+      ],
+      "results": [
+        {
+          "decision": "REVIEW",
+          "reasonCode": "PART_IDENTITY_UNCERTAIN",
+          "anomalyScore": 5.085,
+          "inferenceMs": 91.26,
+          "totalMs": 165.99,
+          "modelVersion": "2026.10.16",
+          "processingMode": "REAL_INFERENCE",
+          "sessionStatus": "COMPLETED",
+          "sessionAttempts": 1
+        }
+      ]
+    },
+    "local-06-retake-session": {
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:55:53.580Z",
+      "durationSeconds": 13.94,
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "inputs": [
+        "video/capture-inputs/Normal-0011-blur-0.006.jpg",
+        "data/visa/pcb1/Data/Images/Normal/0011.JPG"
+      ],
+      "events": [
+        {
+          "atSeconds": 1.5,
+          "label": "upload Normal-0011-blur-0.006.jpg"
+        },
+        {
+          "atSeconds": 2.02,
+          "label": "result RETAKE BLURRED",
+          "decision": "RETAKE",
+          "reasonCode": "BLURRED",
+          "anomalyScore": null
+        },
+        {
+          "atSeconds": 7.02,
+          "label": "upload Normal/0011.JPG"
+        },
+        {
+          "atSeconds": 7.64,
+          "label": "result PASS ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+          "decision": "PASS",
+          "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+          "anomalyScore": 2.055962324142456
+        }
+      ],
+      "results": [
+        {
+          "decision": "RETAKE",
+          "reasonCode": "BLURRED",
+          "anomalyScore": null,
+          "inferenceMs": 0,
+          "totalMs": 42.15,
+          "modelVersion": "2026.10.16",
+          "processingMode": "REAL_INFERENCE",
+          "sessionStatus": "OPEN",
+          "sessionAttempts": 1
+        },
+        {
+          "decision": "PASS",
+          "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+          "anomalyScore": 2.056,
+          "inferenceMs": 92.94,
+          "totalMs": 161.51,
+          "modelVersion": "2026.10.16",
+          "processingMode": "REAL_INFERENCE",
+          "sessionStatus": "COMPLETED",
+          "sessionAttempts": 2
+        }
+      ]
+    },
+    "aws-01-ui-status": {
+      "label": "AWS deployment (public status pages, no token)",
+      "recordedAtUtc": "2026-10-17T04:35:23.378Z",
+      "durationSeconds": 8,
+      "appCommit": "a9acfa4 (release recorded in evaluation/aws-2026-10-16/README.md)",
+      "inputs": [],
+      "events": [
+        {
+          "atSeconds": 0,
+          "label": "deployed UI loaded without a token: model status from AWS, data panels answer HTTP 401"
+        }
+      ],
+      "results": []
+    },
+    "aws-02-model-status": {
+      "label": "AWS deployment (public status pages, no token)",
+      "recordedAtUtc": "2026-10-17T04:35:33.891Z",
+      "durationSeconds": 7,
+      "appCommit": "a9acfa4 (release recorded in evaluation/aws-2026-10-16/README.md)",
+      "inputs": [],
+      "events": [
+        {
+          "atSeconds": 0,
+          "label": "GET /api/v1/model/status"
+        }
+      ],
+      "results": [
+        {
+          "route": "/api/v1/model/status",
+          "body": {
+            "ready": true,
+            "loadError": null,
+            "opencv": {
+              "version": "5.0.0",
+              "majorVersion": 5,
+              "isSupported": true,
+              "hasNewDnnEngine": true,
+              "cpuBaseline": "NEON FP16",
+              "detail": "ok"
+            },
+            "profileId": "visa-pcb1-patchcore-mnv2",
+            "profileVersion": "2026.10.16",
+            "task": "Single-board stationary visual inspection on the public VisA pcb1 benchmark (normal-only anomaly detection)",
+            "domainNote": "Benchmark task only. Not validated on motorcycle components or any customer production line.",
+            "decisionThresholds": {
+              "passBelow": 2.159876585006714,
+              "failAtOrAbove": 2.5937364101409917,
+              "identityMaxDistance": 0.0844113826751709,
+              "identityNoPartMinDistance": 0.21670770645141602,
+              "regionThreshold": 2.159876585006714,
+              "missedDefectTarget": 0.02,
+              "falseRejectTarget": 0.02
+            },
+            "timeoutSeconds": 10
+          }
+        }
+      ]
+    },
+    "aws-03-health": {
+      "label": "AWS deployment (public status pages, no token)",
+      "recordedAtUtc": "2026-10-17T04:35:42.577Z",
+      "durationSeconds": 5,
+      "appCommit": "a9acfa4 (release recorded in evaluation/aws-2026-10-16/README.md)",
+      "inputs": [],
+      "events": [
+        {
+          "atSeconds": 0,
+          "label": "GET /api/v1/health"
+        }
+      ],
+      "results": [
+        {
+          "route": "/api/v1/health",
+          "body": {
+            "status": "ok",
+            "postgres": "ok",
+            "redis": "ok",
+            "inspectionModel": "ok"
+          }
+        }
+      ]
+    }
+  },
+  "footageVsEvaluation": [
+    {
+      "clip": "local-01-pass",
+      "input": "data/visa/pcb1/Data/Images/Normal/0011.JPG",
+      "decision": "PASS",
+      "evaluationDecision": "PASS",
+      "anomalyScore": 2.056,
+      "evaluationScore": 2.056,
+      "match": true
+    },
+    {
+      "clip": "local-02-fail",
+      "input": "data/visa/pcb1/Data/Images/Anomaly/000.JPG",
+      "decision": "FAIL",
+      "evaluationDecision": "FAIL",
+      "anomalyScore": 2.742,
+      "evaluationScore": 2.742,
+      "match": true
+    },
+    {
+      "clip": "local-03-review",
+      "input": "data/visa/pcb1/Data/Images/Normal/0027.JPG",
+      "decision": "REVIEW",
+      "evaluationDecision": "REVIEW",
+      "anomalyScore": 2.165,
+      "evaluationScore": 2.165,
+      "match": true
+    },
+    {
+      "clip": "local-04-missed-048",
+      "input": "data/visa/pcb1/Data/Images/Anomaly/048.JPG",
+      "decision": "PASS",
+      "evaluationDecision": "PASS",
+      "anomalyScore": 2.125,
+      "evaluationScore": 2.125,
+      "match": true
+    },
+    {
+      "clip": "local-05-identity-043",
+      "input": "data/visa/pcb1/Data/Images/Anomaly/043.JPG",
+      "decision": "REVIEW",
+      "evaluationDecision": "REVIEW",
+      "anomalyScore": 5.085,
+      "evaluationScore": 5.085,
+      "match": true
+    },
+    {
+      "clip": "local-06-retake-session",
+      "input": "video/capture-inputs/Normal-0011-blur-0.006.jpg",
+      "decision": "RETAKE",
+      "note": "synthetic input; no evaluation record"
+    },
+    {
+      "clip": "local-06-retake-session",
+      "input": "data/visa/pcb1/Data/Images/Normal/0011.JPG",
+      "decision": "PASS",
+      "evaluationDecision": "PASS",
+      "anomalyScore": 2.056,
+      "evaluationScore": 2.056,
+      "match": true
+    }
+  ],
+  "sourceConflicts": [
+    {
+      "item": "REVIEW count, MotionQA",
+      "briefValue": "40/153",
+      "currentValue": "41/153",
+      "explanation": "40/153 is decision policy 1 (evaluation/results/history/visaPcb1Results-run3-policy1.json, where Anomaly/043 was NO_PART). The current results file uses policy 2 and sends 043 to REVIEW. The video shows the current value and states the policy-1 value with its source."
+    },
+    {
+      "item": "Submission package path",
+      "briefValue": "docs/submission/SUBMISSION_PACKAGE.md or MotionQA_SubmissionPackage.md",
+      "currentValue": "not found; docs/SUBMISSION_DRAFT.md and docs/DEMO_SCRIPT.md used",
+      "explanation": "No file with either name exists in the checkout or the user folders searched."
+    },
+    {
+      "item": "SUBMISSION_DRAFT.md limitations",
+      "briefValue": "lists 'no AWS deployment yet' and REVIEW 41/153",
+      "currentValue": "AWS deployed 2026-10-16 (evaluation/aws-2026-10-16/README.md)",
+      "explanation": "The draft's limitation bullet predates the deployment record; the video follows the deployment record."
+    }
+  ],
+  "aurocFromRecords": 0.9745,
+  "briefTableCheck": [
+    {
+      "label": "Image AUROC (MotionQA)",
+      "actual": 0.9745,
+      "expected": 0.9745,
+      "match": true
+    },
+    {
+      "label": "Image AUROC (baseline)",
+      "actual": 0.8689,
+      "expected": 0.8689,
+      "match": true
+    },
+    {
+      "label": "Anomaly→PASS (MotionQA)",
+      "actual": "1/53",
+      "expected": "1/53",
+      "match": true
+    },
+    {
+      "label": "Anomaly→PASS (baseline)",
+      "actual": "0/53",
+      "expected": "0/53",
+      "match": true
+    },
+    {
+      "label": "Normal→FAIL (MotionQA)",
+      "actual": "4/100",
+      "expected": "4/100",
+      "match": true
+    },
+    {
+      "label": "Normal→FAIL (baseline)",
+      "actual": "7/100",
+      "expected": "7/100",
+      "match": true
+    },
+    {
+      "label": "REVIEW (baseline)",
+      "actual": "58/153",
+      "expected": "58/153",
+      "match": true
+    },
+    {
+      "label": "REVIEW (MotionQA, policy 1 history)",
+      "actual": "40/153",
+      "expected": "40/153",
+      "match": true
+    }
+  ]
+}

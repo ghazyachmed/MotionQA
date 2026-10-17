@@ -12,6 +12,7 @@ const requiredAssets = [
   "assets/dataset/normal-0011.jpg",
   "assets/pipeline/anomaly-000-0-photo.jpg",
   "assets/pipeline/anomaly-048-map-gt.jpg",
+  "assets/qr/live-endpoint.png",
   "captions/en.srt",
 ];
 const narrationCandidates = ["audio/narration.wav", "audio/narration.mp3", "audio/narration.m4a"];

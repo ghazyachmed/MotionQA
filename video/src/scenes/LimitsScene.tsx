@@ -1,14 +1,13 @@
 import type React from "react";
-import { AbsoluteFill, Easing, Sequence, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Easing, Img, Sequence, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { Beat, Card, Hand, Mark, Pop } from "../components/kit";
-import { fraction, links, verified } from "../lib/data";
-import { limitsSegments as seg, scenes } from "../timeline";
+import { cueIn, links } from "../lib/data";
+import { limitsSegments as seg } from "../timeline";
 import { colors, fonts, layout, size } from "../theme";
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
-const cue = (seconds: number, segmentFrom: number, fps: number) => Math.round(seconds * fps) - scenes.limits.from - segmentFrom;
 
-// 240–280 s: what the evidence does not cover, then the judge links (checked before rendering, src/data/links.json).
+// 240–280 s: what the evidence does not cover, then the live endpoint (QR) and the repository.
 export const LimitsScene: React.FC = () => (
   <AbsoluteFill>
     <Sequence from={seg.limits.from} durationInFrames={seg.limits.duration} name="Limits">
@@ -20,80 +19,71 @@ export const LimitsScene: React.FC = () => (
   </AbsoluteFill>
 );
 
-const CheckItem: React.FC<{ text: string; note: string; at: number; tone: string }> = ({ text, note, at, tone }) => {
+const CheckItem: React.FC<{ text: string; at: number; tone: string }> = ({ text, at, tone }) => {
   const frame = useCurrentFrame();
   const tick = interpolate(frame, [at + 6, at + 14], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
   return (
-    <Pop at={at} style={{ display: "grid", gridTemplateColumns: "64px 1fr", alignItems: "start", gap: 20 }}>
-      <div style={{ width: 52, height: 52, border: `3px solid ${colors.line}`, borderRadius: 6, backgroundColor: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: fonts.sans, fontWeight: 800, fontSize: 40, color: tone, scale: 0.6 + 0.4 * tick }}>
+    <Pop at={at} style={{ display: "flex", alignItems: "center", gap: 30 }}>
+      <div style={{ width: 70, height: 70, border: `4px solid ${colors.line}`, borderRadius: 8, backgroundColor: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: fonts.sans, fontWeight: 800, fontSize: 52, color: tone, scale: 0.6 + 0.4 * tick }}>
         {tick > 0 ? "!" : ""}
       </div>
-      <div>
-        <div style={{ fontFamily: fonts.sans, fontSize: size.body, fontWeight: 700, color: colors.ink, lineHeight: 1.25 }}>{text}</div>
-        <Hand fontSize={40} color={tone}>
-          {note}
-        </Hand>
-      </div>
+      <div style={{ fontFamily: fonts.sans, fontSize: 52, fontWeight: 700, color: colors.ink }}>{text}</div>
     </Pop>
   );
 };
 
 const Limits: React.FC = () => {
   const { fps } = useVideoConfig();
-  const f = (s: number) => cue(s, seg.limits.from, fps);
-  const review = verified.decisions.motionqa.normal.REVIEW;
-  const items = [
-    { text: "Benchmark only: VisA pcb1 boards.", note: "not validated on other parts, lines or factories", at: f(240.6), tone: colors.amber },
-    { text: `${review} of ${verified.split.testNormal} good test boards go to REVIEW.`, note: "the price of 0 validation misses", at: f(247.1), tone: colors.amber },
-    { text: `A missing component on plain background can pass (${fraction(verified.metrics.anomalyToPass.motionqa)}).`, note: "Anomaly/048, unfixed", at: f(253.2), tone: colors.red },
-    { text: "FAIL and REVIEW need a person.", note: "the machine decision is never overwritten", at: f(256.2), tone: colors.blue },
-    { text: "No prospective data, no independent test set yet.", note: "protocol ready: docs/INDEPENDENT_EVALUATION.md", at: f(257.6), tone: colors.amber },
-  ];
+  const f = cueIn("limits", "limits", fps);
   return (
-    <Beat kicker="Limits" title="What this evidence does not show" fig={{ n: 21, text: "readme.md · docs/EVALUATION.md · docs/FAILURE_ANALYSIS.md" }}>
-      <div style={{ position: "absolute", left: layout.margin, top: layout.contentTop, width: 1400, display: "flex", flexDirection: "column", gap: 14 }}>
-        {items.map((item) => (
-          <CheckItem key={item.text} {...item} />
-        ))}
+    <Beat kicker="Limits" title="What we cannot claim yet">
+      <div style={{ position: "absolute", left: layout.margin, top: layout.contentTop + 60, display: "flex", flexDirection: "column", gap: 56 }}>
+        <CheckItem text="Tested on one public benchmark only" at={f(240.6)} tone={colors.amber} />
+        <CheckItem text="About 1 in 3 good boards go to REVIEW" at={f(247.1)} tone={colors.amber} />
+        <CheckItem text="Some missing parts can still pass" at={f(253.2)} tone={colors.red} />
       </div>
     </Beat>
   );
 };
 
 const Access: React.FC = () => {
+  const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const f = (s: number) => cue(s, seg.access.from, fps);
-  const linkCard = (heading: string, url: string, lines: string[], at: number, tone: string) => (
-    <Pop at={at}>
-      <Card accent={tone}>
-        <Hand fontSize={42} color={tone}>
-          {heading}
-        </Hand>
-        <div style={{ marginTop: 4, fontFamily: fonts.mono, fontSize: 40, fontWeight: 600, color: colors.ink, fontVariantLigatures: "none" }}>{url}</div>
-        {lines.map((line) => (
-          <div key={line} style={{ marginTop: 4, fontSize: size.small, color: colors.muted, lineHeight: 1.3 }}>
-            {line}
-          </div>
-        ))}
-      </Card>
-    </Pop>
-  );
+  const f = cueIn("limits", "access", fps);
+  const qrAt = f(259.5);
   return (
-    <Beat kicker="Access" title="Try it, read it" fig={{ n: 22, text: `both links checked ${links.endpoint.checkedAtUtc.slice(0, 16).replace("T", " ")} UTC (src/data/links.json)` }}>
-      <div style={{ position: "absolute", left: layout.margin, top: layout.contentTop, width: 1728, display: "flex", flexDirection: "column", gap: 16, fontFamily: fonts.sans }}>
-        {linkCard("live endpoint on AWS", links.endpoint.url, ["Model ready on OpenCV 5.0.0 at the last check. Operator token shared with judges privately.", "Planned teardown by 2026-11-11 (deployment record)."], f(259.5), colors.aws)}
-        {linkCard("code, evaluation files, video sources", links.repository.url, ["Public repository, branch master."], f(266.0), colors.blue)}
-      </div>
-      <Pop at={f(268.6)} style={{ position: "absolute", left: layout.margin, top: layout.contentTop + 470, fontFamily: fonts.sans, fontSize: size.small, color: colors.muted, lineHeight: 1.35 }}>
-        <div>VisA dataset, CC BY 4.0 (Zou et al., ECCV 2022) · MobileNetV2 from OpenCV Zoo, Apache-2.0</div>
-        <div>OpenCV, Apache-2.0 · Inter, JetBrains Mono and Caveat fonts, OFL-1.1</div>
+    <Beat kicker="Try it" title="Scan to open the live app" note={`links checked ${links.endpoint.checkedAtUtc.slice(0, 10)}`}>
+      <Pop at={qrAt} style={{ position: "absolute", left: layout.margin, top: layout.contentTop + 10 }}>
+        <div style={{ padding: 18, backgroundColor: "#fff", border: `3px solid ${colors.line}`, borderRadius: 12, boxShadow: "10px 10px 0 rgba(11,23,48,0.10)", scale: interpolate(frame, [qrAt, qrAt + 12], [0.9, 1], { ...clamp, easing: Easing.out(Easing.back(1.6)) }) }}>
+          <Img src={staticFile("assets/qr/live-endpoint.png")} style={{ width: 420, height: 420, display: "block" }} />
+        </div>
       </Pop>
-      <Pop at={f(272.1)} style={{ position: "absolute", right: layout.margin, top: layout.titleTop - 2, textAlign: "right", fontFamily: fonts.sans, color: colors.ink }}>
+      <div style={{ position: "absolute", left: 620, top: layout.contentTop + 20, width: 1204, display: "flex", flexDirection: "column", gap: 26, fontFamily: fonts.sans }}>
+        <Pop at={qrAt + 10}>
+          <Card accent={colors.aws}>
+            <Hand fontSize={46} color={colors.aws}>
+              live on AWS
+            </Hand>
+            <div style={{ marginTop: 4, fontFamily: fonts.mono, fontSize: 44, fontWeight: 600, color: colors.ink, fontVariantLigatures: "none" }}>{links.endpoint.url}</div>
+            <div style={{ marginTop: 6, fontSize: size.small, color: colors.muted }}>operator token shared with judges privately</div>
+          </Card>
+        </Pop>
+        <Pop at={f(266.0)}>
+          <Card accent={colors.blue}>
+            <Hand fontSize={46}>code, data files, video sources</Hand>
+            <div style={{ marginTop: 4, fontFamily: fonts.mono, fontSize: 44, fontWeight: 600, color: colors.ink, fontVariantLigatures: "none" }}>{links.repository.url}</div>
+          </Card>
+        </Pop>
+      </div>
+      <Pop at={f(272.1)} style={{ position: "absolute", left: 620, top: layout.contentTop + 462, fontFamily: fonts.sans, color: colors.ink }}>
         <div style={{ fontSize: size.subtitle, fontWeight: 800 }}>
           <Mark at={f(272.3)}>MotionQA</Mark> · team Kia Kiu
         </div>
-        <div style={{ fontSize: size.small, fontWeight: 600, marginTop: 8 }}>Ghazy Achmed Movlech Urbayani · Institut Teknologi Bandung</div>
+        <div style={{ marginTop: 6, fontSize: size.small, color: colors.muted }}>Ghazy Achmed Movlech Urbayani · Institut Teknologi Bandung</div>
       </Pop>
+      <div style={{ position: "absolute", left: layout.margin, top: layout.contentTop + 560, fontFamily: fonts.sans, fontSize: size.small, color: colors.muted, opacity: interpolate(frame, [f(268.6), f(268.6) + 10], [0, 1], clamp) }}>
+        VisA CC BY 4.0 (Zou et al., ECCV 2022) · MobileNetV2, OpenCV Zoo, Apache-2.0 · voice: Kokoro-82M, Apache-2.0
+      </div>
     </Beat>
   );
 };

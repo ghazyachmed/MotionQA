@@ -24,8 +24,9 @@ export const Hand: React.FC<{ children: React.ReactNode; color?: string; fontSiz
   <span style={{ fontFamily: fonts.hand, fontWeight: 600, fontSize, color, lineHeight: 1.1, ...style }}>{children}</span>
 );
 
-// Kicker in handwriting, bold title that darkens in, then an optional "Fig. n" line.
-export const Header: React.FC<{ kicker: string; title: string; fig?: { n: number | string; text: string }; figAt?: number }> = ({ kicker, title, fig, figAt = 10 }) => {
+// Kicker in handwriting, bold title (the message of the beat) that darkens in, an optional short provenance note on
+// the kicker row, and an optional "Fig. n" line.
+export const Header: React.FC<{ kicker: string; title: string; note?: string; fig?: { n: number | string; text: string }; figAt?: number }> = ({ kicker, title, note, fig, figAt = 10 }) => {
   const frame = useCurrentFrame();
   const write = interpolate(frame, [0, 14], [100, 0], clamp);
   return (
@@ -33,6 +34,9 @@ export const Header: React.FC<{ kicker: string; title: string; fig?: { n: number
       <div style={{ position: "absolute", left: layout.margin, top: layout.kickerTop - 6, clipPath: `inset(0 ${write}% 0 0)` }}>
         <Hand>{`${kicker} →`}</Hand>
       </div>
+      {note ? (
+        <div style={{ position: "absolute", right: layout.margin, top: layout.kickerTop + 4, fontFamily: fonts.sans, fontSize: size.small, color: colors.muted, whiteSpace: "nowrap", opacity: interpolate(frame, [6, 16], [0, 1], clamp) }}>{note}</div>
+      ) : null}
       <div
         style={{
           position: "absolute",
@@ -62,9 +66,9 @@ export const Header: React.FC<{ kicker: string; title: string; fig?: { n: number
   );
 };
 
-export const Beat: React.FC<{ kicker: string; title: string; fig?: { n: number | string; text: string }; figAt?: number; children: React.ReactNode }> = ({ kicker, title, fig, figAt, children }) => (
+export const Beat: React.FC<{ kicker: string; title: string; note?: string; fig?: { n: number | string; text: string }; figAt?: number; children: React.ReactNode }> = ({ kicker, title, note, fig, figAt, children }) => (
   <AbsoluteFill>
-    <Header kicker={kicker} title={title} fig={fig} figAt={figAt} />
+    <Header kicker={kicker} title={title} note={note} fig={fig} figAt={figAt} />
     {children}
   </AbsoluteFill>
 );

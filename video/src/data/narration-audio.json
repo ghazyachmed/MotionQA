@@ -1,0 +1,335 @@
+{
+ "engine": "kokoro 0.9.4 (Apache-2.0)",
+ "model": "hexgrad/Kokoro-82M v1.0 (Apache-2.0)",
+ "modelFile": {
+  "weights": "kokoro-v1_0.pth",
+  "snapshot": "f3ff3571791e39611d31c381e3a41a3af07b4987",
+  "sha256": "496dba118d1a58f5f3db2efc88dbdc216e0483fc89fe6e47ee1f2c53f18ad1e4"
+ },
+ "voice": "af_heart",
+ "speed": 1,
+ "sampleRate": 48000,
+ "generatedAtUtc": "2026-10-17T09:20:45+00:00",
+ "totalSeconds": 280,
+ "cues": [
+  {
+   "start": 0.2,
+   "speechSeconds": 3.569,
+   "speechEnd": 3.769,
+   "spoken": "Motion Q A. Evidence-backed P C B anomaly inspection."
+  },
+  {
+   "start": 4,
+   "speechSeconds": 3.145,
+   "speechEnd": 7.145,
+   "spoken": "By team Kia Kiu, from Institut Teknologi Bandung."
+  },
+  {
+   "start": 7.5,
+   "speechSeconds": 1.341,
+   "speechEnd": 8.841,
+   "spoken": "Can you spot the defect?"
+  },
+  {
+   "start": 9.9,
+   "speechSeconds": 4.178,
+   "speechEnd": 14.078,
+   "spoken": "One bent pin. Just zero point one three percent of the model input."
+  },
+  {
+   "start": 15.6,
+   "speechSeconds": 2.271,
+   "speechEnd": 17.871,
+   "spoken": "A bare pass, or fail, does not say why."
+  },
+  {
+   "start": 20.4,
+   "speechSeconds": 3.343,
+   "speechEnd": 23.743,
+   "spoken": "Motion Q A keeps the reason, the score, and the evidence."
+  },
+  {
+   "start": 25.3,
+   "speechSeconds": 3.193,
+   "speechEnd": 28.493,
+   "spoken": "Here is how it decides. Every photo follows one path."
+  },
+  {
+   "start": 29.9,
+   "speechSeconds": 3.482,
+   "speechEnd": 33.382,
+   "spoken": "Bad photos are retaken. Unsure cases go to a person."
+  },
+  {
+   "start": 35.3,
+   "speechSeconds": 2.043,
+   "speechEnd": 37.343,
+   "spoken": "This is the real app, running locally."
+  },
+  {
+   "start": 38.4,
+   "speechSeconds": 2.099,
+   "speechEnd": 40.499,
+   "spoken": "A good board scores under the pass line."
+  },
+  {
+   "start": 46.9,
+   "speechSeconds": 1.873,
+   "speechEnd": 48.773,
+   "spoken": "Bent pins score over the fail line."
+  },
+  {
+   "start": 51.3,
+   "speechSeconds": 3.458,
+   "speechEnd": 54.758,
+   "spoken": "A reviewer confirms. The machine decision stays on record."
+  },
+  {
+   "start": 58,
+   "speechSeconds": 2.682,
+   "speechEnd": 60.682,
+   "spoken": "A blurry photo gets retake, in the same session."
+  },
+  {
+   "start": 64,
+   "speechSeconds": 3.613,
+   "speechEnd": 67.613,
+   "spoken": "The sharp retake passes. Three failed tries go to a person."
+  },
+  {
+   "start": 70.4,
+   "speechSeconds": 3.89,
+   "speechEnd": 74.29,
+   "spoken": "Under the hood: one photo, step by step, in Open C V five."
+  },
+  {
+   "start": 75,
+   "speechSeconds": 1.911,
+   "speechEnd": 76.911,
+   "spoken": "Find the board. Check the focus."
+  },
+  {
+   "start": 80.6,
+   "speechSeconds": 3.477,
+   "speechEnd": 84.077,
+   "spoken": "Crop it, and extract features with the new D N N engine."
+  },
+  {
+   "start": 87,
+   "speechSeconds": 3.462,
+   "speechEnd": 90.462,
+   "spoken": "Compare patches with normal boards, and mark what looks different."
+  },
+  {
+   "start": 95.6,
+   "speechSeconds": 4.15,
+   "speechEnd": 99.75,
+   "spoken": "Now, the hard cases. This good board lands just over the pass line."
+  },
+  {
+   "start": 101.2,
+   "speechSeconds": 2.344,
+   "speechEnd": 103.544,
+   "spoken": "Too close to call, so a person decides."
+  },
+  {
+   "start": 104.8,
+   "speechSeconds": 3.508,
+   "speechEnd": 108.308,
+   "spoken": "A known miss: board zero four eight lost a pin, and it passes."
+  },
+  {
+   "start": 111.2,
+   "speechSeconds": 3.219,
+   "speechEnd": 114.419,
+   "spoken": "The hottest spot is on the transducer, not the missing pin."
+  },
+  {
+   "start": 116.9,
+   "speechSeconds": 2.427,
+   "speechEnd": 119.327,
+   "spoken": "This weakness is documented and unfixed."
+  },
+  {
+   "start": 121.6,
+   "speechSeconds": 4.912,
+   "speechEnd": 126.512,
+   "spoken": "Board zero four three lost both transducers. The model is unsure it is the part."
+  },
+  {
+   "start": 128,
+   "speechSeconds": 5.982,
+   "speechEnd": 133.982,
+   "spoken": "An older policy said no part. Now it goes to review, and it stays in all one hundred fifty-three."
+  },
+  {
+   "start": 135.3,
+   "speechSeconds": 2.075,
+   "speechEnd": 137.375,
+   "spoken": "The same app runs live on A W S."
+  },
+  {
+   "start": 139.9,
+   "speechSeconds": 2.24,
+   "speechEnd": 142.14,
+   "spoken": "Without a token, only the status shows."
+  },
+  {
+   "start": 143.3,
+   "speechSeconds": 3.74,
+   "speechEnd": 147.04,
+   "spoken": "The model is ready on Open C V five, and health checks pass."
+  },
+  {
+   "start": 150.3,
+   "speechSeconds": 2.505,
+   "speechEnd": 152.805,
+   "spoken": "A photo enters through CloudFront and engine X."
+  },
+  {
+   "start": 155.8,
+   "speechSeconds": 4.441,
+   "speechEnd": 160.241,
+   "spoken": "Fast A P I runs the Open C V steps on one Graviton instance."
+  },
+  {
+   "start": 161.6,
+   "speechSeconds": 3.759,
+   "speechEnd": 165.359,
+   "spoken": "Evidence goes to S three. The record goes to Postgres Q L."
+  },
+  {
+   "start": 167,
+   "speechSeconds": 3.825,
+   "speechEnd": 170.825,
+   "spoken": "Secrets Manager holds the token. CloudFormation built the stack."
+  },
+  {
+   "start": 171.2,
+   "speechSeconds": 3.801,
+   "speechEnd": 175.001,
+   "spoken": "On October sixteenth, twenty test images ran on A W S."
+  },
+  {
+   "start": 175.7,
+   "speechSeconds": 2.354,
+   "speechEnd": 178.054,
+   "spoken": "All twenty answers matched the local run."
+  },
+  {
+   "start": 180.4,
+   "speechSeconds": 3.996,
+   "speechEnd": 184.396,
+   "spoken": "The data is the public Visa benchmark, on A W S Open Data."
+  },
+  {
+   "start": 185.9,
+   "speechSeconds": 3.4,
+   "speechEnd": 189.3,
+   "spoken": "Good boards build the memory. Validation sets the lines."
+  },
+  {
+   "start": 191.4,
+   "speechSeconds": 3.134,
+   "speechEnd": 194.534,
+   "spoken": "One hundred fifty-three test images give the results."
+  },
+  {
+   "start": 196.2,
+   "speechSeconds": 2.831,
+   "speechEnd": 199.031,
+   "spoken": "Each dot is one test image, placed by its score."
+  },
+  {
+   "start": 201.7,
+   "speechSeconds": 3.036,
+   "speechEnd": 204.736,
+   "spoken": "Two lines make three zones: pass, review, and fail."
+  },
+  {
+   "start": 207.2,
+   "speechSeconds": 4.431,
+   "speechEnd": 211.631,
+   "spoken": "One of fifty-three defective boards passed. Four of one hundred good boards failed."
+  },
+  {
+   "start": 212.9,
+   "speechSeconds": 2.073,
+   "speechEnd": 214.973,
+   "spoken": "Forty-one images went to a person."
+  },
+  {
+   "start": 216.9,
+   "speechSeconds": 5.818,
+   "speechEnd": 222.718,
+   "spoken": "Image A U R O C is zero point nine seven four five. A ranking score, not accuracy."
+  },
+  {
+   "start": 222.9,
+   "speechSeconds": 7.779,
+   "speechEnd": 230.679,
+   "spoken": "The Open C V only baseline ranks lower, zero point eight six eight nine. It misses none, but rejects and reviews more."
+  },
+  {
+   "start": 232,
+   "speechSeconds": 2.888,
+   "speechEnd": 234.888,
+   "spoken": "We tuned capture gates after seeing test results."
+  },
+  {
+   "start": 235.3,
+   "speechSeconds": 3.25,
+   "speechEnd": 238.55,
+   "spoken": "So these are development results, not an independent test."
+  },
+  {
+   "start": 240.5,
+   "speechSeconds": 2.885,
+   "speechEnd": 243.385,
+   "spoken": "Motion Q A is tested on this benchmark only."
+  },
+  {
+   "start": 247,
+   "speechSeconds": 2.354,
+   "speechEnd": 249.354,
+   "spoken": "About one in three good boards goes to review."
+  },
+  {
+   "start": 253.1,
+   "speechSeconds": 1.839,
+   "speechEnd": 254.939,
+   "spoken": "Some missing parts can still pass."
+  },
+  {
+   "start": 259.4,
+   "speechSeconds": 4.251,
+   "speechEnd": 263.651,
+   "spoken": "Scan the code to open the live endpoint. Judges get the token privately."
+  },
+  {
+   "start": 265.9,
+   "speechSeconds": 3.532,
+   "speechEnd": 269.432,
+   "spoken": "The code, the data files and this video's sources are public."
+  },
+  {
+   "start": 272,
+   "speechSeconds": 2.635,
+   "speechEnd": 274.635,
+   "spoken": "Motion Q A, by team Kia Kiu. Thank you."
+  }
+ ],
+ "loudness": {
+  "method": "FFmpeg loudnorm I=-16 TP=-1.5 LRA=11, 48 kHz mono",
+  "before": {
+   "integratedLufs": -23.25,
+   "truePeakDbtp": -0.95,
+   "loudnessRange": 6.1
+  },
+  "after": {
+   "integratedLufs": -16.43,
+   "truePeakDbtp": -1.49,
+   "loudnessRange": 5.9
+  }
+ }
+}

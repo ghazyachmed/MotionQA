@@ -1,16 +1,15 @@
 import type React from "react";
 import { AbsoluteFill, Easing, Sequence, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
-import { Beat, Card, CountUp, Draw, Hand, Mark, Pop, Stamp } from "../components/kit";
-import { fraction, verified } from "../lib/data";
+import { Beat, Card, Draw, Hand, Pop, Stamp } from "../components/kit";
+import { cueIn, fraction, verified } from "../lib/data";
 import type { Fraction } from "../lib/data";
-import { evaluationSegments as seg, scenes } from "../timeline";
+import { evaluationSegments as seg } from "../timeline";
 import { colors, decisionColor, decisionWash, fonts, layout, size } from "../theme";
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 const m = verified.metrics;
 const sp = verified.split;
 const t = verified.thresholds;
-const cue = (seconds: number, segmentFrom: number, fps: number) => Math.round(seconds * fps) - scenes.evaluation.from - segmentFrom;
 
 // 180–240 s: where the data comes from, every test image on one score axis, the baseline, and why it is exploratory.
 export const EvaluationScene: React.FC = () => (
@@ -32,7 +31,7 @@ export const EvaluationScene: React.FC = () => (
 
 const Box: React.FC<{ left: number; top: number; width: number; height: number; at: number; accent?: string; children: React.ReactNode }> = ({ left, top, width, height, at, accent, children }) => (
   <Pop at={at} style={{ position: "absolute", left, top, width, height }}>
-    <Card accent={accent} style={{ height: "100%", padding: "16px 22px" }}>
+    <Card accent={accent} style={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", gap: 6, padding: "14px 24px" }}>
       {children}
     </Card>
   </Pop>
@@ -40,61 +39,40 @@ const Box: React.FC<{ left: number; top: number; width: number; height: number; 
 
 const DataOrigin: React.FC = () => {
   const { fps } = useVideoConfig();
-  const f = (s: number) => cue(s, seg.data.from, fps);
+  const f = cueIn("evaluation", "data", fps);
   const o = verified.dataOrigin;
-  const top = layout.contentTop;
-  const gb = ((o.archiveBytes ?? 0) / 1e9).toFixed(2);
+  const top = layout.contentTop + 20;
   const branches = [
-    { y: top + 0, title: "memory bank", line1: `${sp.bankNormal} good boards`, line2: `→ ${o.memoryBankPatches.toLocaleString("en-US")} normal patches`, at: f(185.9), accent: colors.blue },
-    { y: top + 196, title: "validation", line1: `${sp.validationNormal} good + ${sp.validationAnomaly} defective`, line2: "→ thresholds, model choice", at: f(188.6), accent: colors.amber },
-    { y: top + 392, title: "test", line1: `${sp.testNormal} good + ${sp.testAnomaly} defective`, line2: "→ every result in this video", at: f(191.4), accent: colors.red },
+    { y: top, count: `${sp.bankNormal} good`, what: "build the memory", at: f(185.9), accent: colors.blue },
+    { y: top + 200, count: `${sp.validationNormal} + ${sp.validationAnomaly}`, what: "set the lines", at: f(188.6), accent: colors.amber },
+    { y: top + 400, count: `${sp.testNormal} + ${sp.testAnomaly}`, what: "give the results", at: f(191.4), accent: colors.red },
   ];
+  const big = { fontFamily: fonts.mono, fontSize: 48, fontWeight: 600, color: colors.ink } as const;
   return (
-    <Beat kicker="Evaluation" title="Where the data comes from" fig={{ n: 17, text: "evaluation/visaPcb1Split.json, seed 20261015 · docs/EVALUATION.md" }}>
-      <Box left={96} top={top + 150} width={430} height={250} at={f(180.6)} accent={colors.aws}>
-        <Hand fontSize={42} color={colors.aws}>
-          AWS Open Data · S3
+    <Beat kicker="Results" title="Public data, split three ways" note="VisA pcb1 · CC BY 4.0 · evaluation/visaPcb1Split.json">
+      <Box left={96} top={top + 160} width={400} height={200} at={f(180.6)} accent={colors.aws}>
+        <Hand fontSize={46} color={colors.aws}>
+          AWS Open Data
         </Hand>
-        <div style={{ fontSize: size.body, fontWeight: 800, marginTop: 4 }}>VisA archive</div>
-        <div style={{ fontSize: size.small, color: colors.muted, lineHeight: 1.3 }}>{`${gb} GB · ${o.license}`}</div>
-        <div style={{ fontSize: size.small, color: colors.muted, lineHeight: 1.3 }}>Zou et al., ECCV 2022</div>
+        <div style={{ fontSize: size.subtitle, fontWeight: 800 }}>VisA</div>
       </Box>
-      <Draw d={`M 530 ${top + 275} L 640 ${top + 275}`} at={f(182.2)} head />
-      <Box left={650} top={top + 150} width={380} height={250} at={f(182.6)} accent={colors.ink}>
-        <Hand fontSize={42}>category used</Hand>
-        <div style={{ fontSize: size.body, fontWeight: 800, marginTop: 4 }}>pcb1 (HC-SR04)</div>
-        <div style={{ fontSize: size.small, lineHeight: 1.35 }}>
-          <span style={{ fontFamily: fonts.mono }}>
-            <CountUp to={o.pcb1Normal} at={f(182.8)} />
-          </span>{" "}
-          good
-        </div>
-        <div style={{ fontSize: size.small, lineHeight: 1.35 }}>
-          <span style={{ fontFamily: fonts.mono }}>
-            <CountUp to={o.pcb1Anomaly} at={f(182.8)} />
-          </span>{" "}
-          defective
-        </div>
+      <Draw d={`M 500 ${top + 260} L 600 ${top + 260}`} at={f(182.2)} head />
+      <Box left={610} top={top + 160} width={380} height={200} at={f(182.6)} accent={colors.ink}>
+        <div style={{ fontSize: size.subtitle, fontWeight: 800 }}>pcb1</div>
+        <div style={big}>{`${o.pcb1Normal.toLocaleString("en-US")} + ${o.pcb1Anomaly}`}</div>
+        <div style={{ fontSize: size.small, color: colors.muted }}>good + defective</div>
       </Box>
       {branches.map((b) => (
-        <div key={b.title}>
-          <Draw d={`M 1034 ${top + 275} C 1090 ${top + 275}, 1090 ${b.y + 85}, 1150 ${b.y + 85}`} at={b.at - 8} color={b.accent} head />
-          <Box left={1160} top={b.y} width={664} height={170} at={b.at} accent={b.accent}>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 16 }}>
-              <span style={{ fontSize: size.body, fontWeight: 800 }}>{b.title}</span>
-              <span style={{ fontSize: size.small, fontFamily: fonts.mono }}>{b.line1}</span>
-            </div>
-            <div style={{ marginTop: 6 }}>
-              <Hand fontSize={42} color={b.accent}>
-                {b.line2}
-              </Hand>
+        <div key={b.what}>
+          <Draw d={`M 994 ${top + 260} C 1060 ${top + 260}, 1060 ${b.y + 80}, 1130 ${b.y + 80}`} at={b.at - 8} color={b.accent} head />
+          <Box left={1140} top={b.y} width={684} height={160} at={b.at} accent={b.accent}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 24 }}>
+              <span style={big}>{b.count}</span>
+              <Hand fontSize={52} color={b.accent}>{`→ ${b.what}`}</Hand>
             </div>
           </Box>
         </div>
       ))}
-      <Pop at={f(193.6)} style={{ position: "absolute", left: 96, top: top + 440, width: 940, fontFamily: fonts.sans, fontSize: size.small, color: colors.muted, lineHeight: 1.35 }}>
-        {`Plus ${o.otherObjectValidation} + ${o.otherObjectTest} images of 10 other VisA objects for the NO_PART and wrong-object checks.`}
-      </Pop>
     </Beat>
   );
 };
@@ -102,7 +80,7 @@ const DataOrigin: React.FC = () => {
 type Dot = { id: string; label: string; decision: string; score: number; x: number; y: number; order: number };
 
 const axisX = (v: number) => (v <= 3.3 ? 330 + ((v - 1.9) / 1.4) * 1230 : 1610 + ((v - 3.3) / 1.9) * 190);
-const rowY = { normal: 432, anomaly: 694 };
+const rowY = { normal: 412, anomaly: 680 };
 
 // Deterministic beeswarm: dots sorted by score take the nearest free level (0, -1, +1, -2, ...), 17 px apart.
 const dots: Dot[] = (() => {
@@ -128,15 +106,22 @@ const dots: Dot[] = (() => {
   return result;
 })();
 
+// Shows one annotation at a time: visible from `at` until `until`.
+const Spot: React.FC<{ at: number; until: number; children: React.ReactNode; style?: React.CSSProperties }> = ({ at, until, children, style }) => {
+  const frame = useCurrentFrame();
+  const opacity = interpolate(frame, [at, at + 8, until, until + 8], [0, 1, 1, 0], clamp);
+  return opacity > 0 ? <div style={{ position: "absolute", opacity, ...style }}>{children}</div> : null;
+};
+
 const StripPlot: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const f = (s: number) => cue(s, seg.strip.from, fps);
+  const f = cueIn("evaluation", "strip", fps);
   const dropAt = f(196.8);
   const linesAt = f(201.9);
   const colorAt = f(203.4);
   const missAt = f(207.4);
-  const rejectAt = f(209.6);
+  const rejectAt = f(210.0);
   const reviewAt = f(213.0);
   const aurocAt = f(217.0);
   const passX = axisX(t.passBelow);
@@ -144,15 +129,20 @@ const StripPlot: React.FC = () => {
   const zoneO = interpolate(frame, [linesAt, linesAt + 10], [0, 1], clamp);
   const miss = dots.find((d) => d.label === "anomaly" && d.decision === "PASS");
   const rejects = dots.filter((d) => d.label === "normal" && d.decision === "FAIL");
-  const identity = dots.find((d) => d.id === "Anomaly/043");
   const ticks = [2.0, 2.4, 2.8, 3.2, 4.0, 5.0];
+  const chip = (value: string, text: string, tone: string) => (
+    <Card style={{ padding: "8px 20px", borderColor: tone, whiteSpace: "nowrap" }}>
+      <span style={{ fontFamily: fonts.mono, fontSize: 44, fontWeight: 600, color: tone }}>{value}</span>
+      <span style={{ fontSize: size.body, fontWeight: 600 }}>{` ${text}`}</span>
+    </Card>
+  );
   return (
-    <Beat kicker="Exploratory development results" title="All 153 test images on one axis" fig={{ n: 18, text: "each dot = one test image from visaPcb1Results.json, placed by its raw anomaly score (not a probability)" }}>
+    <Beat kicker="Exploratory development results" title={`${sp.testTotal} test images, one score each`} note="each dot = one image · raw score, not a probability">
       <svg width={layout.width} height={layout.height} style={{ position: "absolute", inset: 0 }}>
         <g opacity={zoneO}>
-          <rect x={330} y={330} width={passX - 330} height={440} fill={decisionWash("PASS")} opacity={0.55} />
-          <rect x={passX} y={330} width={failX - passX} height={440} fill={decisionWash("REVIEW")} opacity={0.6} />
-          <rect x={failX} y={330} width={1800 - failX} height={440} fill={decisionWash("FAIL")} opacity={0.5} />
+          <rect x={330} y={300} width={passX - 330} height={470} fill={decisionWash("PASS")} opacity={0.55} />
+          <rect x={passX} y={300} width={failX - passX} height={470} fill={decisionWash("REVIEW")} opacity={0.6} />
+          <rect x={failX} y={300} width={1800 - failX} height={470} fill={decisionWash("FAIL")} opacity={0.5} />
         </g>
         <line x1={330} y1={780} x2={1560} y2={780} stroke={colors.line} strokeWidth={3} />
         <line x1={1610} y1={780} x2={1800} y2={780} stroke={colors.line} strokeWidth={3} />
@@ -170,79 +160,57 @@ const StripPlot: React.FC = () => {
           if (frame < appear) return null;
           const fall = interpolate(frame, [appear, appear + 10], [-40, 0], { ...clamp, easing: Easing.out(Easing.bounce) });
           const colored = frame >= colorAt + Math.floor(d.order / 6);
-          const dim = (frame >= reviewAt && frame < aurocAt && d.decision !== "REVIEW") || frame >= aurocAt;
-          return <circle key={d.id} cx={d.x} cy={d.y + fall} r={8} fill={colored ? decisionColor(d.decision) : colors.faint} stroke="#fff" strokeWidth={1.5} opacity={dim ? 0.25 : 1} />;
+          const focus =
+            frame >= aurocAt ? false : frame >= reviewAt ? d.decision === "REVIEW" : frame >= rejectAt ? d.label === "normal" && d.decision === "FAIL" : frame >= missAt ? d.label === "anomaly" && d.decision === "PASS" : true;
+          return <circle key={d.id} cx={d.x} cy={d.y + fall} r={8} fill={colored ? decisionColor(d.decision) : colors.faint} stroke="#fff" strokeWidth={1.5} opacity={focus ? 1 : 0.22} />;
         })}
         {frame >= linesAt ? (
           <>
-            <line x1={passX} y1={330} x2={passX} y2={330 + 450 * interpolate(frame, [linesAt, linesAt + 14], [0, 1], clamp)} stroke={colors.green} strokeWidth={4} strokeDasharray="12 8" />
-            <line x1={failX} y1={330} x2={failX} y2={330 + 450 * interpolate(frame, [linesAt + 6, linesAt + 20], [0, 1], clamp)} stroke={colors.red} strokeWidth={4} strokeDasharray="12 8" />
+            <line x1={passX} y1={300} x2={passX} y2={300 + 480 * interpolate(frame, [linesAt, linesAt + 14], [0, 1], clamp)} stroke={colors.green} strokeWidth={4} strokeDasharray="12 8" />
+            <line x1={failX} y1={300} x2={failX} y2={300 + 480 * interpolate(frame, [linesAt + 6, linesAt + 20], [0, 1], clamp)} stroke={colors.red} strokeWidth={4} strokeDasharray="12 8" />
           </>
         ) : null}
-        {miss && frame >= missAt ? <circle cx={miss.x} cy={miss.y} r={20} fill="none" stroke={colors.red} strokeWidth={4} /> : null}
-        {frame >= rejectAt
-          ? rejects.map((d) => <circle key={d.id} cx={d.x} cy={d.y} r={16} fill="none" stroke={colors.red} strokeWidth={3} />)
-          : null}
+        {miss && frame >= missAt && frame < rejectAt + 8 ? <circle cx={miss.x} cy={miss.y} r={22} fill="none" stroke={colors.red} strokeWidth={5} /> : null}
+        {frame >= rejectAt && frame < reviewAt + 8 ? rejects.map((d) => <circle key={d.id} cx={d.x} cy={d.y} r={18} fill="none" stroke={colors.red} strokeWidth={4} />) : null}
       </svg>
-      <div style={{ position: "absolute", left: 96, top: rowY.normal - 30, width: 220, fontFamily: fonts.sans, fontSize: size.small, fontWeight: 800, color: colors.ink }}>{`${sp.testNormal} good`}</div>
-      <div style={{ position: "absolute", left: 96, top: rowY.anomaly - 30, width: 220, fontFamily: fonts.sans, fontSize: size.small, fontWeight: 800, color: colors.ink }}>{`${sp.testAnomaly} defective`}</div>
-      <div style={{ position: "absolute", left: 0, top: 288, width: 1920, opacity: zoneO, fontFamily: fonts.sans, fontSize: size.small, fontWeight: 800 }}>
-        <span style={{ position: "absolute", left: 340, color: colors.green }}>PASS</span>
-        <span style={{ position: "absolute", left: passX + 10, color: colors.amber }}>REVIEW</span>
-        <span style={{ position: "absolute", left: failX + 10, color: colors.red }}>FAIL</span>
-        <span style={{ position: "absolute", left: passX - 108, top: 0, fontFamily: fonts.mono, fontWeight: 600, color: colors.green }}>{t.passBelow.toFixed(3)}</span>
-        <span style={{ position: "absolute", left: failX + 140, top: 0, fontFamily: fonts.mono, fontWeight: 600, color: colors.red }}>{t.failAtOrAbove.toFixed(3)}</span>
+      <div style={{ position: "absolute", left: 96, top: rowY.normal - 24, fontFamily: fonts.sans, fontSize: size.body, fontWeight: 800, color: colors.ink }}>good</div>
+      <div style={{ position: "absolute", left: 96, top: rowY.anomaly - 24, fontFamily: fonts.sans, fontSize: size.body, fontWeight: 800, color: colors.ink }}>defective</div>
+      <div style={{ position: "absolute", left: 0, top: 254, width: 1920, opacity: zoneO, fontFamily: fonts.sans, fontSize: size.body, fontWeight: 800 }}>
+        <span style={{ position: "absolute", left: 345, color: colors.green }}>PASS</span>
+        <span style={{ position: "absolute", left: passX + 14, color: colors.amber }}>REVIEW</span>
+        <span style={{ position: "absolute", left: failX + 14, color: colors.red }}>FAIL</span>
       </div>
       {miss ? (
-        <Pop at={missAt} style={{ position: "absolute", left: miss.x + 26, top: miss.y + 8, whiteSpace: "nowrap" }}>
-          <Hand fontSize={42} color={colors.red}>{`↖ 048 · ${miss.score.toFixed(3)} · missed`}</Hand>
-        </Pop>
+        <Spot at={missAt} until={rejectAt} style={{ left: miss.x + 34, top: miss.y - 110 }}>
+          {chip(fraction(m.anomalyToPass.motionqa), "defective passed", colors.red)}
+        </Spot>
       ) : null}
-      <Pop at={missAt + 10} style={{ position: "absolute", left: 340, top: 566 }}>
-        <Card style={{ padding: "8px 18px" }}>
-          <span style={{ fontFamily: fonts.mono, fontSize: size.body, fontWeight: 600, color: colors.red }}>{fraction(m.anomalyToPass.motionqa)}</span>
-          <span style={{ fontSize: size.small }}> defective → PASS</span>
-        </Card>
-      </Pop>
-      <Pop at={rejectAt} style={{ position: "absolute", left: 1280, top: 566 }}>
-        <Card style={{ padding: "8px 18px" }}>
-          <span style={{ fontFamily: fonts.mono, fontSize: size.body, fontWeight: 600, color: colors.red }}>{fraction(m.normalToFail.motionqa)}</span>
-          <span style={{ fontSize: size.small }}> good → FAIL</span>
-        </Card>
-      </Pop>
-      {identity ? (
-        <Pop at={colorAt + 30} style={{ position: "absolute", left: 1580, top: 470, width: 240, textAlign: "right" }}>
-          <Hand fontSize={40} color={colors.amber}>
-            043 · identity
-            <br />→ REVIEW ↓
-          </Hand>
-        </Pop>
-      ) : null}
-      <Pop at={reviewAt} style={{ position: "absolute", left: 880, top: 566 }}>
-        <Card style={{ padding: "8px 18px", borderColor: colors.amber }}>
-          <span style={{ fontFamily: fonts.mono, fontSize: size.body, fontWeight: 600, color: colors.amber }}>{fraction(m.review.motionqa)}</span>
-          <span style={{ fontSize: size.small }}> to REVIEW</span>
-        </Card>
-      </Pop>
-      <Pop at={aurocAt} style={{ position: "absolute", left: 460, top: 420, width: 1000 }}>
+      <Spot at={rejectAt} until={reviewAt} style={{ left: 1180, top: 520 }}>
+        {chip(fraction(m.normalToFail.motionqa), "good failed", colors.red)}
+      </Spot>
+      <Spot at={reviewAt} until={aurocAt} style={{ left: 760, top: 530 }}>
+        {chip(fraction(m.review.motionqa), "to a person", colors.amber)}
+      </Spot>
+      <Spot at={aurocAt} until={99999} style={{ left: 510, top: 400, width: 900 }}>
         <Card accent={colors.cyan} style={{ textAlign: "center" }}>
-          <div style={{ fontSize: size.body, fontWeight: 700 }}>Image AUROC, test split</div>
-          <div style={{ fontFamily: fonts.mono, fontSize: 96, fontWeight: 600, lineHeight: 1.1 }}>{m.imageAuroc.motionqa.toFixed(4)}</div>
-          <Hand fontSize={44}>how often a defective image outscores a good one</Hand>
-          <div style={{ marginTop: 6, fontSize: size.small, fontWeight: 800, color: colors.red }}>a ranking measure, not accuracy</div>
+          <div style={{ fontSize: size.body, fontWeight: 700 }}>Image AUROC</div>
+          <div style={{ fontFamily: fonts.mono, fontSize: 110, fontWeight: 600, lineHeight: 1.05 }}>{m.imageAuroc.motionqa.toFixed(4)}</div>
+          <Hand fontSize={48} color={colors.red}>
+            a ranking score, not accuracy
+          </Hand>
         </Card>
-      </Pop>
+      </Spot>
     </Beat>
   );
 };
 
-const FractionBar: React.FC<{ f: Fraction; tone: string; at: number }> = ({ f, tone, at }) => {
+const PairBar: React.FC<{ f: Fraction; tone: string; at: number }> = ({ f, tone, at }) => {
   const frame = useCurrentFrame();
   const grow = interpolate(frame, [at, at + 18], [0, 1], clamp);
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-      <div style={{ fontFamily: fonts.mono, fontSize: size.body, fontWeight: 600, width: 200, textAlign: "right", whiteSpace: "nowrap" }}>{fraction(f)}</div>
-      <div style={{ width: 220, height: 18, backgroundColor: "#E3E6EC", borderRadius: 9, overflow: "hidden" }}>
+      <div style={{ fontFamily: fonts.mono, fontSize: 44, fontWeight: 600, width: 230, textAlign: "right", whiteSpace: "nowrap" }}>{fraction(f)}</div>
+      <div style={{ width: 230, height: 22, backgroundColor: "#E3E6EC", borderRadius: 11, overflow: "hidden" }}>
         <div style={{ width: `${(100 * f.n * grow) / f.d}%`, height: "100%", backgroundColor: tone }} />
       </div>
     </div>
@@ -251,43 +219,36 @@ const FractionBar: React.FC<{ f: Fraction; tone: string; at: number }> = ({ f, t
 
 const Compare: React.FC = () => {
   const { fps } = useVideoConfig();
-  const f = (s: number) => cue(s, seg.compare.from, fps);
-  const rows: Array<{ label: string; sub: string; a: React.ReactNode; b: React.ReactNode; at: number }> = [
-    { label: "Image AUROC", sub: "ranking, not accuracy", a: <Big text={m.imageAuroc.motionqa.toFixed(4)} />, b: <Big text={m.imageAuroc.baseline.toFixed(4)} />, at: f(221.4) },
-    { label: "Defective → PASS", sub: "missed defects", a: <FractionBar f={m.anomalyToPass.motionqa} tone={colors.red} at={f(223.0)} />, b: <FractionBar f={m.anomalyToPass.baseline} tone={colors.red} at={f(223.0)} />, at: f(223.0) },
-    { label: "Good → FAIL", sub: "false rejections", a: <FractionBar f={m.normalToFail.motionqa} tone={colors.red} at={f(224.4)} />, b: <FractionBar f={m.normalToFail.baseline} tone={colors.red} at={f(224.4)} />, at: f(224.4) },
-    { label: "REVIEW", sub: "sent to a person", a: <FractionBar f={m.review.motionqa} tone={colors.amber} at={f(226.0)} />, b: <FractionBar f={m.review.baseline} tone={colors.amber} at={f(226.0)} />, at: f(226.0) },
-    { label: "Automatic PASS or FAIL", sub: "all test images", a: <FractionBar f={m.automatic.motionqa} tone={colors.cyanDeep} at={f(227.0)} />, b: <FractionBar f={m.automatic.baseline} tone={colors.cyanDeep} at={f(227.0)} />, at: f(227.0) },
+  const f = cueIn("evaluation", "compare", fps);
+  const rows: Array<{ label: string; a: React.ReactNode; b: React.ReactNode; at: number }> = [
+    { label: "Image AUROC", a: <Big text={m.imageAuroc.motionqa.toFixed(4)} />, b: <Big text={m.imageAuroc.baseline.toFixed(4)} />, at: f(223.1) },
+    { label: "Defective → PASS", a: <PairBar f={m.anomalyToPass.motionqa} tone={colors.red} at={f(226.4)} />, b: <PairBar f={m.anomalyToPass.baseline} tone={colors.red} at={f(226.4)} />, at: f(226.4) },
+    { label: "Good → FAIL", a: <PairBar f={m.normalToFail.motionqa} tone={colors.red} at={f(227.9)} />, b: <PairBar f={m.normalToFail.baseline} tone={colors.red} at={f(227.9)} />, at: f(227.9) },
+    { label: "REVIEW", a: <PairBar f={m.review.motionqa} tone={colors.amber} at={f(228.9)} />, b: <PairBar f={m.review.baseline} tone={colors.amber} at={f(228.9)} />, at: f(228.9) },
   ];
   return (
-    <Beat kicker="Exploratory development results" title="Against an OpenCV-only baseline" fig={{ n: 19, text: `baseline: cv.findTransformECC template difference, same thresholding · ${sp.testTotal} test images · policy ${verified.evaluation.decisionPolicy}` }}>
-      <div style={{ position: "absolute", left: layout.margin, top: layout.contentTop, display: "grid", gridTemplateColumns: "640px 520px 520px", columnGap: 24, fontFamily: fonts.sans, color: colors.ink }}>
+    <Beat kicker="Exploratory development results" title="Compared with an OpenCV-only baseline" note="baseline: cv.findTransformECC template difference">
+      <div style={{ position: "absolute", left: layout.margin, top: layout.contentTop + 20, display: "grid", gridTemplateColumns: "560px 560px 560px", columnGap: 24, fontFamily: fonts.sans, color: colors.ink }}>
         <div />
-        <div style={{ fontSize: size.body, fontWeight: 800, color: colors.cyanDeep, paddingBottom: 6 }}>MotionQA</div>
-        <div style={{ fontSize: size.body, fontWeight: 800, color: colors.muted, paddingBottom: 6 }}>baseline</div>
+        <div style={{ fontSize: size.subtitle, fontWeight: 800, color: colors.cyanDeep, paddingBottom: 10, paddingLeft: 60 }}>MotionQA</div>
+        <div style={{ fontSize: size.subtitle, fontWeight: 800, color: colors.muted, paddingBottom: 10, paddingLeft: 60 }}>baseline</div>
         {rows.map((row) => (
           <Row key={row.label} row={row} />
         ))}
       </div>
-      <Pop at={f(227.6)} style={{ position: "absolute", left: layout.margin, top: layout.contentTop + 520, fontFamily: fonts.sans, fontSize: size.small, color: colors.muted }}>
-        {`Policy 1 run (${verified.policy1.generatedAt.slice(0, 10)}): REVIEW ${fraction(verified.policy1.review)}, NO_PART ${fraction(verified.policy1.noPart)} (Anomaly/043). Same denominator.`}
-      </Pop>
     </Beat>
   );
 };
 
-const Big: React.FC<{ text: string }> = ({ text }) => <div style={{ fontFamily: fonts.mono, fontSize: 46, fontWeight: 600, paddingLeft: 60 }}>{text}</div>;
+const Big: React.FC<{ text: string }> = ({ text }) => <div style={{ fontFamily: fonts.mono, fontSize: 60, fontWeight: 600, paddingLeft: 60 }}>{text}</div>;
 
-const Row: React.FC<{ row: { label: string; sub: string; a: React.ReactNode; b: React.ReactNode; at: number } }> = ({ row }) => {
+const Row: React.FC<{ row: { label: string; a: React.ReactNode; b: React.ReactNode; at: number } }> = ({ row }) => {
   const frame = useCurrentFrame();
   const opacity = interpolate(frame, [row.at, row.at + 10], [0, 1], clamp);
-  const cell: React.CSSProperties = { opacity, borderTop: `2px solid ${colors.line}`, padding: "8px 0", display: "flex", alignItems: "center", minHeight: 82 };
+  const cell: React.CSSProperties = { opacity, borderTop: `2px solid ${colors.line}`, padding: "16px 0", display: "flex", alignItems: "center", minHeight: 96 };
   return (
     <>
-      <div style={{ ...cell, flexDirection: "column", alignItems: "flex-start", justifyContent: "center" }}>
-        <div style={{ fontSize: size.body, fontWeight: 700, lineHeight: 1.15 }}>{row.label}</div>
-        <div style={{ fontSize: size.small, color: colors.muted, lineHeight: 1.15 }}>{row.sub}</div>
-      </div>
+      <div style={{ ...cell, fontSize: size.subtitle, fontWeight: 700 }}>{row.label}</div>
       <div style={cell}>{row.a}</div>
       <div style={cell}>{row.b}</div>
     </>
@@ -297,35 +258,32 @@ const Row: React.FC<{ row: { label: string; sub: string; a: React.ReactNode; b: 
 const WhyExploratory: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const f = (s: number) => cue(s, seg.why.from, fps);
+  const f = cueIn("evaluation", "why", fps);
   const runs = verified.history;
-  const xs = [140, 560, 980, 1400];
-  const lineP = interpolate(frame, [f(229.2), f(231.6)], [0, 1], clamp);
-  const o = verified.orientation;
+  const xs = [200, 640, 1080, 1520];
+  const lineP = interpolate(frame, [f(232.0), f(235.3)], [0, 1], clamp);
   return (
-    <Beat kicker="Exploratory development results" title="Why this is development data" fig={{ n: 20, text: "result files in evaluation/results/history/ and the current visaPcb1Results.json" }}>
+    <Beat kicker="Exploratory development results" title="Development results, not an independent test" note="evaluation/results/history/">
       <svg width={layout.width} height={layout.height} style={{ position: "absolute", inset: 0 }}>
-        <line x1={140} y1={400} x2={140 + (1400 - 140) * lineP} y2={400} stroke={colors.line} strokeWidth={4} />
+        <line x1={200} y1={420} x2={200 + (1520 - 200) * lineP} y2={420} stroke={colors.line} strokeWidth={4} />
       </svg>
       {runs.map((run, i) => {
-        const at = f(229.2) + i * 18;
+        const at = f(232.0) + i * 16;
         const changed = i === 1;
         return (
-          <Pop key={run.run} at={at} style={{ position: "absolute", left: xs[i] - 24, top: 376, width: 400 }}>
-            <div style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: changed ? colors.red : colors.ink, border: "4px solid #fff", boxShadow: `0 0 0 3px ${changed ? colors.red : colors.ink}` }} />
-            <div style={{ marginTop: 14, fontFamily: fonts.mono, fontSize: size.small, color: colors.muted }}>{`${run.generatedAt.slice(5, 10)} ${run.generatedAt.slice(11, 16)}Z`}</div>
-            <div style={{ marginTop: 4, fontFamily: fonts.sans, fontSize: size.small, fontWeight: 700, color: changed ? colors.red : colors.ink, width: 380, lineHeight: 1.25 }}>{run.run}</div>
+          <Pop key={run.run} at={at} style={{ position: "absolute", left: xs[i] - 30, top: 390, width: 380 }}>
+            <div style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: changed ? colors.red : colors.ink, border: "5px solid #fff", boxShadow: `0 0 0 4px ${changed ? colors.red : colors.ink}` }} />
+            <div style={{ marginTop: 14, fontFamily: fonts.mono, fontSize: size.small, color: colors.muted }}>{`${run.generatedAt.slice(5, 10)} ${run.generatedAt.slice(11, 16)}`}</div>
           </Pop>
         );
       })}
-      <Pop at={f(234.2)} style={{ position: "absolute", left: layout.margin, top: 640 }}>
-        <Stamp text="NOT AN INDEPENDENT EVALUATION" at={f(234.4)} />
+      <Pop at={f(232.6)} style={{ position: "absolute", left: xs[1] - 40, top: 290 }}>
+        <Hand fontSize={52} color={colors.red}>
+          capture gates changed here ↓
+        </Hand>
       </Pop>
-      <Pop at={f(235.4)} style={{ position: "absolute", left: 1000, top: 620, width: 824, fontFamily: fonts.sans, fontSize: size.small, color: colors.ink, lineHeight: 1.35 }}>
-        <div>
-          <Mark at={f(235.6)}>{`${sp.validationAnomaly} official-test anomalies`}</Mark> were used for thresholds.
-        </div>
-        <div>{`Pins down: ${fraction(o.anomalyPinsDown)} defective vs ${fraction(o.normalPinsDown)} good boards.`}</div>
+      <Pop at={f(235.3)} style={{ position: "absolute", left: layout.margin, top: 600 }}>
+        <Stamp text="NOT AN INDEPENDENT EVALUATION" at={f(235.5)} />
       </Pop>
     </Beat>
   );

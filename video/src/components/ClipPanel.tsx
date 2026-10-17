@@ -1,12 +1,12 @@
 import type React from "react";
-import { footage, reasonText, resultFrame, score3, verified } from "../lib/data";
+import { footage, resultFrame, score3, verified } from "../lib/data";
 import type { FootageClipName } from "../timeline";
-import { colors, fonts, layout, size } from "../theme";
+import { colors, layout } from "../theme";
 import type { Box, CropKey } from "./FootageClip";
-import { Hand, Pill, Pop, Ruler } from "./kit";
+import { Pill, Pop, Ruler } from "./kit";
 
-export const clipBox: Box = { left: layout.margin, top: layout.contentTop, width: 990, height: 574 };
-export const panelLeft = 1130;
+export const clipBox: Box = { left: layout.margin, top: layout.contentTop, width: 1045, height: 606 };
+export const panelLeft = 1185;
 export const panelWidth = layout.width - layout.margin - panelLeft;
 // Whole app below the page header; aspect matches clipBox. Then the evidence image, then the decision tiles.
 export const fullCrop = { x: 130, y: 118, w: 1660 };
@@ -29,16 +29,11 @@ export const scoreZones = [
 ];
 export const identityZones = [
   { from: 0, to: t.identityRecognizedMax, decision: "PASS", label: "known" },
-  { from: t.identityRecognizedMax, to: t.identityNoPartMin, decision: "REVIEW", label: "gap" },
+  { from: t.identityRecognizedMax, to: t.identityNoPartMin, decision: "REVIEW", label: "unsure" },
   { from: t.identityNoPartMin, to: 0.26, decision: "NO_PART", label: "other" },
 ];
 
-export const inputName = (clip: FootageClipName, index: number): string => {
-  const input = footage(clip)?.inputs[index] ?? "";
-  return input.includes("data/visa/") ? `${input.replace("data/visa/pcb1/Data/Images/", "")} · test split` : "synthetic blur of Normal/0011";
-};
-
-// Right-hand panel for a recorded clip: decision, an animated score ruler, latency, input and a note.
+// Right-hand panel for a recorded clip: the decision, one animated ruler, and at most one short note.
 export const ClipPanel: React.FC<{
   clip: FootageClipName;
   trim?: number;
@@ -56,19 +51,13 @@ export const ClipPanel: React.FC<{
   const identity = verified.cases.anomaly043.identityDistance;
   return (
     <>
-      <Pop at={Math.max(0, at - 30)} style={{ position: "absolute", left: panelLeft, top: top - 6 }}>
-        <Hand fontSize={42}>recorded API response ↓</Hand>
-      </Pop>
-      <Pop at={at} style={{ position: "absolute", left: panelLeft, top: top + 52, width: panelWidth, fontFamily: fonts.sans, color: colors.ink }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <Pill decision={result?.decision ?? "MISSING"} large />
-          <span style={{ fontSize: size.small, fontWeight: 600, lineHeight: 1.25 }}>{reasonText[result?.reasonCode ?? ""] ?? result?.reasonCode}</span>
-        </div>
+      <Pop at={at} style={{ position: "absolute", left: panelLeft, top: top + 40 }}>
+        <Pill decision={result?.decision ?? "MISSING"} large style={{ fontSize: 72, padding: "8px 30px" }} />
       </Pop>
       {ruler !== "none" && (isIdentity || typeof result?.anomalyScore === "number") ? (
         <Ruler
           left={panelLeft}
-          top={top + 196}
+          top={top + 230}
           width={panelWidth - 10}
           min={isIdentity ? 0 : 1.9}
           max={isIdentity ? 0.26 : 3.05}
@@ -85,13 +74,8 @@ export const ClipPanel: React.FC<{
           zoom={zoom ? { ...zoom, at: at + 60 } : undefined}
         />
       ) : null}
-      <Pop at={at + 36} style={{ position: "absolute", left: panelLeft, top: top + 404, width: panelWidth, fontFamily: fonts.sans, fontSize: size.small, color: colors.muted, lineHeight: 1.35 }}>
-        {isIdentity ? <div>{`anomaly score ${score3(result?.anomalyScore ?? 0)} kept as evidence`}</div> : null}
-        {!isIdentity && typeof result?.inferenceMs === "number" ? <div>{`inference ${Math.round(result.inferenceMs)} ms · server ${Math.round(result.totalMs ?? 0)} ms · Apple M2`}</div> : null}
-        <div>{inputName(clip, index)}</div>
-      </Pop>
       {note ? (
-        <Pop at={noteAt ?? at + 70} style={{ position: "absolute", left: panelLeft, top: top + 500, width: panelWidth }}>
+        <Pop at={noteAt ?? at + 70} style={{ position: "absolute", left: panelLeft, top: top + 470, width: panelWidth }}>
           {note}
         </Pop>
       ) : null}

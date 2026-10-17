@@ -1,239 +1,225 @@
 1
-00:00:00,600 --> 00:00:03,400
+00:00:00,200 --> 00:00:03,880
 MotionQA: evidence-backed PCB anomaly inspection.
 
 2
-00:00:03,600 --> 00:00:06,000
-Team Kia Kiu, Institut Teknologi Bandung.
+00:00:04,000 --> 00:00:07,380
+By team Kia Kiu, Institut Teknologi Bandung.
 
 3
-00:00:06,300 --> 00:00:09,600
-Can you spot the defect on this benchmark board?
+00:00:07,500 --> 00:00:09,420
+Can you spot the defect?
 
 4
-00:00:09,900 --> 00:00:15,300
-It is one bent pin: 262 pixels of
-the model input, about 0.13 percent.
+00:00:09,900 --> 00:00:14,330
+One bent pin. Just 0.13 percent of the model input.
 
 5
-00:00:15,600 --> 00:00:20,200
-A manual check records PASS or FAIL, but rarely why.
+00:00:15,600 --> 00:00:19,060
+A bare PASS or FAIL does not say why.
 
 6
-00:00:20,400 --> 00:00:24,800
-MotionQA stores the decision with its
-reason, score, thresholds and evidence.
+00:00:20,400 --> 00:00:23,990
+MotionQA keeps the reason,
+the score and the evidence.
 
 7
-00:00:25,300 --> 00:00:30,900
-First, the live endpoint on AWS. CloudFront
-serves the app from one EC2 Graviton instance.
+00:00:25,300 --> 00:00:29,150
+Here is how it decides.
+Every photo follows one path.
 
 8
-00:00:31,100 --> 00:00:34,600
-Without a token, only the model status is visible.
+00:00:29,900 --> 00:00:33,750
+Bad photos are retaken. Unsure cases go to a person.
 
 9
-00:00:34,900 --> 00:00:39,800
-The server reports the model ready
-on OpenCV 5, and health is ok.
+00:00:35,300 --> 00:00:37,990
+This is the real app, running locally.
 
 10
-00:00:40,100 --> 00:00:44,600
-On October 16, twenty test
-images ran through CloudFront.
+00:00:38,400 --> 00:00:41,480
+A good board scores under the PASS line.
 
 11
-00:00:44,900 --> 00:00:49,800
-All twenty decisions matched the local run.
-Median inference took 450 milliseconds.
+00:00:46,900 --> 00:00:49,590
+Bent pins score over the FAIL line.
 
 12
-00:00:50,100 --> 00:00:54,900
-Every photo walks the same decision path.
-
-13
-00:00:55,100 --> 00:00:59,800
-Bad photos get RETAKE.
-Doubtful parts go to a person.
-
-14
-00:01:00,200 --> 00:01:03,400
-Now a local demonstration, same model profile.
-
-15
-00:01:03,700 --> 00:01:09,400
-A good board scores 2.06,
-below the PASS line at 2.16.
-
-16
-00:01:11,600 --> 00:01:15,900
-Bent pins push the score to
-2.74, past the FAIL line.
-
-17
-00:01:16,200 --> 00:01:21,200
+00:00:51,300 --> 00:00:55,010
 A reviewer confirms. The machine
 decision stays on record.
 
+13
+00:00:58,000 --> 00:01:01,460
+A blurry photo gets RETAKE in the same session.
+
+14
+00:01:04,000 --> 00:01:08,230
+The sharp retake passes. Three
+failed tries go to a person.
+
+15
+00:01:10,400 --> 00:01:14,630
+Under the hood: one photo,
+step by step, in OpenCV 5.
+
+16
+00:01:15,000 --> 00:01:17,310
+Find the board. Check the focus.
+
+17
+00:01:20,600 --> 00:01:24,450
+Crop it and extract features
+with the new DNN engine.
+
 18
-00:01:22,900 --> 00:01:27,900
-A blurred photo gets RETAKE,
-and the session stays open.
+00:01:27,000 --> 00:01:30,850
+Compare patches with normal boards,
+and mark what looks different.
 
 19
-00:01:28,400 --> 00:01:34,600
-The sharp retake passes. After three
-failed tries, the part goes to a person.
+00:01:35,600 --> 00:01:40,600
+Now the hard cases. This good board
+lands just over the PASS line.
 
 20
-00:01:35,600 --> 00:01:40,900
-This good board lands at
-2.165, just over the PASS line.
+00:01:41,200 --> 00:01:44,280
+Too close to call, so a person decides.
 
 21
-00:01:41,200 --> 00:01:44,500
-So MotionQA asks a person instead of guessing.
+00:01:44,800 --> 00:01:49,030
+A known miss: board 048 lost a pin, and it passes.
 
 22
-00:01:44,800 --> 00:01:50,900
-Now a known failure. Test image 048
-has a missing pin, and it passes.
+00:01:51,200 --> 00:01:55,430
+The hottest spot is on the
+transducer, not the missing pin.
 
 23
-00:01:51,200 --> 00:01:56,600
-The hottest spot sits on the
-transducer, not on the missing pin.
+00:01:56,900 --> 00:01:59,580
+This weakness is documented and unfixed.
 
 24
-00:01:56,900 --> 00:02:01,300
-Plain background looks normal to a
-patch memory. This stays unfixed.
+00:02:01,600 --> 00:02:06,760
+Board 043 lost both transducers.
+The model is unsure it is the part.
 
 25
-00:02:01,600 --> 00:02:07,700
-Board 043 lost both transducers. Its
-identity distance, 0.155, falls in the gap.
+00:02:08,000 --> 00:02:14,230
+An older policy said NO_PART. Now it
+goes to REVIEW, and it stays in all 153.
 
 26
-00:02:08,000 --> 00:02:14,800
-An older policy called it NO_PART. Now
-it goes to REVIEW, and stays in all 153.
+00:02:15,300 --> 00:02:17,990
+The same app runs live on AWS.
 
 27
-00:02:15,400 --> 00:02:19,600
-Let us dissect one photo through OpenCV 5.
+00:02:19,900 --> 00:02:22,590
+Without a token, only the status shows.
 
 28
-00:02:19,900 --> 00:02:25,100
-Otsu thresholding and contours find
-the board. Sobel edges check focus.
+00:02:23,300 --> 00:02:27,530
+The model is ready on OpenCV 5,
+and health checks pass.
 
 29
-00:02:25,400 --> 00:02:30,600
-The crop goes through MobileNetV2
-on the new DNN engine.
+00:02:30,300 --> 00:02:33,060
+A photo enters through CloudFront and nginx.
 
 30
-00:02:30,900 --> 00:02:36,600
-Patch distances to normal boards form
-the anomaly map and the evidence.
+00:02:35,800 --> 00:02:40,490
+FastAPI runs the OpenCV steps
+on one Graviton instance.
 
 31
-00:02:37,300 --> 00:02:42,500
-On AWS, the photo enters
-through CloudFront and nginx.
+00:02:41,600 --> 00:02:45,610
+Evidence goes to S3. The record goes to PostgreSQL.
 
 32
-00:02:42,800 --> 00:02:48,200
-FastAPI runs the pipeline on one t4g.small instance.
-
-33
-00:02:48,500 --> 00:02:54,100
-Evidence goes to S3, the record to
-PostgreSQL, live events to Redis.
-
-34
-00:02:54,400 --> 00:02:59,600
+00:02:47,000 --> 00:02:51,070
 Secrets Manager holds the token.
 CloudFormation built the stack.
 
+33
+00:02:51,200 --> 00:02:55,250
+On October 16, twenty test images ran on AWS.
+
+34
+00:02:55,700 --> 00:02:58,390
+All twenty answers matched the local run.
+
 35
-00:03:00,400 --> 00:03:05,600
-Where does the data come from? The
-public VisA archive on AWS Open Data.
+00:03:00,400 --> 00:03:04,650
+The data is the public VisA
+benchmark, on AWS Open Data.
 
 36
-00:03:05,900 --> 00:03:11,100
-804 good boards build the memory.
-Validation images set the thresholds.
+00:03:05,900 --> 00:03:09,550
+Good boards build the memory.
+Validation sets the lines.
 
 37
-00:03:11,400 --> 00:03:15,800
+00:03:11,400 --> 00:03:14,780
 153 test images give the results.
 
 38
-00:03:16,200 --> 00:03:21,400
-Each dot is one test image,
-placed by its anomaly score.
+00:03:16,200 --> 00:03:20,050
+Each dot is one test image, placed by its score.
 
 39
-00:03:21,700 --> 00:03:26,900
-Two lines split the axis into PASS, REVIEW and FAIL.
+00:03:21,700 --> 00:03:25,160
+Two lines make three zones: PASS, REVIEW and FAIL.
 
 40
-00:03:27,200 --> 00:03:32,600
-1 of 53 defective boards passed.
-4 of 100 good boards failed.
+00:03:27,200 --> 00:03:31,880
+One of 53 defective boards passed.
+Four of 100 good boards failed.
 
 41
-00:03:32,900 --> 00:03:36,600
-41 of 153 images went to REVIEW.
+00:03:32,900 --> 00:03:35,220
+41 images went to a person.
 
 42
-00:03:36,900 --> 00:03:40,900
-Image AUROC is 0.9745. It ranks
-scores. It is not accuracy.
+00:03:36,900 --> 00:03:42,780
+Image AUROC is 0.9745. A
+ranking score, not accuracy.
 
 43
-00:03:41,200 --> 00:03:48,700
-The OpenCV-only baseline: AUROC 0.8689, no
-missed defects, 7 false rejections, 58 reviews.
+00:03:42,900 --> 00:03:50,930
+The OpenCV-only baseline ranks lower, 0.8689.
+It misses none, but rejects and reviews more.
 
 44
-00:03:49,000 --> 00:03:53,900
-These are exploratory development results.
+00:03:52,000 --> 00:03:55,140
+We tuned capture gates after seeing test results.
 
 45
-00:03:54,200 --> 00:03:59,700
-Capture gates changed after test outcomes,
-so this is not an independent evaluation.
+00:03:55,300 --> 00:03:58,800
+So these are development
+results, not an independent test.
 
 46
-00:04:00,500 --> 00:04:06,700
-The model covers this benchmark only. It
-is not validated on other parts or lines.
+00:04:00,500 --> 00:04:03,640
+MotionQA is tested on this benchmark only.
 
 47
-00:04:07,000 --> 00:04:12,800
-About a third of good boards go
-to REVIEW at this operating point.
+00:04:07,000 --> 00:04:10,460
+About one in three good boards goes to REVIEW.
 
 48
-00:04:13,100 --> 00:04:18,900
-A missing component on plain background
-can pass. FAIL and REVIEW need a person.
+00:04:13,100 --> 00:04:15,410
+Some missing parts can still pass.
 
 49
-00:04:19,400 --> 00:04:25,600
-Judges can open the CloudFront endpoint.
-We share the operator token privately.
+00:04:19,400 --> 00:04:24,400
+Scan the code to open the live endpoint.
+Judges get the token privately.
 
 50
-00:04:25,900 --> 00:04:31,700
-The public repository holds the code, the
-evaluation files and this video's sources.
+00:04:25,900 --> 00:04:30,130
+The code, the data files and
+this video's sources are public.
 
 51
-00:04:32,000 --> 00:04:38,500
-MotionQA, by team Kia Kiu. Thank you for watching.
+00:04:32,000 --> 00:04:34,880
+MotionQA, by team Kia Kiu. Thank you.

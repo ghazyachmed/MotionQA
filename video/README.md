@@ -32,7 +32,7 @@ Rendering is offline: fonts, footage, images and captions load from `public/` wi
 render needs all of these:
 
 - every footage clip in `public/assets/footage/` (real recordings, not UI animation);
-- a narration recording at `public/audio/narration.wav` (or `.mp3` / `.m4a`), at most 300 s;
+- a narration track at `public/audio/narration.wav` (or `.mp3` / `.m4a`), at most 300 s (see "Narration" below);
 - `src/data/narration.json` re-timed to that recording, with `status` no longer starting with `TEXT ONLY`;
 - verified judge links in `src/data/links.json` (`npm run check-links`);
 - no placeholder text; `props/final.json` sets `mode: "final"`, which removes the draft watermark.
@@ -48,9 +48,29 @@ The draft watermark names what is missing, for example `DRAFT — NARRATION AUDI
 | `src/data/narration.json` | hand-written | Narration cues; `npm run captions` writes `public/captions/en.srt` and `NARRATION.md` |
 | `src/data/timeline.json` | hand-written | Scene and segment frames, shared by the scenes and the scripts |
 | `src/data/links.json` | `npm run check-links` | Judge links with the time and result of the last check (network, before rendering) |
+| `public/assets/qr/live-endpoint.png` | `node scripts/make-qr.mjs` | QR code of the live endpoint; `npm run verify` decodes it and requires the exact URL |
+| `public/audio/narration.wav` + `src/data/narration-audio.json` | `scripts/tts_narration.py` | Narration track and its provenance (model, voice, per-cue speech length) |
 | `public/assets/footage/*.mp4` + `.json` | `npm run capture:local` / `capture:aws` | Real screen recordings; the JSON sidecar holds timestamps, events and the API results |
 | `src/data/pipeline-stages.json` + `public/assets/pipeline/*` | `../backend/.venv/bin/python scripts/export_pipeline_stages.py` | Real intermediate outputs of the OpenCV 5 pipeline (part mask, focus band, crop, DNN feature maps, anomaly map, evidence) for Anomaly/000, and the 048 anomaly map with the VisA ground-truth outline. `npm run verify` checks them against the evaluation records. |
 | `public/assets/dataset/*` | `scripts/prepare_dataset_figures.py` | VisA images; the 048 crop shows the VisA ground-truth mask (a dataset label) |
+
+## Narration
+
+The narration is synthesised locally with Kokoro-82M (Apache-2.0, generic voice `af_heart`, normal speed). Each cue in
+`src/data/narration.json` has caption `text` and an optional `say` with spelled-out pronunciation ("Open C V five",
+"zero point nine seven four five"). The script keeps every cue at its anchored start, refuses to speed the voice up, and
+fails if a cue would run into the next one; it then re-times the captions to the real audio.
+
+```bash
+python3.11 -m venv ../.tts-venv && ../.tts-venv/bin/pip install "kokoro>=0.9.4" soundfile numpy
+brew install espeak-ng                      # phonemises words missing from Kokoro's dictionary
+../.tts-venv/bin/python scripts/tts_narration.py
+node scripts/normalize-audio.mjs            # -16 LUFS, true peak <= -1.5 dBTP
+npm run captions && node scripts/verify-assets.mjs --write-manifest
+```
+
+A recorded human voice can replace it: save it as `public/audio/narration.wav`, re-time `src/data/narration.json`, and
+update its `status`.
 
 ## Recording the footage again
 
@@ -74,5 +94,5 @@ The synthetic blur input (`capture-inputs/Normal-0011-blur-0.006.jpg`) comes fro
 ## Credits
 
 VisA dataset, CC BY 4.0 (Zou et al., ECCV 2022). MobileNetV2 from OpenCV Zoo, Apache-2.0. OpenCV, Apache-2.0.
-Inter, JetBrains Mono and Caveat fonts, SIL Open Font License 1.1 (`public/fonts/*-OFL.txt`). Remotion is free for teams of up
+Inter, JetBrains Mono and Caveat fonts, SIL Open Font License 1.1 (`public/fonts/*-OFL.txt`). Narration voice: Kokoro-82M, Apache-2.0. Remotion is free for teams of up
 to three people (remotion.pro/license).

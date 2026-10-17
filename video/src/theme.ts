@@ -49,7 +49,7 @@ export const layout = {
   kickerTop: 96,
   titleTop: 146,
   figTop: 226,
-  contentTop: 282,
+  contentTop: 250,
   contentBottom: 856,
   captionBottom: 984,
 };

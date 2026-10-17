@@ -1,0 +1,15 @@
+{
+  "endpoint": {
+    "url": "https://d4dqbqmvvujy7.cloudfront.net",
+    "ok": true,
+    "checkedAtUtc": "2026-10-17T09:18:19.200Z",
+    "evidence": "page HTTP 200; model/status ready=true, OpenCV 5.0.0, profile visa-pcb1-patchcore-mnv2 2026.10.16; health ok",
+    "access": "API and evidence need the operator token, supplied to judges privately"
+  },
+  "repository": {
+    "url": "https://github.com/ghazyachmed/MotionQA",
+    "ok": true,
+    "checkedAtUtc": "2026-10-17T09:18:19.200Z",
+    "evidence": "page HTTP 200; GitHub API visibility=public, default branch master"
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "profile": "visa-pcb1-patchcore-mnv2 2026.10.16",
+  "opencv": "5.0.0",
+  "images": {
+    "Anomaly/000": {
+      "decision": "FAIL",
+      "reasonCode": "ANOMALY_SCORE_AT_OR_ABOVE_FAIL_THRESHOLD",
+      "anomalyScore": 2.7422,
+      "identityDistance": 0.0109,
+      "partAreaFraction": 0.3151,
+      "edgeSharpness": 348.2,
+      "minEdgeSharpness": 114.3,
+      "partBox": [
+        167,
+        326,
+        1133,
+        880
+      ],
+      "cropBox": [
+        109,
+        62,
+        1082
+      ],
+      "inputSize": 448,
+      "featureShapes": [
+        [
+          1,
+          32,
+          56,
+          56
+        ],
+        [
+          1,
+          96,
+          28,
+          28
+        ]
+      ],
+      "exportElapsedMs": 632.7,
+      "input": "assets/pipeline/anomaly-000-1-input.jpg",
+      "mask": "assets/pipeline/anomaly-000-2-mask.jpg",
+      "edges": "assets/pipeline/anomaly-000-3-edges.jpg",
+      "edgeBandKernelPx": 11,
+      "groundTruthBoxFull": [
+        537,
+        755,
+        38,
+        102
+      ],
+      "imageSize": [
+        1404,
+        1070
+      ],
+      "photo": "assets/pipeline/anomaly-000-0-photo.jpg",
+      "crop": "assets/pipeline/anomaly-000-4-crop.jpg",
+      "features": "assets/pipeline/anomaly-000-5-features.jpg",
+      "anomalyMap": "assets/pipeline/anomaly-000-6-anomaly-map.jpg",
+      "anomalyMapRange": [
+        1.944,
+        3.242
+      ],
+      "overlay": "assets/pipeline/anomaly-000-7-overlay.jpg"
+    },
+    "Anomaly/048": {
+      "decision": "PASS",
+      "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+      "anomalyScore": 2.1249,
+      "identityDistance": 0.007,
+      "partAreaFraction": 0.3056,
+      "edgeSharpness": 237.0,
+      "minEdgeSharpness": 114.3,
+      "partBox": [
+        208,
+        301,
+        1163,
+        872
+      ],
+      "cropBox": [
+        150,
+        51,
+        1070
+      ],
+      "inputSize": 448,
+      "featureShapes": [
+        [
+          1,
+          32,
+          56,
+          56
+        ],
+        [
+          1,
+          96,
+          28,
+          28
+        ]
+      ],
+      "exportElapsedMs": 370.5,
+      "mapWithGroundTruth": "assets/pipeline/anomaly-048-map-gt.jpg",
+      "mapPeak": [
+        327,
+        201
+      ],
+      "groundTruthBox": [
+        253,
+        293,
+        10,
+        53
+      ],
+      "maxInsideGroundTruth": 2.0974,
+      "mapMax": 2.1249
+    }
+  }
+}

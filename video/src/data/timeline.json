@@ -1,0 +1,152 @@
+{
+  "fps": 30,
+  "totalFrames": 8400,
+  "scenes": {
+    "team": {
+      "from": 0,
+      "duration": 750
+    },
+    "app": {
+      "from": 750,
+      "duration": 2100
+    },
+    "review": {
+      "from": 2850,
+      "duration": 1200
+    },
+    "architecture": {
+      "from": 4050,
+      "duration": 1350
+    },
+    "evaluation": {
+      "from": 5400,
+      "duration": 1800
+    },
+    "limits": {
+      "from": 7200,
+      "duration": 1200
+    }
+  },
+  "segments": {
+    "team": {
+      "title": {
+        "from": 0,
+        "duration": 222
+      },
+      "spot": {
+        "from": 222,
+        "duration": 243
+      },
+      "record": {
+        "from": 465,
+        "duration": 285
+      }
+    },
+    "app": {
+      "tree": {
+        "from": 0,
+        "duration": 300
+      },
+      "pass": {
+        "from": 300,
+        "duration": 306,
+        "clip": "local-01-pass",
+        "trim": 0
+      },
+      "fail": {
+        "from": 606,
+        "duration": 338,
+        "clip": "local-02-fail",
+        "trim": 0
+      },
+      "retake": {
+        "from": 944,
+        "duration": 406,
+        "clip": "local-06-retake-session",
+        "trim": 0
+      },
+      "dissect": {
+        "from": 1350,
+        "duration": 750
+      }
+    },
+    "review": {
+      "review": {
+        "from": 0,
+        "duration": 269,
+        "clip": "local-03-review",
+        "trim": 6
+      },
+      "missed048": {
+        "from": 269,
+        "duration": 255,
+        "clip": "local-04-missed-048",
+        "trim": 21
+      },
+      "why048": {
+        "from": 524,
+        "duration": 270
+      },
+      "identity043": {
+        "from": 794,
+        "duration": 255,
+        "clip": "local-05-identity-043",
+        "trim": 21
+      },
+      "history043": {
+        "from": 1049,
+        "duration": 151
+      }
+    },
+    "architecture": {
+      "awsUi": {
+        "from": 0,
+        "duration": 240,
+        "clip": "aws-01-ui-status",
+        "trim": 0
+      },
+      "awsJson": {
+        "from": 240,
+        "duration": 210,
+        "clip": "aws-02-model-status",
+        "trim": 0
+      },
+      "flow": {
+        "from": 450,
+        "duration": 630
+      },
+      "awsMatch": {
+        "from": 1080,
+        "duration": 270
+      }
+    },
+    "evaluation": {
+      "data": {
+        "from": 0,
+        "duration": 480
+      },
+      "strip": {
+        "from": 480,
+        "duration": 804
+      },
+      "compare": {
+        "from": 1284,
+        "duration": 270
+      },
+      "why": {
+        "from": 1554,
+        "duration": 246
+      }
+    },
+    "limits": {
+      "limits": {
+        "from": 0,
+        "duration": 570
+      },
+      "access": {
+        "from": 570,
+        "duration": 630
+      }
+    }
+  }
+}

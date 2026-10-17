@@ -1,0 +1,494 @@
+{
+ "language": "en",
+ "basis": "docs/DEMO_SCRIPT.md shot list and docs/SUBMISSION_DRAFT.md text (no SUBMISSION_PACKAGE.md exists in the checkout). Numbers come from src/data/verified-results.json. Explainer structure follows the user's reference video.",
+ "status": "TTS narration generated 2026-10-17 with Kokoro-82M v1.0 (Apache-2.0), generic voice af_heart; captions are timed to the generated audio.",
+ "cues": [
+  {
+   "scene": "team",
+   "start": 0.2,
+   "end": 3.88,
+   "text": "MotionQA: evidence-backed PCB anomaly inspection.",
+   "highlight": [
+    "evidence-backed"
+   ],
+   "say": "Motion Q A. Evidence-backed P C B anomaly inspection."
+  },
+  {
+   "scene": "team",
+   "start": 4.0,
+   "end": 7.38,
+   "text": "By team Kia Kiu, Institut Teknologi Bandung.",
+   "highlight": [
+    "Kia Kiu"
+   ],
+   "say": "By team Kia Kiu, from Institut Teknologi Bandung."
+  },
+  {
+   "scene": "team",
+   "start": 7.5,
+   "end": 9.42,
+   "text": "Can you spot the defect?",
+   "highlight": [
+    "spot the defect"
+   ]
+  },
+  {
+   "scene": "team",
+   "start": 9.9,
+   "end": 14.33,
+   "text": "One bent pin. Just 0.13 percent of the model input.",
+   "highlight": [
+    "0.13 percent"
+   ],
+   "say": "One bent pin. Just zero point one three percent of the model input."
+  },
+  {
+   "scene": "team",
+   "start": 15.6,
+   "end": 19.06,
+   "text": "A bare PASS or FAIL does not say why.",
+   "highlight": [
+    "does not say why"
+   ],
+   "say": "A bare pass, or fail, does not say why."
+  },
+  {
+   "scene": "team",
+   "start": 20.4,
+   "end": 23.99,
+   "text": "MotionQA keeps the reason, the score and the evidence.",
+   "highlight": [
+    "the evidence"
+   ],
+   "say": "Motion Q A keeps the reason, the score, and the evidence."
+  },
+  {
+   "scene": "app",
+   "start": 25.3,
+   "end": 29.15,
+   "text": "Here is how it decides. Every photo follows one path.",
+   "highlight": [
+    "one path"
+   ]
+  },
+  {
+   "scene": "app",
+   "start": 29.9,
+   "end": 33.75,
+   "text": "Bad photos are retaken. Unsure cases go to a person.",
+   "highlight": [
+    "go to a person"
+   ]
+  },
+  {
+   "scene": "app",
+   "start": 35.3,
+   "end": 37.99,
+   "text": "This is the real app, running locally.",
+   "highlight": [
+    "real app"
+   ]
+  },
+  {
+   "scene": "app",
+   "start": 38.4,
+   "end": 41.48,
+   "text": "A good board scores under the PASS line.",
+   "highlight": [
+    "under the PASS line"
+   ],
+   "say": "A good board scores under the pass line."
+  },
+  {
+   "scene": "app",
+   "start": 46.9,
+   "end": 49.59,
+   "text": "Bent pins score over the FAIL line.",
+   "highlight": [
+    "over the FAIL line"
+   ],
+   "say": "Bent pins score over the fail line."
+  },
+  {
+   "scene": "app",
+   "start": 51.3,
+   "end": 55.01,
+   "text": "A reviewer confirms. The machine decision stays on record.",
+   "highlight": [
+    "stays on record"
+   ]
+  },
+  {
+   "scene": "app",
+   "start": 58.0,
+   "end": 61.46,
+   "text": "A blurry photo gets RETAKE in the same session.",
+   "highlight": [
+    "RETAKE"
+   ],
+   "say": "A blurry photo gets retake, in the same session."
+  },
+  {
+   "scene": "app",
+   "start": 64.0,
+   "end": 68.23,
+   "text": "The sharp retake passes. Three failed tries go to a person.",
+   "highlight": [
+    "passes"
+   ]
+  },
+  {
+   "scene": "app",
+   "start": 70.4,
+   "end": 74.63,
+   "text": "Under the hood: one photo, step by step, in OpenCV 5.",
+   "highlight": [
+    "Under the hood"
+   ],
+   "say": "Under the hood: one photo, step by step, in Open C V five."
+  },
+  {
+   "scene": "app",
+   "start": 75.0,
+   "end": 77.31,
+   "text": "Find the board. Check the focus.",
+   "highlight": [
+    "Check the focus"
+   ]
+  },
+  {
+   "scene": "app",
+   "start": 80.6,
+   "end": 84.45,
+   "text": "Crop it and extract features with the new DNN engine.",
+   "highlight": [
+    "new DNN engine"
+   ],
+   "say": "Crop it, and extract features with the new D N N engine."
+  },
+  {
+   "scene": "app",
+   "start": 87.0,
+   "end": 90.85,
+   "text": "Compare patches with normal boards, and mark what looks different.",
+   "highlight": [
+    "looks different"
+   ]
+  },
+  {
+   "scene": "review",
+   "start": 95.6,
+   "end": 100.6,
+   "text": "Now the hard cases. This good board lands just over the PASS line.",
+   "highlight": [
+    "just over"
+   ],
+   "say": "Now, the hard cases. This good board lands just over the pass line."
+  },
+  {
+   "scene": "review",
+   "start": 101.2,
+   "end": 104.28,
+   "text": "Too close to call, so a person decides.",
+   "highlight": [
+    "a person decides"
+   ]
+  },
+  {
+   "scene": "review",
+   "start": 104.8,
+   "end": 109.03,
+   "text": "A known miss: board 048 lost a pin, and it passes.",
+   "highlight": [
+    "known miss"
+   ],
+   "say": "A known miss: board zero four eight lost a pin, and it passes."
+  },
+  {
+   "scene": "review",
+   "start": 111.2,
+   "end": 115.43,
+   "text": "The hottest spot is on the transducer, not the missing pin.",
+   "highlight": [
+    "not the missing pin"
+   ]
+  },
+  {
+   "scene": "review",
+   "start": 116.9,
+   "end": 119.58,
+   "text": "This weakness is documented and unfixed.",
+   "highlight": [
+    "unfixed"
+   ]
+  },
+  {
+   "scene": "review",
+   "start": 121.6,
+   "end": 126.76,
+   "text": "Board 043 lost both transducers. The model is unsure it is the part.",
+   "highlight": [
+    "unsure"
+   ],
+   "say": "Board zero four three lost both transducers. The model is unsure it is the part."
+  },
+  {
+   "scene": "review",
+   "start": 128.0,
+   "end": 134.23,
+   "text": "An older policy said NO_PART. Now it goes to REVIEW, and it stays in all 153.",
+   "highlight": [
+    "stays in all 153"
+   ],
+   "say": "An older policy said no part. Now it goes to review, and it stays in all one hundred fifty-three."
+  },
+  {
+   "scene": "architecture",
+   "start": 135.3,
+   "end": 137.99,
+   "text": "The same app runs live on AWS.",
+   "highlight": [
+    "live on AWS"
+   ],
+   "say": "The same app runs live on A W S."
+  },
+  {
+   "scene": "architecture",
+   "start": 139.9,
+   "end": 142.59,
+   "text": "Without a token, only the status shows.",
+   "highlight": [
+    "only the status"
+   ]
+  },
+  {
+   "scene": "architecture",
+   "start": 143.3,
+   "end": 147.53,
+   "text": "The model is ready on OpenCV 5, and health checks pass.",
+   "highlight": [
+    "ready on OpenCV 5"
+   ],
+   "say": "The model is ready on Open C V five, and health checks pass."
+  },
+  {
+   "scene": "architecture",
+   "start": 150.3,
+   "end": 153.06,
+   "text": "A photo enters through CloudFront and nginx.",
+   "highlight": [
+    "CloudFront"
+   ],
+   "say": "A photo enters through CloudFront and engine X."
+  },
+  {
+   "scene": "architecture",
+   "start": 155.8,
+   "end": 160.49,
+   "text": "FastAPI runs the OpenCV steps on one Graviton instance.",
+   "highlight": [
+    "Graviton"
+   ],
+   "say": "Fast A P I runs the Open C V steps on one Graviton instance."
+  },
+  {
+   "scene": "architecture",
+   "start": 161.6,
+   "end": 165.61,
+   "text": "Evidence goes to S3. The record goes to PostgreSQL.",
+   "highlight": [
+    "S3"
+   ],
+   "say": "Evidence goes to S three. The record goes to Postgres Q L."
+  },
+  {
+   "scene": "architecture",
+   "start": 167.0,
+   "end": 171.07,
+   "text": "Secrets Manager holds the token. CloudFormation built the stack.",
+   "highlight": [
+    "CloudFormation"
+   ]
+  },
+  {
+   "scene": "architecture",
+   "start": 171.2,
+   "end": 175.25,
+   "text": "On October 16, twenty test images ran on AWS.",
+   "highlight": [
+    "twenty test images"
+   ],
+   "say": "On October sixteenth, twenty test images ran on A W S."
+  },
+  {
+   "scene": "architecture",
+   "start": 175.7,
+   "end": 178.39,
+   "text": "All twenty answers matched the local run.",
+   "highlight": [
+    "All twenty"
+   ]
+  },
+  {
+   "scene": "evaluation",
+   "start": 180.4,
+   "end": 184.65,
+   "text": "The data is the public VisA benchmark, on AWS Open Data.",
+   "highlight": [
+    "VisA"
+   ],
+   "say": "The data is the public Visa benchmark, on A W S Open Data."
+  },
+  {
+   "scene": "evaluation",
+   "start": 185.9,
+   "end": 189.55,
+   "text": "Good boards build the memory. Validation sets the lines.",
+   "highlight": [
+    "sets the lines"
+   ]
+  },
+  {
+   "scene": "evaluation",
+   "start": 191.4,
+   "end": 194.78,
+   "text": "153 test images give the results.",
+   "highlight": [
+    "153 test images"
+   ],
+   "say": "One hundred fifty-three test images give the results."
+  },
+  {
+   "scene": "evaluation",
+   "start": 196.2,
+   "end": 200.05,
+   "text": "Each dot is one test image, placed by its score.",
+   "highlight": [
+    "one test image"
+   ]
+  },
+  {
+   "scene": "evaluation",
+   "start": 201.7,
+   "end": 205.16,
+   "text": "Two lines make three zones: PASS, REVIEW and FAIL.",
+   "highlight": [
+    "three zones"
+   ],
+   "say": "Two lines make three zones: pass, review, and fail."
+  },
+  {
+   "scene": "evaluation",
+   "start": 207.2,
+   "end": 211.88,
+   "text": "One of 53 defective boards passed. Four of 100 good boards failed.",
+   "highlight": [
+    "One of 53"
+   ],
+   "say": "One of fifty-three defective boards passed. Four of one hundred good boards failed."
+  },
+  {
+   "scene": "evaluation",
+   "start": 212.9,
+   "end": 215.22,
+   "text": "41 images went to a person.",
+   "highlight": [
+    "41 images"
+   ],
+   "say": "Forty-one images went to a person."
+  },
+  {
+   "scene": "evaluation",
+   "start": 216.9,
+   "end": 222.78,
+   "text": "Image AUROC is 0.9745. A ranking score, not accuracy.",
+   "highlight": [
+    "not accuracy"
+   ],
+   "say": "Image A U R O C is zero point nine seven four five. A ranking score, not accuracy."
+  },
+  {
+   "scene": "evaluation",
+   "start": 222.9,
+   "end": 230.93,
+   "text": "The OpenCV-only baseline ranks lower, 0.8689. It misses none, but rejects and reviews more.",
+   "highlight": [
+    "ranks lower"
+   ],
+   "say": "The Open C V only baseline ranks lower, zero point eight six eight nine. It misses none, but rejects and reviews more."
+  },
+  {
+   "scene": "evaluation",
+   "start": 232.0,
+   "end": 235.14,
+   "text": "We tuned capture gates after seeing test results.",
+   "highlight": [
+    "after seeing test results"
+   ]
+  },
+  {
+   "scene": "evaluation",
+   "start": 235.3,
+   "end": 238.8,
+   "text": "So these are development results, not an independent test.",
+   "highlight": [
+    "not an independent test"
+   ]
+  },
+  {
+   "scene": "limits",
+   "start": 240.5,
+   "end": 243.64,
+   "text": "MotionQA is tested on this benchmark only.",
+   "highlight": [
+    "this benchmark only"
+   ],
+   "say": "Motion Q A is tested on this benchmark only."
+  },
+  {
+   "scene": "limits",
+   "start": 247.0,
+   "end": 250.46,
+   "text": "About one in three good boards goes to REVIEW.",
+   "highlight": [
+    "one in three"
+   ],
+   "say": "About one in three good boards goes to review."
+  },
+  {
+   "scene": "limits",
+   "start": 253.1,
+   "end": 255.41,
+   "text": "Some missing parts can still pass.",
+   "highlight": [
+    "can still pass"
+   ]
+  },
+  {
+   "scene": "limits",
+   "start": 259.4,
+   "end": 264.4,
+   "text": "Scan the code to open the live endpoint. Judges get the token privately.",
+   "highlight": [
+    "Scan the code"
+   ]
+  },
+  {
+   "scene": "limits",
+   "start": 265.9,
+   "end": 270.13,
+   "text": "The code, the data files and this video's sources are public.",
+   "highlight": [
+    "are public"
+   ]
+  },
+  {
+   "scene": "limits",
+   "start": 272.0,
+   "end": 274.88,
+   "text": "MotionQA, by team Kia Kiu. Thank you.",
+   "highlight": [],
+   "say": "Motion Q A, by team Kia Kiu. Thank you."
+  }
+ ]
+}

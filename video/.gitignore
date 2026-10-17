@@ -8,3 +8,6 @@ out
 
 # Raw screencast frames from scripts/capture-demo.mjs (the encoded clips live in public/assets/footage).
 .capture-frames
+
+# The repository root ignores every "data/" folder (datasets); the video's data files are source and must be tracked.
+!/src/data/

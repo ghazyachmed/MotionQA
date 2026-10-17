@@ -30,6 +30,8 @@ export function wrapCaption(text) {
     let best = lines;
     let bestDiff = Math.abs(lines[0].length - lines[1].length);
     for (let i = 1; i < all.length; i += 1) {
+      // Keep "OpenCV 5", "board 048" and similar pairs together.
+      if (/^\d/.test(all[i]) && /[A-Za-z]$/.test(all[i - 1])) continue;
       const a = all.slice(0, i).join(" ");
       const b = all.slice(i).join(" ");
       const diff = Math.abs(a.length - b.length);

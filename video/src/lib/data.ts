@@ -1,4 +1,5 @@
 import links from "../data/links.json";
+import timeline from "../data/timeline.json";
 import verified from "../data/verified-results.json";
 import type { FootageClipName } from "../timeline";
 
@@ -64,4 +65,13 @@ export const reasonText: Record<string, string> = {
   PART_IDENTITY_UNCERTAIN: "Part identity uncertain",
   PART_NOT_RECOGNIZED: "Part not recognized",
   BLURRED: "Photo too blurred to judge",
+};
+
+// Absolute narration second -> frame inside a segment, using the shared timeline. Components call this so they keep
+// their narration sync wherever the timeline places them.
+export const cueIn = (scene: keyof typeof timeline.scenes, segment: string, fps: number) => {
+  const sceneFrom = timeline.scenes[scene].from;
+  const segments = timeline.segments[scene] as Record<string, { from: number }>;
+  const segmentFrom = segments[segment]?.from ?? 0;
+  return (seconds: number) => Math.round(seconds * fps) - sceneFrom - segmentFrom;
 };
