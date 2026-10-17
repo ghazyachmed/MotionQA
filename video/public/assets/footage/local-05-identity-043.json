@@ -1,0 +1,58 @@
+{
+  "clip": "local-05-identity-043",
+  "target": "local",
+  "label": "Local demonstration",
+  "url": "http://127.0.0.1:5173/",
+  "recordedAtUtc": "2026-10-17T04:55:41.297Z",
+  "durationSeconds": 9.42,
+  "capturedFrames": 105,
+  "outputFrames": 282,
+  "fps": 30,
+  "viewport": {
+    "width": 1440,
+    "height": 810
+  },
+  "browser": "155.0.8059.80",
+  "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+  "appTreeCleanAtCapture": true,
+  "inputs": [
+    {
+      "path": "data/visa/pcb1/Data/Images/Anomaly/043.JPG",
+      "sha256": "dbc6b10eaacb7be78fd1ba20e5dc821297e3280be0b67d62ab0e95bdb307f877",
+      "note": "test split, anomaly (both transducers missing)"
+    }
+  ],
+  "events": [
+    {
+      "atSeconds": 1.5,
+      "label": "upload Anomaly/043.JPG"
+    },
+    {
+      "atSeconds": 2.11,
+      "label": "result REVIEW PART_IDENTITY_UNCERTAIN",
+      "decision": "REVIEW",
+      "reasonCode": "PART_IDENTITY_UNCERTAIN",
+      "anomalyScore": 5.085483074188232
+    }
+  ],
+  "apiResults": [
+    {
+      "httpStatus": 201,
+      "inspectionId": "sess-bd0cf4bf-8322-4892-a403-7b80c1ded620-a01",
+      "decision": "REVIEW",
+      "reasonCode": "PART_IDENTITY_UNCERTAIN",
+      "anomalyScore": 5.085483074188232,
+      "identityDistance": 0.1553756594657898,
+      "passBelow": 2.159876585006714,
+      "failAtOrAbove": 2.5937364101409917,
+      "inferenceMs": 91.26,
+      "totalMs": 165.99,
+      "modelId": "visa-pcb1-patchcore-mnv2",
+      "modelVersion": "2026.10.16",
+      "processingMode": "REAL_INFERENCE",
+      "sessionStatus": "COMPLETED",
+      "sessionAttempts": 1
+    }
+  ],
+  "sha256": "3c94ec31ba554d90019276db0dcb008d5cf76b833e3feea6323f120acdd602c2"
+}

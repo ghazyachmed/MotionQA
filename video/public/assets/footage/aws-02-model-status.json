@@ -1,0 +1,57 @@
+{
+  "clip": "aws-02-model-status",
+  "target": "aws",
+  "label": "AWS deployment (public status pages, no token)",
+  "url": "https://d4dqbqmvvujy7.cloudfront.net/api/v1/model/status",
+  "recordedAtUtc": "2026-10-17T04:35:33.891Z",
+  "durationSeconds": 7,
+  "capturedFrames": 1,
+  "outputFrames": 210,
+  "fps": 30,
+  "viewport": {
+    "width": 960,
+    "height": 540
+  },
+  "browser": "155.0.8059.80",
+  "appCommit": "a9acfa4 (release recorded in evaluation/aws-2026-10-16/README.md)",
+  "appTreeCleanAtCapture": null,
+  "inputs": [],
+  "events": [
+    {
+      "atSeconds": 0,
+      "label": "GET /api/v1/model/status"
+    }
+  ],
+  "apiResults": [
+    {
+      "route": "/api/v1/model/status",
+      "body": {
+        "ready": true,
+        "loadError": null,
+        "opencv": {
+          "version": "5.0.0",
+          "majorVersion": 5,
+          "isSupported": true,
+          "hasNewDnnEngine": true,
+          "cpuBaseline": "NEON FP16",
+          "detail": "ok"
+        },
+        "profileId": "visa-pcb1-patchcore-mnv2",
+        "profileVersion": "2026.10.16",
+        "task": "Single-board stationary visual inspection on the public VisA pcb1 benchmark (normal-only anomaly detection)",
+        "domainNote": "Benchmark task only. Not validated on motorcycle components or any customer production line.",
+        "decisionThresholds": {
+          "passBelow": 2.159876585006714,
+          "failAtOrAbove": 2.5937364101409917,
+          "identityMaxDistance": 0.0844113826751709,
+          "identityNoPartMinDistance": 0.21670770645141602,
+          "regionThreshold": 2.159876585006714,
+          "missedDefectTarget": 0.02,
+          "falseRejectTarget": 0.02
+        },
+        "timeoutSeconds": 10
+      }
+    }
+  ],
+  "sha256": "c5d09017fedba3f1fe2b5fc57c2331920beb34423fdc2e14d301f7e3de38f266"
+}

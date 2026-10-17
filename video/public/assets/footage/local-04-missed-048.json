@@ -1,0 +1,58 @@
+{
+  "clip": "local-04-missed-048",
+  "target": "local",
+  "label": "Local demonstration",
+  "url": "http://127.0.0.1:5173/",
+  "recordedAtUtc": "2026-10-17T04:55:28.939Z",
+  "durationSeconds": 9.42,
+  "capturedFrames": 103,
+  "outputFrames": 283,
+  "fps": 30,
+  "viewport": {
+    "width": 1440,
+    "height": 810
+  },
+  "browser": "155.0.8059.80",
+  "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+  "appTreeCleanAtCapture": true,
+  "inputs": [
+    {
+      "path": "data/visa/pcb1/Data/Images/Anomaly/048.JPG",
+      "sha256": "733c324c3b5918cfeaf4e4ec280886539aed18149184a93e037e834078617508",
+      "note": "test split, anomaly (missing header pin)"
+    }
+  ],
+  "events": [
+    {
+      "atSeconds": 1.5,
+      "label": "upload Anomaly/048.JPG"
+    },
+    {
+      "atSeconds": 2.12,
+      "label": "result PASS ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+      "decision": "PASS",
+      "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+      "anomalyScore": 2.124938488006592
+    }
+  ],
+  "apiResults": [
+    {
+      "httpStatus": 201,
+      "inspectionId": "sess-12ba0766-b60c-4cbe-a362-35d206fe1307-a01",
+      "decision": "PASS",
+      "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+      "anomalyScore": 2.124938488006592,
+      "identityDistance": 0.006970763206481934,
+      "passBelow": 2.159876585006714,
+      "failAtOrAbove": 2.5937364101409917,
+      "inferenceMs": 90.45,
+      "totalMs": 147.38,
+      "modelId": "visa-pcb1-patchcore-mnv2",
+      "modelVersion": "2026.10.16",
+      "processingMode": "REAL_INFERENCE",
+      "sessionStatus": "COMPLETED",
+      "sessionAttempts": 1
+    }
+  ],
+  "sha256": "33369b08df2b89be77fe7242906f49a06d8efd62f82a9931f13abb70745b786e"
+}

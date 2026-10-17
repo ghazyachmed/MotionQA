@@ -1,0 +1,27 @@
+{
+  "clip": "aws-01-ui-status",
+  "target": "aws",
+  "label": "AWS deployment (public status pages, no token)",
+  "url": "https://d4dqbqmvvujy7.cloudfront.net/",
+  "recordedAtUtc": "2026-10-17T04:35:23.378Z",
+  "durationSeconds": 8,
+  "capturedFrames": 480,
+  "outputFrames": 240,
+  "fps": 30,
+  "viewport": {
+    "width": 1440,
+    "height": 810
+  },
+  "browser": "155.0.8059.80",
+  "appCommit": "a9acfa4 (release recorded in evaluation/aws-2026-10-16/README.md)",
+  "appTreeCleanAtCapture": null,
+  "inputs": [],
+  "events": [
+    {
+      "atSeconds": 0,
+      "label": "deployed UI loaded without a token: model status from AWS, data panels answer HTTP 401"
+    }
+  ],
+  "apiResults": [],
+  "sha256": "365440356bc633f3c793c992f8c5bcefd37657791a5715c86d3606f2d4001650"
+}

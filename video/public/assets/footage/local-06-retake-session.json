@@ -1,0 +1,91 @@
+{
+  "clip": "local-06-retake-session",
+  "target": "local",
+  "label": "Local demonstration",
+  "url": "http://127.0.0.1:5173/",
+  "recordedAtUtc": "2026-10-17T04:55:53.580Z",
+  "durationSeconds": 13.94,
+  "capturedFrames": 109,
+  "outputFrames": 418,
+  "fps": 30,
+  "viewport": {
+    "width": 1440,
+    "height": 810
+  },
+  "browser": "155.0.8059.80",
+  "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+  "appTreeCleanAtCapture": true,
+  "inputs": [
+    {
+      "path": "video/capture-inputs/Normal-0011-blur-0.006.jpg",
+      "sha256": "4f344b8a34504b638e660d079cae13fbdfee262cd70bbfbb72ee901a324cea8e",
+      "note": "synthetic Gaussian blur of Normal/0011 (sigma 0.6 % of long side, runLocalDemo.blurred_copy)"
+    },
+    {
+      "path": "data/visa/pcb1/Data/Images/Normal/0011.JPG",
+      "sha256": "09b58a87f2380592be9f72ae3b0f8060adefb3d2836ec974ffce4ef662d6c252",
+      "note": "test split, normal (sharp original, same session)"
+    }
+  ],
+  "events": [
+    {
+      "atSeconds": 1.5,
+      "label": "upload Normal-0011-blur-0.006.jpg"
+    },
+    {
+      "atSeconds": 2.02,
+      "label": "result RETAKE BLURRED",
+      "decision": "RETAKE",
+      "reasonCode": "BLURRED",
+      "anomalyScore": null
+    },
+    {
+      "atSeconds": 7.02,
+      "label": "upload Normal/0011.JPG"
+    },
+    {
+      "atSeconds": 7.64,
+      "label": "result PASS ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+      "decision": "PASS",
+      "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+      "anomalyScore": 2.055962324142456
+    }
+  ],
+  "apiResults": [
+    {
+      "httpStatus": 201,
+      "inspectionId": "sess-2ff25a54-9e6a-4696-aecc-1701452eebd9-a01",
+      "decision": "RETAKE",
+      "reasonCode": "BLURRED",
+      "anomalyScore": null,
+      "identityDistance": null,
+      "passBelow": 2.159876585006714,
+      "failAtOrAbove": 2.5937364101409917,
+      "inferenceMs": 0,
+      "totalMs": 42.15,
+      "modelId": "visa-pcb1-patchcore-mnv2",
+      "modelVersion": "2026.10.16",
+      "processingMode": "REAL_INFERENCE",
+      "sessionStatus": "OPEN",
+      "sessionAttempts": 1
+    },
+    {
+      "httpStatus": 201,
+      "inspectionId": "sess-2ff25a54-9e6a-4696-aecc-1701452eebd9-a02",
+      "decision": "PASS",
+      "reasonCode": "ANOMALY_SCORE_BELOW_PASS_THRESHOLD",
+      "anomalyScore": 2.055962324142456,
+      "identityDistance": 0.005362272262573242,
+      "passBelow": 2.159876585006714,
+      "failAtOrAbove": 2.5937364101409917,
+      "inferenceMs": 92.94,
+      "totalMs": 161.51,
+      "modelId": "visa-pcb1-patchcore-mnv2",
+      "modelVersion": "2026.10.16",
+      "processingMode": "REAL_INFERENCE",
+      "sessionStatus": "COMPLETED",
+      "sessionAttempts": 2
+    }
+  ],
+  "sha256": "b0b070b667ddf07a77a8e5436bd160343b5962b172a366edfc4756ea298ed7d2"
+}

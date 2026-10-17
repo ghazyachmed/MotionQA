@@ -1,0 +1,440 @@
+{
+  "note": "Hashes identify these exact files. They do not show that the dataset images are independent of model development.",
+  "generatedBy": "node scripts/verify-assets.mjs --write-manifest",
+  "assets": [
+    {
+      "path": "public/assets/dataset/anomaly-048-groundtruth-crop.jpg",
+      "sha256": "9c825c912cef6941528523dd65bd9c4a27a24dd0f800bee6bbfde6db1b6d9746",
+      "bytes": 147913,
+      "source": "VisA pcb1 Anomaly/048.JPG with the VisA ground-truth mask outline, scripts/prepare_dataset_figures.py (OpenCV 5)",
+      "license": "CC BY 4.0 (VisA, Zou et al., ECCV 2022)",
+      "purpose": "Shows where the missing pin is; labelled as a dataset label, not model output"
+    },
+    {
+      "path": "public/assets/dataset/normal-0011.jpg",
+      "sha256": "6a0ee260a5c9a05d49a35cfe8f14ebc7fb691a5ec4234d86d47c18bf51582a5e",
+      "bytes": 397843,
+      "source": "VisA pcb1 Normal/0011.JPG (test split), copied by scripts/prepare_dataset_figures.py",
+      "license": "CC BY 4.0 (VisA, Zou et al., ECCV 2022)",
+      "purpose": "Board photo on the title card"
+    },
+    {
+      "path": "public/assets/footage/aws-01-ui-status.json",
+      "sha256": "4268c49f0d4dd9966a6a78d8f3c40eebcba48931c6a8f09d77b80b276e72f521",
+      "bytes": 773,
+      "source": "Screen recording of https://d4dqbqmvvujy7.cloudfront.net public routes without a token by scripts/capture-demo.mjs aws",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Capture metadata for aws-01-ui-status: timestamps, events, API results",
+      "label": "AWS deployment (public status pages, no token)",
+      "recordedAtUtc": "2026-10-17T04:35:23.378Z",
+      "appCommit": "a9acfa4 (release recorded in evaluation/aws-2026-10-16/README.md)",
+      "appTreeCleanAtCapture": null,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/footage/aws-01-ui-status.mp4",
+      "sha256": "365440356bc633f3c793c992f8c5bcefd37657791a5715c86d3606f2d4001650",
+      "bytes": 208195,
+      "source": "Screen recording of https://d4dqbqmvvujy7.cloudfront.net public routes without a token by scripts/capture-demo.mjs aws",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Deployed UI on CloudFront without a token: model status line, data panels answer HTTP 401",
+      "label": "AWS deployment (public status pages, no token)",
+      "recordedAtUtc": "2026-10-17T04:35:23.378Z",
+      "appCommit": "a9acfa4 (release recorded in evaluation/aws-2026-10-16/README.md)",
+      "appTreeCleanAtCapture": null,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/footage/aws-02-model-status.json",
+      "sha256": "835ca9d387a9d111f280c3dda458530d5aeeac48edd891905605f0d9e3cbb1d2",
+      "bytes": 1807,
+      "source": "Screen recording of https://d4dqbqmvvujy7.cloudfront.net public routes without a token by scripts/capture-demo.mjs aws",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Capture metadata for aws-02-model-status: timestamps, events, API results",
+      "label": "AWS deployment (public status pages, no token)",
+      "recordedAtUtc": "2026-10-17T04:35:33.891Z",
+      "appCommit": "a9acfa4 (release recorded in evaluation/aws-2026-10-16/README.md)",
+      "appTreeCleanAtCapture": null,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/footage/aws-02-model-status.mp4",
+      "sha256": "c5d09017fedba3f1fe2b5fc57c2331920beb34423fdc2e14d301f7e3de38f266",
+      "bytes": 158085,
+      "source": "Screen recording of https://d4dqbqmvvujy7.cloudfront.net public routes without a token by scripts/capture-demo.mjs aws",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "GET /api/v1/model/status on the AWS endpoint",
+      "label": "AWS deployment (public status pages, no token)",
+      "recordedAtUtc": "2026-10-17T04:35:33.891Z",
+      "appCommit": "a9acfa4 (release recorded in evaluation/aws-2026-10-16/README.md)",
+      "appTreeCleanAtCapture": null,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/footage/aws-03-health.json",
+      "sha256": "c9d1acedb724eb85106390acd01b258511836eb36dd5846e5a1ee6bbf0857c62",
+      "bytes": 889,
+      "source": "Screen recording of https://d4dqbqmvvujy7.cloudfront.net public routes without a token by scripts/capture-demo.mjs aws",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Capture metadata for aws-03-health: timestamps, events, API results",
+      "label": "AWS deployment (public status pages, no token)",
+      "recordedAtUtc": "2026-10-17T04:35:42.577Z",
+      "appCommit": "a9acfa4 (release recorded in evaluation/aws-2026-10-16/README.md)",
+      "appTreeCleanAtCapture": null,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/footage/aws-03-health.mp4",
+      "sha256": "bddbbc83afdf0a746dcf7d368ee4d7d643fc761ad0b5930c0c9ea4f60e40f62d",
+      "bytes": 31021,
+      "source": "Screen recording of https://d4dqbqmvvujy7.cloudfront.net public routes without a token by scripts/capture-demo.mjs aws",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "GET /api/v1/health on the AWS endpoint",
+      "label": "AWS deployment (public status pages, no token)",
+      "recordedAtUtc": "2026-10-17T04:35:42.577Z",
+      "appCommit": "a9acfa4 (release recorded in evaluation/aws-2026-10-16/README.md)",
+      "appTreeCleanAtCapture": null,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/footage/local-01-pass.json",
+      "sha256": "c63653630b455c29b7aed8ced6285ae69cf1b892a9c67f5a6a753ce4946b8e46",
+      "bytes": 1673,
+      "source": "Screen recording of the local MotionQA app (uvicorn + Vite, Apple M2) by scripts/capture-demo.mjs local; headless Chrome CDP screencast",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Capture metadata for local-01-pass: timestamps, events, API results",
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:54:47.575Z",
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "appTreeCleanAtCapture": true,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/footage/local-01-pass.mp4",
+      "sha256": "791e6bafc6e73987bf2a458777bd2792cfd05b10c23e4d86d3a15fd3fa504bcb",
+      "bytes": 885712,
+      "source": "Screen recording of the local MotionQA app (uvicorn + Vite, Apple M2) by scripts/capture-demo.mjs local; headless Chrome CDP screencast",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Real inference, PASS on test image Normal/0011",
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:54:47.575Z",
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "appTreeCleanAtCapture": true,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/footage/local-02-fail.json",
+      "sha256": "a5d7a59307df9016af290704798125039a195275756604e587e4c4bcef7d400c",
+      "bytes": 1883,
+      "source": "Screen recording of the local MotionQA app (uvicorn + Vite, Apple M2) by scripts/capture-demo.mjs local; headless Chrome CDP screencast",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Capture metadata for local-02-fail: timestamps, events, API results",
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:55:01.573Z",
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "appTreeCleanAtCapture": true,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/footage/local-02-fail.mp4",
+      "sha256": "9967076906746b2b63990f4f575c884682816c0ed8e9515a155aa9527d4809ed",
+      "bytes": 900957,
+      "source": "Screen recording of the local MotionQA app (uvicorn + Vite, Apple M2) by scripts/capture-demo.mjs local; headless Chrome CDP screencast",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Real inference, FAIL on test image Anomaly/000, then reviewer confirmation",
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:55:01.573Z",
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "appTreeCleanAtCapture": true,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/footage/local-03-review.json",
+      "sha256": "7b331fdff5f0df2b23a28e97697c3592804227fb0f3a989d4628b68ed7d1af28",
+      "bytes": 1661,
+      "source": "Screen recording of the local MotionQA app (uvicorn + Vite, Apple M2) by scripts/capture-demo.mjs local; headless Chrome CDP screencast",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Capture metadata for local-03-review: timestamps, events, API results",
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:55:16.243Z",
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "appTreeCleanAtCapture": true,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/footage/local-03-review.mp4",
+      "sha256": "36339209f9eca234f1c3a5e8d34644240c6209b4d870eb9bd96c26843be8569d",
+      "bytes": 875357,
+      "source": "Screen recording of the local MotionQA app (uvicorn + Vite, Apple M2) by scripts/capture-demo.mjs local; headless Chrome CDP screencast",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Real inference, REVIEW on test image Normal/0027",
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:55:16.243Z",
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "appTreeCleanAtCapture": true,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/footage/local-04-missed-048.json",
+      "sha256": "31bc05403881b368ef7130b2f96d1031aa3b56b19c4f616efb2718658cabcab9",
+      "bytes": 1699,
+      "source": "Screen recording of the local MotionQA app (uvicorn + Vite, Apple M2) by scripts/capture-demo.mjs local; headless Chrome CDP screencast",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Capture metadata for local-04-missed-048: timestamps, events, API results",
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:55:28.939Z",
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "appTreeCleanAtCapture": true,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/footage/local-04-missed-048.mp4",
+      "sha256": "33369b08df2b89be77fe7242906f49a06d8efd62f82a9931f13abb70745b786e",
+      "bytes": 857850,
+      "source": "Screen recording of the local MotionQA app (uvicorn + Vite, Apple M2) by scripts/capture-demo.mjs local; headless Chrome CDP screencast",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Real inference, PASS on defective test image Anomaly/048 (missed defect)",
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:55:28.939Z",
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "appTreeCleanAtCapture": true,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/footage/local-05-identity-043.json",
+      "sha256": "3a953ffd58b0f124ce836794e7d36cd10c5d900d9a21fb7b5f0b5ea54d3e98d4",
+      "bytes": 1678,
+      "source": "Screen recording of the local MotionQA app (uvicorn + Vite, Apple M2) by scripts/capture-demo.mjs local; headless Chrome CDP screencast",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Capture metadata for local-05-identity-043: timestamps, events, API results",
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:55:41.297Z",
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "appTreeCleanAtCapture": true,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/footage/local-05-identity-043.mp4",
+      "sha256": "3c94ec31ba554d90019276db0dcb008d5cf76b833e3feea6323f120acdd602c2",
+      "bytes": 824310,
+      "source": "Screen recording of the local MotionQA app (uvicorn + Vite, Apple M2) by scripts/capture-demo.mjs local; headless Chrome CDP screencast",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Real inference, REVIEW (identity uncertain) on test image Anomaly/043",
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:55:41.297Z",
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "appTreeCleanAtCapture": true,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/footage/local-06-retake-session.json",
+      "sha256": "85268524ca2da37984153cda529a77312c9b315f045d05aaab3755946510ecd1",
+      "bytes": 2775,
+      "source": "Screen recording of the local MotionQA app (uvicorn + Vite, Apple M2) by scripts/capture-demo.mjs local; headless Chrome CDP screencast",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Capture metadata for local-06-retake-session: timestamps, events, API results",
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:55:53.580Z",
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "appTreeCleanAtCapture": true,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/footage/local-06-retake-session.mp4",
+      "sha256": "b0b070b667ddf07a77a8e5436bd160343b5962b172a366edfc4756ea298ed7d2",
+      "bytes": 751841,
+      "source": "Screen recording of the local MotionQA app (uvicorn + Vite, Apple M2) by scripts/capture-demo.mjs local; headless Chrome CDP screencast",
+      "license": "Recording made by the team for this video; shows VisA pcb1 images (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Real inference, RETAKE on a synthetic blur, then PASS in the same session",
+      "label": "Local demonstration",
+      "recordedAtUtc": "2026-10-17T04:55:53.580Z",
+      "appCommit": "c77ac5e8bfd0ca40e76731d187750b80daf709a3",
+      "appTreeCleanAtCapture": true,
+      "browser": "Chrome 155.0.8059.80"
+    },
+    {
+      "path": "public/assets/pipeline/anomaly-000-0-photo.jpg",
+      "sha256": "0b155bb15cba9c77a1348d50ccecb12a3fa0cdf7402c84949e0c1a1e6954e36e",
+      "bytes": 379121,
+      "source": "Intermediate output of the MotionQA OpenCV 5 pipeline (locatePart, measureCapture, cropPartSquare, OpenCV DNN features, PatchCoreScorer, renderOverlay) for VisA pcb1 Anomaly/000 or 048, scripts/export_pipeline_stages.py",
+      "license": "Derived from VisA pcb1 (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Architecture dissection: one stage of the real pipeline"
+    },
+    {
+      "path": "public/assets/pipeline/anomaly-000-1-input.jpg",
+      "sha256": "13255bac54fe54ae22805ba2536a4ce3a7a925d6450cace31161ae901123bc47",
+      "bytes": 207458,
+      "source": "Intermediate output of the MotionQA OpenCV 5 pipeline (locatePart, measureCapture, cropPartSquare, OpenCV DNN features, PatchCoreScorer, renderOverlay) for VisA pcb1 Anomaly/000 or 048, scripts/export_pipeline_stages.py",
+      "license": "Derived from VisA pcb1 (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Architecture dissection: one stage of the real pipeline"
+    },
+    {
+      "path": "public/assets/pipeline/anomaly-000-2-mask.jpg",
+      "sha256": "4a2f300f6a64fb873bfc596b1e72853165f60d37991566cb8b23bd7b0ad519ed",
+      "bytes": 23628,
+      "source": "Intermediate output of the MotionQA OpenCV 5 pipeline (locatePart, measureCapture, cropPartSquare, OpenCV DNN features, PatchCoreScorer, renderOverlay) for VisA pcb1 Anomaly/000 or 048, scripts/export_pipeline_stages.py",
+      "license": "Derived from VisA pcb1 (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Architecture dissection: one stage of the real pipeline"
+    },
+    {
+      "path": "public/assets/pipeline/anomaly-000-3-edges.jpg",
+      "sha256": "ca4591945bcddb33f6688944f48ea71719a340c28865e9a36ff23cd567563d21",
+      "bytes": 265786,
+      "source": "Intermediate output of the MotionQA OpenCV 5 pipeline (locatePart, measureCapture, cropPartSquare, OpenCV DNN features, PatchCoreScorer, renderOverlay) for VisA pcb1 Anomaly/000 or 048, scripts/export_pipeline_stages.py",
+      "license": "Derived from VisA pcb1 (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Architecture dissection: one stage of the real pipeline"
+    },
+    {
+      "path": "public/assets/pipeline/anomaly-000-4-crop.jpg",
+      "sha256": "415c66fdb1669a9b5399cf678a354389c038599076b084c476b3fc25b64538ee",
+      "bytes": 80373,
+      "source": "Intermediate output of the MotionQA OpenCV 5 pipeline (locatePart, measureCapture, cropPartSquare, OpenCV DNN features, PatchCoreScorer, renderOverlay) for VisA pcb1 Anomaly/000 or 048, scripts/export_pipeline_stages.py",
+      "license": "Derived from VisA pcb1 (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Architecture dissection: one stage of the real pipeline"
+    },
+    {
+      "path": "public/assets/pipeline/anomaly-000-5-features.jpg",
+      "sha256": "63381d1412109dd7cb4cd6dd5bc92d7460c2bdd4356ba94095d85636f605f0a1",
+      "bytes": 89026,
+      "source": "Intermediate output of the MotionQA OpenCV 5 pipeline (locatePart, measureCapture, cropPartSquare, OpenCV DNN features, PatchCoreScorer, renderOverlay) for VisA pcb1 Anomaly/000 or 048, scripts/export_pipeline_stages.py",
+      "license": "Derived from VisA pcb1 (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Architecture dissection: one stage of the real pipeline"
+    },
+    {
+      "path": "public/assets/pipeline/anomaly-000-6-anomaly-map.jpg",
+      "sha256": "706adc65170ad9fcba27339ceb06cf62634e4bd26e485e17d145bb18563f42e0",
+      "bytes": 44573,
+      "source": "Intermediate output of the MotionQA OpenCV 5 pipeline (locatePart, measureCapture, cropPartSquare, OpenCV DNN features, PatchCoreScorer, renderOverlay) for VisA pcb1 Anomaly/000 or 048, scripts/export_pipeline_stages.py",
+      "license": "Derived from VisA pcb1 (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Architecture dissection: one stage of the real pipeline"
+    },
+    {
+      "path": "public/assets/pipeline/anomaly-000-7-overlay.jpg",
+      "sha256": "acfd231ceb2da2e9337a18ea0d8901014b19354145756c7b0d89d4e78927c1d7",
+      "bytes": 214443,
+      "source": "Intermediate output of the MotionQA OpenCV 5 pipeline (locatePart, measureCapture, cropPartSquare, OpenCV DNN features, PatchCoreScorer, renderOverlay) for VisA pcb1 Anomaly/000 or 048, scripts/export_pipeline_stages.py",
+      "license": "Derived from VisA pcb1 (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Architecture dissection: one stage of the real pipeline"
+    },
+    {
+      "path": "public/assets/pipeline/anomaly-048-map-gt.jpg",
+      "sha256": "165e9da705c6a5ca2ea25e28939364d70a331fcdbb46f2c280024b433558671b",
+      "bytes": 56784,
+      "source": "Intermediate output of the MotionQA OpenCV 5 pipeline (locatePart, measureCapture, cropPartSquare, OpenCV DNN features, PatchCoreScorer, renderOverlay) for VisA pcb1 Anomaly/000 or 048, scripts/export_pipeline_stages.py",
+      "license": "Derived from VisA pcb1 (CC BY 4.0, Zou et al., ECCV 2022)",
+      "purpose": "Anomaly map of the missed defect with the VisA ground-truth outline (dataset label) and the map maximum"
+    },
+    {
+      "path": "public/captions/en.srt",
+      "sha256": "ad7cd11f37aac8d30e8e8f22ef306c5426287508e1dda11121f294380f3885a3",
+      "bytes": 4928,
+      "source": "Generated from src/data/narration.json by scripts/build-captions.mjs",
+      "license": "Team text",
+      "purpose": "Burned-in English captions; also delivered as a sidecar file"
+    },
+    {
+      "path": "public/fonts/Caveat-OFL.txt",
+      "sha256": "163a2b400e16916ad3196296c946c526d0efce6baf22a2164269ffc62fb9f671",
+      "bytes": 4384,
+      "source": "LICENSE file of the @fontsource package",
+      "license": "SIL Open Font License 1.1 (text)",
+      "purpose": "Licence text shipped with the fonts"
+    },
+    {
+      "path": "public/fonts/Inter-OFL.txt",
+      "sha256": "3b0a5fca3d17942cde889069889dedbbbd075e9b599968c82a95f4d944e9b345",
+      "bytes": 4477,
+      "source": "LICENSE file of the @fontsource package",
+      "license": "SIL Open Font License 1.1 (text)",
+      "purpose": "Licence text shipped with the fonts"
+    },
+    {
+      "path": "public/fonts/JetBrainsMono-OFL.txt",
+      "sha256": "403581b69dac5cff4079205e01c6b467e56af449ecbd7247693ddb1baafa005b",
+      "bytes": 4524,
+      "source": "LICENSE file of the @fontsource package",
+      "license": "SIL Open Font License 1.1 (text)",
+      "purpose": "Licence text shipped with the fonts"
+    },
+    {
+      "path": "public/fonts/caveat-latin-500-normal.woff2",
+      "sha256": "edbfb1a768829d4e85127cd327e59faaec9701cb043e96430938f1f66acf009f",
+      "bytes": 50904,
+      "source": "@fontsource/caveat 5.3.0 (npm)",
+      "license": "SIL Open Font License 1.1",
+      "purpose": "Handwritten kicker and annotation layer, loaded locally"
+    },
+    {
+      "path": "public/fonts/caveat-latin-600-normal.woff2",
+      "sha256": "d51e2283010e661d9f3dafdc9ff4b82b2ebcb2f7aa43ca48a105f5f68d46cc32",
+      "bytes": 51220,
+      "source": "@fontsource/caveat 5.3.0 (npm)",
+      "license": "SIL Open Font License 1.1",
+      "purpose": "Handwritten kicker and annotation layer, loaded locally"
+    },
+    {
+      "path": "public/fonts/caveat-latin-700-normal.woff2",
+      "sha256": "15f9638095ad5ec9816f93d66805ca1a87e71dc5a76b596bfce1c78d4704c405",
+      "bytes": 51020,
+      "source": "@fontsource/caveat 5.3.0 (npm)",
+      "license": "SIL Open Font License 1.1",
+      "purpose": "Handwritten kicker and annotation layer, loaded locally"
+    },
+    {
+      "path": "public/fonts/inter-latin-400-normal.woff2",
+      "sha256": "8909904ab6c872eb994093482a88a28eca2cd95912d7b6fecd72103b0dc07edc",
+      "bytes": 23664,
+      "source": "@fontsource/inter 5.3.0 (npm)",
+      "license": "SIL Open Font License 1.1",
+      "purpose": "On-screen typography, loaded locally"
+    },
+    {
+      "path": "public/fonts/inter-latin-500-normal.woff2",
+      "sha256": "f3779f1efccc4bdcdf9c0a02ab95bf6bd092ed09c48c08cedc725889edd1d19f",
+      "bytes": 24272,
+      "source": "@fontsource/inter 5.3.0 (npm)",
+      "license": "SIL Open Font License 1.1",
+      "purpose": "On-screen typography, loaded locally"
+    },
+    {
+      "path": "public/fonts/inter-latin-600-normal.woff2",
+      "sha256": "f9a06e79cd3a2a20951c0f0e28f66dd0e6d3fda73911d640a2125c8fcb78f21a",
+      "bytes": 24452,
+      "source": "@fontsource/inter 5.3.0 (npm)",
+      "license": "SIL Open Font License 1.1",
+      "purpose": "On-screen typography, loaded locally"
+    },
+    {
+      "path": "public/fonts/inter-latin-700-normal.woff2",
+      "sha256": "6f56409fd3d64bb85f7d070bce20749db2d66b6d63cec586cc22d1c761be2491",
+      "bytes": 24356,
+      "source": "@fontsource/inter 5.3.0 (npm)",
+      "license": "SIL Open Font License 1.1",
+      "purpose": "On-screen typography, loaded locally"
+    },
+    {
+      "path": "public/fonts/inter-latin-800-normal.woff2",
+      "sha256": "a7d0a50f15d389cad679238466bdb5fc9787aa0715719064ce25abaff042820d",
+      "bytes": 24400,
+      "source": "@fontsource/inter 5.3.0 (npm)",
+      "license": "SIL Open Font License 1.1",
+      "purpose": "On-screen typography, loaded locally"
+    },
+    {
+      "path": "public/fonts/jetbrains-mono-latin-400-normal.woff2",
+      "sha256": "14425ba9c695763c1547f48a206b7aa60350a33ae23de09f0407877f3fcd89eb",
+      "bytes": 21168,
+      "source": "@fontsource/jetbrains-mono 5.3.0 (npm)",
+      "license": "SIL Open Font License 1.1",
+      "purpose": "On-screen typography, loaded locally"
+    },
+    {
+      "path": "public/fonts/jetbrains-mono-latin-600-normal.woff2",
+      "sha256": "400c6bfda18d5d14acad1c15d6dcb9f8e13c015e7286317e0b9a482539bef147",
+      "bytes": 21860,
+      "source": "@fontsource/jetbrains-mono 5.3.0 (npm)",
+      "license": "SIL Open Font License 1.1",
+      "purpose": "On-screen typography, loaded locally"
+    }
+  ]
+}

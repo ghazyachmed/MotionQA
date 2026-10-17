@@ -1,0 +1,10 @@
+node_modules
+dist
+.DS_Store
+.env
+
+# Renders, stills and contact sheets (regenerate with npm run render:draft / npm run stills).
+out
+
+# Raw screencast frames from scripts/capture-demo.mjs (the encoded clips live in public/assets/footage).
+.capture-frames

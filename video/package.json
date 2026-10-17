@@ -1,0 +1,49 @@
+{
+  "name": "motionqa-video",
+  "version": "1.0.0",
+  "description": "MotionQA submission video (Remotion). Not part of the production frontend.",
+  "repository": {},
+  "license": "UNLICENSED",
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=24"
+  },
+  "private": true,
+  "dependencies": {
+    "@remotion/captions": "4.0.536",
+    "@remotion/cli": "4.0.536",
+    "@remotion/fonts": "4.0.536",
+    "@remotion/media": "4.0.536",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.536"
+  },
+  "devDependencies": {
+    "@fontsource/caveat": "5.3.0",
+    "@fontsource/inter": "5.3.0",
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "@remotion/eslint-config-flat": "4.0.536",
+    "@types/react": "19.2.7",
+    "@types/web": "0.0.166",
+    "eslint": "10.12.0",
+    "playwright-core": "1.64.1",
+    "prettier": "3.8.1",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "dev": "remotion studio",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src && tsc --noEmit",
+    "captions": "node scripts/build-captions.mjs",
+    "verify": "node scripts/verify-results.mjs && node scripts/verify-assets.mjs",
+    "verify:final": "node scripts/verify-results.mjs && node scripts/verify-assets.mjs --final",
+    "check-links": "node scripts/check-links.mjs",
+    "capture:local": "node scripts/capture-demo.mjs local",
+    "capture:aws": "node scripts/capture-demo.mjs aws",
+    "stills": "node scripts/render-stills.mjs",
+    "render:draft": "npm run verify && remotion render MotionQADemo out/MotionQA_Draft.mp4 --props=props/draft.json --codec=h264 --crf=18 --pixel-format=yuv420p",
+    "render:final": "npm run typecheck && npm run verify:final && remotion render MotionQADemo out/MotionQA_Final.mp4 --props=props/final.json --codec=h264 --crf=18 --pixel-format=yuv420p --audio-codec=aac --enforce-audio-track"
+  },
+  "allowScripts": {
+    "esbuild": false
+  }
+}

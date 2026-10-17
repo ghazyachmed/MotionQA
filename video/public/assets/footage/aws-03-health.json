@@ -1,0 +1,37 @@
+{
+  "clip": "aws-03-health",
+  "target": "aws",
+  "label": "AWS deployment (public status pages, no token)",
+  "url": "https://d4dqbqmvvujy7.cloudfront.net/api/v1/health",
+  "recordedAtUtc": "2026-10-17T04:35:42.577Z",
+  "durationSeconds": 5,
+  "capturedFrames": 1,
+  "outputFrames": 150,
+  "fps": 30,
+  "viewport": {
+    "width": 960,
+    "height": 540
+  },
+  "browser": "155.0.8059.80",
+  "appCommit": "a9acfa4 (release recorded in evaluation/aws-2026-10-16/README.md)",
+  "appTreeCleanAtCapture": null,
+  "inputs": [],
+  "events": [
+    {
+      "atSeconds": 0,
+      "label": "GET /api/v1/health"
+    }
+  ],
+  "apiResults": [
+    {
+      "route": "/api/v1/health",
+      "body": {
+        "status": "ok",
+        "postgres": "ok",
+        "redis": "ok",
+        "inspectionModel": "ok"
+      }
+    }
+  ],
+  "sha256": "bddbbc83afdf0a746dcf7d368ee4d7d643fc761ad0b5930c0c9ea4f60e40f62d"
+}
