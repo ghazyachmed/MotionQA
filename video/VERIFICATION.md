@@ -2,8 +2,9 @@
 
 Date: 2026-10-17. Output: **`out/MotionQA_Final.mp4`** (version 3, with narration). The final gate
 (`npm run render:final`) passed: real footage present, narration track present and synced, judge links re-checked, QR
-code decodes to the endpoint, no placeholders, no draft watermark. Committed to `master`; nothing was pushed, deployed
-or submitted.
+code decodes to the endpoint, no placeholders, no draft watermark. Committed to `master`. Both video commits were pushed to GitHub; `origin/master` was verified at
+`444e0693a57fd1e6c433887cf02d3f033e178d26` on 2026-10-17 before this documentation correction.
+No deployment or competition submission was performed as part of the video work.
 
 ## What changed in version 3
 
