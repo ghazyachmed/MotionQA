@@ -16,7 +16,7 @@ role of human review. Submission is an owner action.
 | Pinned dependencies; build, deployment, test instructions | Done | `backend/requirements-*.lock`, `package-lock.json`, `readme.md` |
 | Architecture diagram with OpenCV 5 and AWS components | Done (AWS part deployed) | `docs/ARCHITECTURE.md` |
 | Working web endpoint **or** arranged live screen-share | Deployed 2026-10-16 | https://d4dqbqmvvujy7.cloudfront.net; `evaluation/aws-2026-10-16/README.md` |
-| Video ≤ 5 minutes: team, app working, architecture, results | **Missing** | Script: `docs/DEMO_SCRIPT.md` |
+| Video ≤ 5 minutes: team, app working, architecture, results | Completed, 280 seconds, narrated | `video/out/MotionQA_Final.mp4`; verification: `video/VERIFICATION.md`. Public/unlisted video URL still required. |
 | Evaluation evidence incl. failures and limitations | Development benchmark only; failure analysis done | `docs/EVALUATION.md`, `docs/FAILURE_ANALYSIS.md`, `docs/INDEPENDENT_EVALUATION.md` (NOT RUN) |
 | Core rule: meaningful AWS component | Met | OpenCV 5 inference on EC2 Graviton; S3, Secrets Manager, CloudWatch, CloudFront, CloudFormation |
 
@@ -36,14 +36,14 @@ aws-systems-manager (all running since 2026-10-16).
 **Try it out:** repository link · https://d4dqbqmvvujy7.cloudfront.net (operator token supplied to judges privately;
 live screen-share also possible).
 
-**Video:** `TODO(owner)` after recording (≤ 5 min).
+**Video:** Completed: `video/out/MotionQA_Final.mp4` (4 minutes 40 seconds, narrated). Add the public/unlisted video URL after upload.
 
-**Team:** `TODO(owner)` names and roles. Do not list contributors who did not take part.
+**Team:** Kia Kiu. Ghazy Achmed Movlech Urbayani, Institut Teknologi Bandung. Role: full-stack developer and ML engineer.
 
 ## About the project (draft text)
 
 ### Problem and users
-Visual checks of manufactured parts are often manual and leave little record of what was inspected and why. MotionQA
+An anomaly score alone does not specify review, recapture, or evidence retention. MotionQA
 targets quality inspectors and line supervisors who photograph a part at a fixed station. It is a prototype; no
 manufacturer has used it, and no field trial has taken place.
 
@@ -71,7 +71,7 @@ HTTPS. Deployment uses an IAM user with temporary credentials and a CloudFormati
 stack's resources, with a permissions boundary on the server role. The smoke test passed through CloudFront; twenty
 test-split inspections returned the same decisions as the local evaluation (20/20) with a median of 450 ms inference
 and 779 ms server time. The account stays on the AWS Free plan; the estimated cost to 11 November is about US$17 of
-credits, and the stack is deleted after judging. Record: `evaluation/aws-2026-10-16/README.md`.
+credits, and stack teardown is planned after judging. Record: `evaluation/aws-2026-10-16/README.md`.
 
 ### Evaluation (measured, development data)
 Public VisA `pcb1` benchmark (HC-SR04 boards; CC BY 4.0, Zou et al. ECCV 2022). On the reused test split
@@ -94,7 +94,7 @@ no out-of-memory events — an emulation, not an AWS measurement.
 - Orientation confound in the benchmark data; pins-down good boards go to REVIEW far more often.
 - About a third of good test boards go to REVIEW at the deployed operating point.
 - Rates are per image with no grouped confidence intervals; VisA has no physical-part identifiers.
-- No prospective data, no human-labelled new test set, no AWS deployment yet.
+- No prospective data or human-labelled new test set. AWS deployment is complete.
 
 ### Responsible use
 Inspection support, not an autonomous reject decision: FAIL and REVIEW require a person. Evidence is private
@@ -104,8 +104,7 @@ Dataset and model licences: VisA CC BY 4.0; OpenCV Zoo MobileNetV2 Apache-2.0.
 ### Planned, not built
 Prospective collection on a real component with a custodian and sealed protocol (`docs/PROSPECTIVE_COLLECTION.md`),
 with a development profile for that component built by `buildComponentProfile` and frozen before the final test;
-position-aware checks for missing components; physical-part-grouped uncertainty; AWS deployment within verified
-zero-cost scope.
+position-aware checks for missing components; physical-part-grouped uncertainty.
 
 ## Evidence index
 
@@ -115,4 +114,4 @@ zero-cost scope.
 | Measured (local run 2026-10-16) | `evaluation/localRun-2026-10-16/`, `artifacts/local-demo-001/`, `artifacts/public-photos-001/` |
 | Measured (second pass 2026-10-16) | `evaluation/localRun-2026-10-16b/`, `evaluation/results/policyComparison-p1-vs-p2.json`, `evaluation/results/failureAnalysis-2026-10-16.json` |
 | Assumptions | Cost figures in `docs/SUBMISSION_READINESS.md` (historical estimate), AWS eligibility (unchecked) |
-| Planned | Prospective evaluation, owner-component profile, AWS deployment |
+| Planned | Prospective evaluation and owner-component profile |
