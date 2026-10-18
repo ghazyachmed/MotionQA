@@ -1,6 +1,7 @@
 import type React from "react";
 import { Composition, getStaticFiles } from "remotion";
 import type { CalculateMetadataFunction } from "remotion";
+import { GalleryArchitecture, GalleryMissedPin } from "./gallery/Gallery";
 import { MotionQADemo } from "./MotionQADemo";
 import type { MotionQADemoProps } from "./MotionQADemo";
 import { FPS, TOTAL_FRAMES, footageClips } from "./timeline";
@@ -31,6 +32,14 @@ const calculateMetadata: CalculateMetadataFunction<MotionQADemoProps> = ({ props
 };
 
 export const RemotionRoot: React.FC = () => (
+  <>
+    <MotionQAComposition />
+    <Composition id="GalleryArchitecture" component={GalleryArchitecture} durationInFrames={1} fps={FPS} width={1920} height={1280} />
+    <Composition id="GalleryMissedPin" component={GalleryMissedPin} durationInFrames={1} fps={FPS} width={1920} height={1280} />
+  </>
+);
+
+const MotionQAComposition: React.FC = () => (
   <Composition
     id="MotionQADemo"
     component={MotionQADemo}

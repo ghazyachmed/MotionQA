@@ -48,7 +48,20 @@ const Packet: React.FC<{ path: number[][]; at: number; duration: number; childre
   return <div style={{ position: "absolute", left: x, top: y, translate: "-50% -50%", zIndex: 5 }}>{children}</div>;
 };
 
-const Flow: React.FC = () => {
+// Sub-labels for the gallery still (detailed mode); the video keeps one word per box.
+const details: Record<string, string> = {
+  browser: "operator",
+  cf: "HTTPS",
+  nginx: "UI + /api proxy",
+  api: "inspection pipeline",
+  pg: "inspection records",
+  redis: "live events",
+  s3: "private evidence, 30-day expiry",
+  sm: "token, DB password",
+  cw: "container logs",
+};
+
+export const Flow: React.FC<{ kicker?: string; title?: string; detailed?: boolean }> = ({ kicker = "Live on AWS", title = "One request through the stack", detailed = false }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const f = cueIn("architecture", "flow", fps);
@@ -68,6 +81,8 @@ const Flow: React.FC = () => {
   ];
   const tone = { aws: colors.aws, app: colors.line, opencv: colors.cyanDeep, client: colors.muted };
   const wash = { aws: colors.awsWash, app: colors.card, opencv: colors.cyanWash, client: colors.card };
+  // Detailed mode (gallery still) adds a sub-label, so every box gets 40 px more height; the lines follow the centres.
+  if (detailed) for (const node of nodes) node.height += node.id === "s3" || node.id === "sm" ? 66 : 40;
   const n = Object.fromEntries(nodes.map((node) => [node.id, node]));
   const mid = (node: Node) => node.top + node.height / 2;
   const R = (node: Node) => node.left + node.width;
@@ -98,7 +113,7 @@ const Flow: React.FC = () => {
     [[ec2.left + ec2.width, mid(n.cw)], [n.cw.left, mid(n.cw)]],
   ];
   return (
-    <Beat kicker="Live on AWS" title="One request through the stack" note="deploy/aws/motionQaStack.yaml">
+    <Beat kicker={kicker} title={title} note="deploy/aws/motionQaStack.yaml">
       <div style={{ position: "absolute", left: 380, top: top, width: 1444, height: 600, boxSizing: "border-box", border: `3px dashed ${colors.aws}`, borderRadius: 18, opacity: fade(0), boxShadow: frame >= f(168.8) ? `0 0 0 8px ${colors.marker}` : "none" }}>
         <div style={{ position: "absolute", left: 20, top: 8, fontFamily: fonts.hand, fontWeight: 600, fontSize: 42, color: colors.aws }}>one CloudFormation stack</div>
       </div>
@@ -125,6 +140,7 @@ const Flow: React.FC = () => {
             backgroundColor: wash[node.kind],
             boxShadow: glow(node.id),
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
             textAlign: "center",
@@ -138,6 +154,7 @@ const Flow: React.FC = () => {
           }}
         >
           {node.label}
+          {detailed ? <div style={{ fontSize: size.small, fontWeight: 500, color: colors.muted, lineHeight: 1.15, marginTop: 4 }}>{details[node.id]}</div> : null}
         </div>
       ))}
       <Packet path={inPath} at={f(150.6)} duration={f(155.8) - f(150.6)}>
